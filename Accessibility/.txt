@@ -1,0 +1,24 @@
+Copy to index.html:
+
+
+<div id="accessibility-placeholder"></div>
+<link rel="stylesheet" href="Accessibility/accessibility.css">
+
+<script>
+  fetch('Accessibility/accessibility.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('accessibility-placeholder').innerHTML = html;
+
+      // עכשיו שה-HTML הוכנס – טען את הסקריפט
+      const script = document.createElement('script');
+      script.src = 'Accessibility/accessibility.js';
+      script.onload = () => {
+        // מפעיל את הפונקציות מיד אחרי טעינה
+        if (typeof setupAccessibility === 'function') {
+          setupAccessibility(); // הפונקציה תוגדר בקובץ JS
+        }
+      };
+      document.body.appendChild(script);
+    });
+</script>

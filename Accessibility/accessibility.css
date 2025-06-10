@@ -1,0 +1,80 @@
+#accessibility-toggle {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      /* background: #c0b6b6; */
+      color: black;
+      padding: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 30px;
+    }
+
+    #accessibility-toggle span {
+      font-size: 12px;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    #accessibility-toggle img{
+        box-shadow: #2cd3d3;
+    }
+
+    #accessibility-bar {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      display: none;
+      z-index: 9999;
+      width: 160px;
+      direction: rtl;
+      border-radius: 10px;
+    }
+
+    #accessibility-bar button {
+      display: block;
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 40px;
+      font-weight: bold;
+      background-color: rgba(44, 211, 211, 0.3)
+      
+    }
+        #accessibility-bar button:hover {
+        background-color: rgba(6, 14, 33, 0.9);
+        color: white;
+        }
+
+    body.high-contrast, body.high-contrast * {
+      background-color: #000 !important;
+      color: #FFD700 !important;
+      border-color: #FFD700 !important;
+    }
+
+    .highlight-links a {
+      background-color: yellow !important;
+      color: black !important;
+      text-decoration: underline !important;
+    }
+       .icon-accessibility{
+        border-radius: 30px;
+       }
+        .icon-accessibility:hover{
+ box-shadow:
+    0 0 15px darkturquoise,
+    0 0 30px rgba(0, 206, 209, 0.6),
+    0 0 45px rgba(0, 206, 209, 0.4),
+    0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px) scale(1.08);
+  transition: all 0.3s ease;        }
