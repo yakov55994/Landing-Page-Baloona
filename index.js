@@ -602,3 +602,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const mapContainer = document.querySelector('.embedded-map');
+    if (mapContainer) {
+        mapContainer.addEventListener('click', function() {
+            const googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=אלי+כהן+19+אשקלון';
+            window.open(googleMapsUrl, '_blank');
+        });
+    }
+});
