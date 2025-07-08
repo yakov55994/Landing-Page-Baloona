@@ -45,7 +45,7 @@ body {
 
 /* Hero Section */
 .hero {
-    min-height: 95vh;
+    height: 15vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -165,50 +165,6 @@ body {
     animation: fadeIn 0.5s ease;
 }
 
-@media (min-width: 768px) {
-    .profile-image-container {
-        right: 30px; /* Position from right on larger screens */
-        transform: none;
-        bottom: -60px;
-    }
-}
-
-.profile-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* This maintains aspect ratio while filling the container */
-}
-
-.profile-border {
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    /* שינוי מכתום לזהב */
-    border: 2px solid rgba(255, 215, 0, 0.8);
-    border-radius: 50%;
-    z-index: 11;
-    pointer-events: none;
-}
-
-.name-container {
-    margin-top: 70px; /* Space for the overlapping profile image */
-    margin-bottom: 30px;
-    padding: 0 20px;
-}
-
-.name {
-    font-family: 'Times New Roman', Times, serif ;
-    font-size: 110px;
-    font-weight: 700;
-    /* צבע זהב מפואר */
-    color: var(--gold-bronze);
-    /* אפקט זוהר מסביב לטקסט - משלב כמה שכבות של צל */
-    text-shadow: white 2px 2px 2px;
-    margin-bottom: 5px;
-    letter-spacing: 1px;
-}
 
 .title-hebrew {
     font-size: 2rem;
@@ -1653,7 +1609,7 @@ video-carousel-item:hover {
     .cover-photo-container {
         width: 100%;
         position: relative;
-        max-height: 350px;
+        max-height: 150px;
         overflow: hidden;
         background-color: #1c1c1c; /* Fallback if image doesn't load */
         display: flex;
@@ -1802,19 +1758,6 @@ video-carousel-item:hover {
         font-size: 18px;
     }
     
-    /* תיקון גודל תמונת פרופיל */
-    .profile-image-container {
-        width: 110px;
-        height: 110px;
-        bottom: -35px;
-        border-width: 3px;
-    }
-    
-    /* התאמת גריד של סרטונים */
-    .videos-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
     
     /* הגדרת רווחים בטופס */
     .contact-form-container {
@@ -1895,7 +1838,7 @@ video-carousel-item:hover {
     /* התאמת גובה תמונת כותרת */
     .cover-photo-container,
     .cover-image {
-        max-height: 150px;
+        max-height: 50px;
     }
     
     /* ריווח בסקשנים */
@@ -1976,4 +1919,51 @@ video-carousel-item:hover {
     100% {
         box-shadow: 0 0 0px 0px var(--gold-bronze), 0 0 10px 2px rgba(217,185,120,0.7), 0 0 0px 0px rgba(255,255,255,0.4);
     }
+}
+
+/* אפקט פשוט לסקציית אודות */
+
+.section#about .section-title {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideIn 0.8s ease-out forwards;
+}
+
+.about-text {
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: slideInFromLeft 0.6s ease-out forwards;
+}
+
+.about-text:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.about-text:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.about-text:nth-child(5) {
+    animation-delay: 0.6s;
+}
+
+/* אנימציות פשוטות */
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromLeft {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* אפקט hover פשוט */
+.about-text:hover {
+    transform: translateY(-4px);
+    transition: transform 0.1s ease;
 }

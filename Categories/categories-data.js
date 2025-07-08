@@ -1,130 +1,193 @@
-// categories-data.js - נתונים של כל הקטגוריות והסרטונים
+// categories-data.js - נתונים של כל הקטגוריות והתמונות
 
 const categoriesData = {
     // רשימת הקטגוריות והכותרות שלהן
     categories: [
-        { id: 'bar-mitzvah', name: 'עלייה לתורה' },
+        { id: 'bar-mitzvah', name: 'בר מצווה' },
         { id: 'brit-milah', name: 'ברית מילה' },
-        { id: 'hilula', name: 'הילולא' },
-        { id: 'taverna', name: 'טברנה' }
+        { id: 'birthday', name: 'יום הולדת' },
+        { id: 'Marriage-proposal', name: 'הצעת נישואין' }
     ],
 
-    // נתונים של הסרטונים לכל קטגוריה
-    videos: {
+    // נתונים של התמונות לכל קטגוריה
+    images: {
         'bar-mitzvah': [
             {
                 id: 1,
-                title: 'שיר הקדשה לחתן',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045206/LandingPage-Uriel-Cohen/zlwfbwiwpy2yiybdpfqc.mp4',
-                ariaLabel: 'שיר הקדשה לחתן',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 2,
-                title: 'ברכה לחתן',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045203/LandingPage-Uriel-Cohen/cocka0uz8ucr4mad0d0b.mp4',
-                ariaLabel: 'ברכה לחתן',
-                muted: false
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 3,
-                title: 'תקציר טקס',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045206/LandingPage-Uriel-Cohen/odulnnjnkwca825wzttq.mp4',
-                ariaLabel: 'תקציר טקס',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 4,
-                title: 'ישמח חתני',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045204/LandingPage-Uriel-Cohen/enahlflmet7vb2e8pxqo.mp4',
-                ariaLabel: 'ישמח חתני',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 5,
-                title: 'לאל ברוך',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045216/LandingPage-Uriel-Cohen/rt0dcfthes4vmipobspa.mp4',
-                ariaLabel: 'לאל ברוך',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 6,
-                title: 'קבלת עול מלכות שמיים',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045917/LandingPage-Uriel-Cohen/yc8qot2n3qzod7yol3ka.mp4',
-                ariaLabel: 'קבלת עול מלכות שמיים',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             }
         ],
 
         'brit-milah': [
             {
                 id: 1,
-                title: 'ברכת הברית',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045206/LandingPage-Uriel-Cohen/zlwfbwiwpy2yiybdpfqc.mp4',
-                ariaLabel: 'ברכת הברית',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 2,
-                title: 'שירי ברית מילה',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045203/LandingPage-Uriel-Cohen/cocka0uz8ucr4mad0d0b.mp4',
-                ariaLabel: 'שירי ברית מילה',
-                muted: false
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 3,
-                title: 'חגיגת הברית',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045206/LandingPage-Uriel-Cohen/odulnnjnkwca825wzttq.mp4',
-                ariaLabel: 'חגיגת הברית',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 4,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 5,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 6,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             }
         ],
 
-        'hilula': [
+        'birthday': [
             {
                 id: 1,
-                title: 'שירי הילולא',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045206/LandingPage-Uriel-Cohen/zlwfbwiwpy2yiybdpfqc.mp4',
-                ariaLabel: 'שירי הילולא',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 2,
-                title: 'פיוטים מיוחדים',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045203/LandingPage-Uriel-Cohen/cocka0uz8ucr4mad0d0b.mp4',
-                ariaLabel: 'פיוטים מיוחדים',
-                muted: false
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 3,
-                title: 'אווירת הילולא',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045216/LandingPage-Uriel-Cohen/rt0dcfthes4vmipobspa.mp4',
-                ariaLabel: 'אווירת הילולא',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 4,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 5,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 6,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             }
         ],
 
-        'taverna': [
+        'Marriage-proposal': [
             {
                 id: 1,
-                title: 'ערב טברנה',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045206/LandingPage-Uriel-Cohen/zlwfbwiwpy2yiybdpfqc.mp4',
-                ariaLabel: 'ערב טברנה',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 2,
-                title: 'שירי טברנה מזרחית',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045203/LandingPage-Uriel-Cohen/cocka0uz8ucr4mad0d0b.mp4',
-                ariaLabel: 'שירי טברנה מזרחית',
-                muted: false
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             },
             {
                 id: 3,
-                title: 'אווירה אותנטית',
-                videoSrc: 'https://res.cloudinary.com/dbbivwbbt/video/upload/v1746045204/LandingPage-Uriel-Cohen/enahlflmet7vb2e8pxqo.mp4',
-                ariaLabel: 'אווירה אותנטית',
-                muted: true
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 4,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 5,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
+            },
+            {
+                id: 6,
+                title: '',
+                imageSrc: '',
+                alt: '',
+                description: ''
             }
         ]
     },
@@ -135,68 +198,81 @@ const categoriesData = {
             id: 1,
             imageSrc: '/images/Recommendations/1.png',
             alt: 'המלצה 1',
+            title: 'המלצה 1',
+            description: '',
             category: 'performances'
         },
         {
             id: 2,
             imageSrc: '/images/Recommendations/2.jpg',
             alt: 'המלצה 2',
+            title: 'המלצה 2',
+            description: '',
             category: 'studio'
         },
         {
             id: 3,
             imageSrc: '/images/Recommendations/3.jpg',
             alt: 'המלצה 3',
+            title: 'המלצה 3',
+            description: '',
             category: 'events'
         },
         {
             id: 4,
             imageSrc: '/images/Recommendations/4.jpg',
             alt: 'המלצה 4',
+            title: 'המלצה 4',
+            description: '',
             category: 'performances'
         },
         {
             id: 5,
             imageSrc: '/images/Recommendations/5.jpg',
             alt: 'המלצה 5',
+            title: 'המלצה 5',
+            description: '',
             category: 'studio'
         }
     ],
 
-    // נתונים של הלהיטים
+    // נתונים של הלהיטים - כעת תמונות
     hits: [
         {
             id: 1,
-            title: 'מחרוזת זעבור',
-            description: 'פורסם לפני שנתיים • 44K צפיות',
-            imageSrc: '/images/Hits/1.png',
-            videoId: 'Tyc-q6IKvew',
-            alt: 'מחרוזת זעבור'
+            title: '',
+            description: '',
+            imageSrc: '',
+            alt: ''
         },
         {
             id: 2,
-            title: 'מחרוזת סליחות',
-            description: 'פורסם לפני שנה • 132K צפיות',
-            imageSrc: '/images/Hits/2.png',
-            videoId: 'FcnsNhwuyus',
-            alt: 'מחרוזת סליחות'
+            title: '',
+            description: '',
+            imageSrc: '',
+            alt: ''
         },
         {
             id: 3,
-            title: 'מחרוזת הייא הייא',
-            description: 'פורסם לפני שנתיים • 2.5K צפיות',
-            imageSrc: '/images/Hits/3.png',
-            videoId: 'hmPgKXLScJM',
-            alt: 'מחרוזת הייא הייא'
+            title: '',
+            description: '',
+            imageSrc: '',
+            alt: ''
         },
         {
             id: 4,
-            title: 'משמחים חתן כלה',
-            description: 'פורסם לפני שנתיים • 2.5K צפיות',
-            imageSrc: '/images/Hits/4.png',
-            videoId: 'iWpaLIBeLMc',
-            alt: 'משמחים חתן כלה'
-        }
+            title: '',
+            description: '',
+            imageSrc: '',
+            alt: ''
+        },
+        {
+            id: 5,
+            title: '',
+            description: '',
+            imageSrc: '',
+            alt: ''
+        }     
     ]
 };
 
@@ -205,8 +281,8 @@ const CategoriesManager = {
     // קבלת כל הקטגוריות
     getAllCategories: () => categoriesData.categories,
     
-    // קבלת סרטונים לפי קטגוריה
-    getVideosByCategory: (categoryId) => categoriesData.videos[categoryId] || [],
+    // קבלת תמונות לפי קטגוריה
+    getImagesByCategory: (categoryId) => categoriesData.images[categoryId] || [],
     
     // קבלת כל ההמלצות
     getAllRecommendations: () => categoriesData.recommendations,
@@ -218,25 +294,23 @@ const CategoriesManager = {
     getRecommendationsByCategory: (category) => 
         categoriesData.recommendations.filter(item => item.category === category),
     
-    // בניית HTML לסרטון בודד
-    buildVideoHTML: (video) => {
+    // בניית HTML לתמונה בודדת בקטגוריה
+    buildCategoryImageHTML: (image) => {
         return `
-            <div class="video-carousel-item" data-video-src="${video.videoSrc}">
-                <div class="event-video-container">
-                    <video aria-label="${video.ariaLabel}" class="event-video" preload="metadata" 
-                           poster="${video.videoSrc}" ${video.muted ? 'muted' : ''} playsinline>
-                        <source src="${video.videoSrc}" type="video/mp4">
-                    </video>
-                    <div class="event-overlay">
-                        <div class="event-play-button">
-                            <svg class="event-play-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8 5V19L19 12L8 5Z" fill="#ffffff"/>
+            <div class="gallery-item" data-image-id="${image.id}">
+                <div class="gallery-item-inner">
+                    <img src="${image.imageSrc}" alt="${image.alt}">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h3>${image.title}</h3>
+                            ${image.description ? `<p>${image.description}</p>` : ''}
+                        </div>
+                        <div class="gallery-icon">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="#ffffff"/>
                             </svg>
                         </div>
                     </div>
-                </div>
-                <div class="event-video-info">
-                    <h3 class="event-title">${video.title}</h3>
                 </div>
             </div>
         `;
@@ -250,7 +324,8 @@ const CategoriesManager = {
                     <img src="${recommendation.imageSrc}" alt="${recommendation.alt}">
                     <div class="gallery-overlay">
                         <div class="gallery-info">
-                            <p></p>
+                            <h3>${recommendation.title}</h3>
+                            ${recommendation.description ? `<p>${recommendation.description}</p>` : ''}
                         </div>
                         <div class="gallery-icon">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -263,20 +338,20 @@ const CategoriesManager = {
         `;
     },
     
-    // בניית HTML ללהיט בודד
+    // בניית HTML ללהיט בודד - כעת תמונה
     buildHitHTML: (hit) => {
         return `
-            <div class="gallery-item video-item" data-video-id="${hit.videoId}" onclick="openYouTubeModal(this)">
+            <div class="gallery-item" data-hit-id="${hit.id}">
                 <div class="gallery-item-inner">
                     <img src="${hit.imageSrc}" alt="${hit.alt}">
                     <div class="gallery-overlay">
                         <div class="gallery-info">
                             <h3>${hit.title}</h3>
-                            <p>${hit.description}</p>
+                            ${hit.description ? `<p>${hit.description}</p>` : ''}
                         </div>
-                        <div class="play-button">
-                            <svg class="play-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8 5V19L19 12L8 5Z" fill="#ffffff"/>
+                        <div class="gallery-icon">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="#ffffff"/>
                             </svg>
                         </div>
                     </div>

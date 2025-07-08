@@ -1,3 +1,438 @@
+// הוסף את זה בתחילת הקובץ index.js שלך, לפני ה-DOMContentLoaded
+
+// נתוני הגלריה
+const galleryData = [
+    {
+        id: 1,
+        title: "בר מצווה ",
+        description: "עיצוב בלונים מיוחד לבר מצווה",
+        image: "https://www.iballoon.co.il/wp-content/uploads/2019/12/balloons-bar-mitzvah2.jpg", // שנה לנתיב האמיתי
+        category: "bar-mitzvah"
+    },
+    {
+        id: 2,
+        title: "יום הולדת ",
+        description: "עמודי בלונים ליום הולדת",
+        image: "https://www.iballoon.co.il/wp-content/uploads/2021/07/mom-bitrday-ballons-1001x1024.jpg", // שנה לנתיב האמיתי
+        category: "birthdays"
+    },
+    {
+        id: 3,
+        title: "הצעת נישואין",
+        description: "קשת בלונים לחתונה",
+        image: "https://blue-balloon.co.il/wp-content/uploads/2021/06/1-3-768x576.jpg", // שנה לנתיב האמיתי
+        category: "weddings"
+    },
+    {
+        id: 4,
+        title: "בר מצווה ",
+        description: "עיצוב בלונים מיוחד לבר מצווה",
+        image: "https://yambalon.co.il/wp-content/uploads/2022/01/IMG-20211122-WA0106-300x450.jpg", // שנה לנתיב האמיתי
+        category: "bar-mitzvah"
+    },
+    {
+        id: 5,
+        title: "יום הולדת ",
+        description: "עמודי בלונים ליום הולדת",
+        image: "https://www.tulipflowers.co.il/Cat_433626_626.jpg", // שנה לנתיב האמיתי
+        category: "birthdays"
+    },
+    {
+        id: 6,
+        title: "הצעת נישואין",
+        description: "קשת בלונים לחתונה",
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmDP1zZ287J5TrDjpUclGXRSV0V65bhgw-Ug&s", // שנה לנתיב האמיתי
+        category: "weddings"
+    }
+    // הוסף עוד פריטים לפי הצורך...
+];
+
+// פונקציה ליצירת הגלריה
+function createGallery() {
+    const gallerySection = document.getElementById('gallery');
+    if (!gallerySection) return;
+
+    // יצירת כפתורי הפילטר
+    const categories = ['all', ...new Set(galleryData.map(item => item.category))];
+    const categoryNames = {
+        'all': 'הכל',
+        'birthdays': 'ימי הולדת',
+        'weddings': 'חתונות',
+        'corporate': 'אירועי חברה',
+        'holidays': 'חגים',
+        'bar-mitzvah': 'בר/בת מצווה'
+    };
+
+    const filterButtons = categories.map(category => 
+        `<button class="filter-btn ${category === 'all' ? 'active' : ''}" data-filter="${category}">
+            ${categoryNames[category] || category}
+        </button>`
+    ).join('');
+
+    // יצירת פריטי הגלריה
+    const galleryItems = galleryData.map(item => `
+        <div class="gallery-item" data-category="${item.category}">
+            <img src="${item.image}" alt="${item.title}" loading="lazy">
+            <div class="gallery-info">
+                
+            </div>
+        </div>
+    `).join('');
+
+    // יצירת מודל הלייטבוקס
+    const lightboxModal = `
+        <div class="lightbox-modal">
+            <div class="lightbox-content">
+                <span class="close-lightbox">&times;</span>
+                <img class="lightbox-image" src="" alt="">
+                <div class="lightbox-info">
+                    <h3 class="lightbox-title"></h3>
+                    <p class="lightbox-desc"></p>
+                </div>
+                <button class="lightbox-prev">&#10094;</button>
+                <button class="lightbox-next">&#10095;</button>
+            </div>
+        </div>
+    `;
+
+    // שמירת הכותרת הקיימת
+    const existingTitle = gallerySection.querySelector('.section-title');
+    
+    // הכנסת הכל לקונטיינר
+    gallerySection.innerHTML = '';
+    if (existingTitle) {
+        gallerySection.appendChild(existingTitle);
+    }
+    
+    gallerySection.insertAdjacentHTML('beforeend', `
+        <div class="filter-buttons">
+            ${filterButtons}
+        </div>
+        <div class="gallery-container">
+            ${galleryItems}
+        </div>
+        ${lightboxModal}
+    `);
+
+    // הוספת CSS
+    addGalleryCSS();
+}
+
+// פונקציה להוספת CSS
+function addGalleryCSS() {
+    if (document.getElementById('gallery-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'gallery-styles';
+    style.textContent = `
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            padding: 0 20px;
+        }
+
+        .filter-btn {
+            padding: 12px 24px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 14px;
+            color: black;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            border-color:rgb(255, 149, 0);
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: rgb(255, 149, 0);
+            color: black;
+            border-color: black;
+        }
+
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 110px;
+            padding-left: 70px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .gallery-item {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(255, 215, 0, 0.8);
+            background: white;
+            height: 180px;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(255, 215, 0, 0.8);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-info {
+            transform: translateY(0);
+        }
+
+        .gallery-info h3 {
+            margin-bottom: 5px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .gallery-info p {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.85em;
+            line-height: 1.3;
+        }
+
+        /* Lightbox */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-modal.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+
+        .lightbox-info {
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .close-lightbox {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .lightbox-prev, .lightbox-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            font-size: 24px;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .lightbox-prev {
+            left: -60px;
+        }
+
+        .lightbox-next {
+            right: -60px;
+        }
+
+        /* רספונסיביות */
+        
+        /* טאבלט גדול - 1024px ומטה */
+        @media (max-width: 1024px) {
+            .gallery-container {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 40px;
+                padding-left: 30px;
+                max-width: 900px;
+            }
+            
+            .gallery-item {
+                height: 200px;
+            }
+        }
+
+        /* טאבלט - 768px ומטה */
+        @media (max-width: 768px) {
+            .filter-buttons {
+                gap: 8px;
+                margin: 20px 0;
+            }
+            
+            .filter-btn {
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+            
+            .gallery-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 25px;
+                padding-left: 20px;
+                padding-right: 20px;
+                max-width: 100%;
+            }
+            
+            .gallery-item {
+                height: 220px;
+            }
+            
+            .lightbox-prev {
+                left: 10px;
+            }
+            
+            .lightbox-next {
+                right: 10px;
+            }
+            
+            .close-lightbox {
+                top: -35px;
+                font-size: 28px;
+            }
+        }
+
+        /* מובייל - 480px ומטה */
+        @media (max-width: 480px) {
+            .filter-buttons {
+                gap: 6px;
+                margin: 15px 0;
+                padding: 0 5px;
+            }
+            
+            .filter-btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .gallery-container {
+            grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                padding-left: 15px;
+                padding-right: 15px;
+                margin-top: 50px;
+            }
+            
+            .gallery-item {
+                height: 100px;
+            }
+            
+            .gallery-info {
+                padding: 12px;
+            }
+            
+            .gallery-info h3 {
+                font-size: 1em;
+                margin-bottom: 4px;
+            }
+            
+            .gallery-info p {
+                font-size: 0.8em;
+            }
+            
+            .lightbox-content {
+                max-width: 95%;
+                max-height: 95%;
+            }
+            
+            .lightbox-info {
+                padding: 15px;
+            }
+            
+            .lightbox-prev, .lightbox-next {
+                font-size: 20px;
+                padding: 8px 12px;
+            }
+        }
+
+        /* מובייל קטן - 320px ומטה */
+        @media (max-width: 320px) {
+            .filter-btn {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            
+            .gallery-container {
+                gap: 15px;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .gallery-item {
+                height: 200px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// עדכן את ה-DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    // צור את הגלריה קודם
+    createGallery();
+    
+    // אחר כך אתחל את כל השאר
+    initVideoCarousels();
+    initCategoryTabs();
+    initVideoModals();
+    initBackToTopButton();
+    initGallery(); // עכשיו זה יעבוד כי האלמנטים קיימים
+    initContactForm();
+    initMap();
+    checkRTLSupport();
+    initSmoothScrolling();
+    initScrollArrow();
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // הגדרות לקרוסלת וידאו
     initVideoCarousels();
@@ -10,11 +445,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // כפתור חזרה לראש העמוד
     initBackToTopButton();
+    
+    // אתחול הגלריה
+    initGallery();
+    
+    // אתחול טופס יצירת קשר
+    initContactForm();
+    
+    // אתחול מפה
+    initMap();
+    
+    // הפעלת פונקציות נוספות
+    checkRTLSupport();
+    initSmoothScrolling();
+    initScrollArrow();
 });
 
 // אתחול קרוסלות וידאו
 function initVideoCarousels() {
-    // חפש את כל הקרוסלות באתר
     const carousels = document.querySelectorAll('.video-carousel-container');
     
     carousels.forEach(carousel => {
@@ -28,23 +476,27 @@ function initVideoCarousels() {
         
         let currentIndex = 0;
         const itemWidth = items[0].offsetWidth;
-        const gap = 20; // המרווח בין הפריטים
+        const gap = 20;
         const visibleItems = Math.floor(carouselStrip.offsetWidth / (itemWidth + gap));
         
         // מאזיני לחיצות על כפתורי ניווט
-        prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateCarousel();
-            }
-        });
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
+                }
+            });
+        }
         
-        nextBtn.addEventListener('click', () => {
-            if (currentIndex < items.length - visibleItems) {
-                currentIndex++;
-                updateCarousel();
-            }
-        });
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < items.length - visibleItems) {
+                    currentIndex++;
+                    updateCarousel();
+                }
+            });
+        }
         
         // מאזיני לחיצה על נקודות ניווט
         dots.forEach((dot, index) => {
@@ -56,8 +508,7 @@ function initVideoCarousels() {
         
         // פונקציה לעדכון מצב הקרוסלה
         function updateCarousel() {
-            // חישוב הזזה - תלוי בכיוון האתר (RTL)
-            const offset = -currentIndex * (itemWidth + gap); // המרווח בין פריטים
+            const offset = -currentIndex * (itemWidth + gap);
             carouselStrip.style.transform = `translateX(${offset}px)`;
             
             // עדכון מצב פריט פעיל
@@ -79,8 +530,12 @@ function initVideoCarousels() {
             });
             
             // עדכון מצב כפתורי ניווט
-            prevBtn.style.opacity = currentIndex > 0 ? '1' : '0.5';
-            nextBtn.style.opacity = currentIndex < items.length - visibleItems ? '1' : '0.5';
+            if (prevBtn) {
+                prevBtn.style.opacity = currentIndex > 0 ? '1' : '0.5';
+            }
+            if (nextBtn) {
+                nextBtn.style.opacity = currentIndex < items.length - visibleItems ? '1' : '0.5';
+            }
         }
         
         // הוספת תמיכה בהחלקה על מסך מגע
@@ -101,13 +556,11 @@ function initVideoCarousels() {
             const direction = document.dir === 'rtl' ? -1 : 1;
             
             if ((touchEndX - touchStartX) * direction > minSwipeDistance) {
-                // החלקה לצד ימין במצב RTL או שמאל במצב LTR - הקודם
                 if (currentIndex > 0) {
                     currentIndex--;
                     updateCarousel();
                 }
             } else if ((touchStartX - touchEndX) * direction > minSwipeDistance) {
-                // החלקה לצד שמאל במצב RTL או ימין במצב LTR - הבא
                 if (currentIndex < items.length - visibleItems) {
                     currentIndex++;
                     updateCarousel();
@@ -121,10 +574,8 @@ function initVideoCarousels() {
             if (videoContainer) {
                 const video = videoContainer.querySelector('video');
                 if (video) {
-                    // הגדרת טעינה לזית לסרט כדי לשפר ביצועים
                     video.preload = 'metadata';
                     
-                    // טעינת תמונת קדימון אם קיימת
                     if (video.poster) {
                         const img = new Image();
                         img.src = video.poster;
@@ -138,11 +589,9 @@ function initVideoCarousels() {
         
         // טיפול בשינוי גודל החלון
         window.addEventListener('resize', () => {
-            // עדכון רוחב פריט בעת שינוי גודל חלון
             const newItemWidth = items[0].offsetWidth;
             const newVisibleItems = Math.floor(carouselStrip.offsetWidth / (newItemWidth + gap));
             
-            // הגבלת האינדקס הנוכחי
             if (currentIndex > items.length - newVisibleItems) {
                 currentIndex = Math.max(0, items.length - newVisibleItems);
             }
@@ -169,7 +618,10 @@ function initCategoryTabs() {
             
             // הוספת מצב פעיל ללשונית הנוכחית ולתוכן המתאים
             tab.classList.add('active');
-            document.getElementById(category).classList.add('active');
+            const targetContent = document.getElementById(category);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
             
             // איתחול קרוסלת הוידאו בקטגוריה הנוכחית
             setTimeout(() => {
@@ -213,11 +665,13 @@ function initVideoModals() {
         card.addEventListener('click', () => {
             const videoId = card.getAttribute('data-video-id');
             
-            // יצירת iframe של יוטיוב
             const iframe = document.createElement('iframe');
             iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
             iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
             iframe.allowFullscreen = true;
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
             
             videoContainer.innerHTML = '';
             videoContainer.appendChild(iframe);
@@ -231,11 +685,13 @@ function initVideoModals() {
         card.addEventListener('click', () => {
             const videoSrc = card.getAttribute('data-video-src');
             
-            // יצירת אלמנט וידאו
             const video = document.createElement('video');
             video.src = videoSrc;
             video.controls = true;
             video.autoplay = true;
+            video.style.width = '100%';
+            video.style.height = 'auto';
+            video.style.maxHeight = '80vh';
             
             videoContainer.innerHTML = '';
             videoContainer.appendChild(video);
@@ -247,14 +703,14 @@ function initVideoModals() {
     // פונקציה לפתיחת המודל
     function openVideoModal() {
         modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // מניעת גלילה בעמוד הרקע
+        document.body.style.overflow = 'hidden';
     }
     
     // פונקציה לסגירת המודל
     function closeVideoModal() {
         modal.style.display = 'none';
-        videoContainer.innerHTML = ''; // ניקוי תוכן הוידאו
-        document.body.style.overflow = ''; // אפשור גלילה בעמוד
+        videoContainer.innerHTML = '';
+        document.body.style.overflow = '';
     }
 }
 
@@ -283,76 +739,8 @@ function initBackToTopButton() {
     });
 }
 
-// בדיקת תמיכה בשפה עברית וכיוון RTL
-function checkRTLSupport() {
-    // בדיקה האם השפה בדפדפן היא עברית או ערבית
-    const isRTLLanguage = /^(he|ar|fa|ur)\b/.test(navigator.language);
-    
-    // וידוא שהכיוון הוא RTL עבור שפות אלו
-    if (isRTLLanguage && document.dir !== 'rtl') {
-        document.dir = 'rtl';
-    }
-}
-
-// אתחול צף של קישורים פנימיים בעמוד
-function initSmoothScrolling() {
-    // בחירת כל הקישורים שמובילים לעוגנים בעמוד הנוכחי
-    document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const targetId = this.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
-            
-            if (targetElement) {
-                window.scrollTo({
-                    top: targetElement.offsetTop - 80, // הפחתה של גובה כותרת אם יש
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-}
-
-// הוספת קוד JavaScript להסתרת החץ לאחר לחיצה
-document.addEventListener('DOMContentLoaded', function() {
-    // מציאת החץ
-    const scrollArrow = document.querySelector('.scroll-arrow');
-    
-    if (scrollArrow) {
-        // הוספת מאזין אירוע ללחיצה על החץ
-        scrollArrow.addEventListener('click', function() {
-            // הסתרת החץ עם מחלקת CSS
-            scrollArrow.classList.add('hidden');
-            
-            // גלילה לאזור האודות
-            const aboutSection = document.getElementById('about');
-            if (aboutSection) {
-                aboutSection.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-        
-        // גם להסתיר את החץ בעת גלילה מטה
-        window.addEventListener('scroll', function() {
-            if (window.scrollY > 200) { // אם גללנו למטה יותר מ-200 פיקסלים
-                scrollArrow.classList.add('hidden');
-            } else {
-                scrollArrow.classList.remove('hidden');
-            }
-        });
-    }
-});
-// הפעלת פונקציות נוספות
-checkRTLSupport();
-initSmoothScrolling();
-
-
-
-//Gallery
-
-// JavaScript לגלריה מודרנית עם פילטרים ולייטבוקס
-document.addEventListener('DOMContentLoaded', function() {
-    // אתחול הגלריה והפילטרים
+// אתחול גלריה מודרנית עם פילטרים ולייטבוקס
+function initGallery() {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const galleryItems = document.querySelectorAll('.gallery-item');
     const lightboxModal = document.querySelector('.lightbox-modal');
@@ -363,21 +751,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const lightboxNext = document.querySelector('.lightbox-next');
     const lightboxPrev = document.querySelector('.lightbox-prev');
     
+    // בדיקה שיש אלמנטים של גלריה
+    if (!galleryItems.length || !lightboxModal) return;
+    
     let currentImageIndex = 0;
-    let filteredItems = [...galleryItems];
+    let filteredItems = Array.from(galleryItems);
     
     // פונקציית פילטור הפריטים
     function filterItems(filter) {
-        galleryItems.forEach(item => {
+        filteredItems = []; // איפוס המערך
+        
+        galleryItems.forEach((item, index) => {
             const category = item.getAttribute('data-category');
             
             if (filter === 'all' || category === filter) {
                 item.style.display = 'block';
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                
                 // אנימציית הופעה
                 setTimeout(() => {
                     item.style.opacity = '1';
                     item.style.transform = 'translateY(0)';
-                }, 50);
+                }, 50 * filteredItems.length);
+                
                 filteredItems.push(item);
             } else {
                 // אנימציית היעלמות
@@ -391,65 +788,84 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // הוספת אירועי לחיצה לכפתורי הפילטר
-    // filterBtns.forEach(btn => {
-    //     btn.addEventListener('click', function() {
-    //         // הסרת מחלקת אקטיב מכל הכפתורים
-    //         filterBtns.forEach(btn => btn.classList.remove('active'));
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // הסרת מחלקת אקטיב מכל הכפתורים
+            filterBtns.forEach(b => b.classList.remove('active'));
             
-    //         // הוספת מחלקת אקטיב לכפתור הנוכחי
-    //         this.classList.add('active');
+            // הוספת מחלקת אקטיב לכפתור הנוכחי
+            this.classList.add('active');
             
-    //         // פילטור הפריטים לפי הקטגוריה
-    //         const filter = this.getAttribute('data-filter');
-    //         filteredItems = [];
-    //         filterItems(filter);
-    //     });
-    // });
+            // פילטור הפריטים לפי הקטגוריה
+            const filter = this.getAttribute('data-filter');
+            filterItems(filter);
+        });
+    });
     
     // פונקציה לפתיחת הלייטבוקס
     function openLightbox(index) {
+        if (!filteredItems[index]) return;
+        
         currentImageIndex = index;
         const currentItem = filteredItems[index];
         
         // עדכון תוכן הלייטבוקס
         const img = currentItem.querySelector('img');
-        const title = currentItem.querySelector('.gallery-info h3').textContent;
-        const desc = currentItem.querySelector('.gallery-info p').textContent;
+        const titleElement = currentItem.querySelector('.gallery-info h3');
+        const descElement = currentItem.querySelector('.gallery-info p');
         
-        lightboxImage.src = img.src;
-        lightboxImage.alt = img.alt;
-        lightboxTitle.textContent = title;
-        lightboxDesc.textContent = desc;
+        if (img && lightboxImage) {
+            lightboxImage.src = img.src;
+            lightboxImage.alt = img.alt;
+        }
+        
+        if (titleElement && lightboxTitle) {
+            lightboxTitle.textContent = titleElement.textContent;
+        }
+        
+        if (descElement && lightboxDesc) {
+            lightboxDesc.textContent = descElement.textContent;
+        }
         
         // הצגת הלייטבוקס
         lightboxModal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // מניעת גלילה ברקע
+        document.body.style.overflow = 'hidden';
     }
     
     // הוספת אירועי לחיצה לפריטי הגלריה
     galleryItems.forEach((item, index) => {
         item.addEventListener('click', () => {
-            openLightbox(index);
+            // מציאת האינדקס בתוך המערך המסונן
+            const filteredIndex = filteredItems.indexOf(item);
+            if (filteredIndex !== -1) {
+                openLightbox(filteredIndex);
+            }
         });
     });
     
     // סגירת הלייטבוקס
-    closeLightbox.addEventListener('click', () => {
-        lightboxModal.classList.remove('active');
-        document.body.style.overflow = ''; // שחרור גלילה ברקע
-    });
+    if (closeLightbox) {
+        closeLightbox.addEventListener('click', () => {
+            lightboxModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
     
     // ניווט בלייטבוקס - הבא
-    lightboxNext.addEventListener('click', () => {
-        currentImageIndex = (currentImageIndex + 1) % filteredItems.length;
-        openLightbox(currentImageIndex);
-    });
+    if (lightboxNext) {
+        lightboxNext.addEventListener('click', () => {
+            currentImageIndex = (currentImageIndex + 1) % filteredItems.length;
+            openLightbox(currentImageIndex);
+        });
+    }
     
     // ניווט בלייטבוקס - הקודם
-    lightboxPrev.addEventListener('click', () => {
-        currentImageIndex = (currentImageIndex - 1 + filteredItems.length) % filteredItems.length;
-        openLightbox(currentImageIndex);
-    });
+    if (lightboxPrev) {
+        lightboxPrev.addEventListener('click', () => {
+            currentImageIndex = (currentImageIndex - 1 + filteredItems.length) % filteredItems.length;
+            openLightbox(currentImageIndex);
+        });
+    }
     
     // סגירת הלייטבוקס בלחיצה מחוץ לתמונה
     lightboxModal.addEventListener('click', (e) => {
@@ -478,17 +894,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // מניעת ברירת מחדל על אירועי טאץ' בלייטבוקס
+    // תמיכה במגע במובייל
+    let initialX = null;
+    
     lightboxModal.addEventListener('touchstart', (e) => {
         initialX = e.touches[0].clientX;
     }, {passive: true});
     
-    // אפקט החלקה במובייל
-    let initialX;
     lightboxModal.addEventListener('touchmove', (e) => {
-        if (initialX === null) {
-            return;
-        }
+        if (initialX === null) return;
         
         const currentX = e.touches[0].clientX;
         const diffX = initialX - currentX;
@@ -507,45 +921,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, {passive: true});
     
-    // אפס את ערך ההתחלה בסיום המגע
     lightboxModal.addEventListener('touchend', () => {
         initialX = null;
     }, {passive: true});
-
-    filteredItems = [...galleryItems];
     
     // הפעלת פילטר ברירת מחדל (הכל)
-});
+    if (filterBtns.length > 0) {
+        filterBtns[0].classList.add('active');
+        filterItems('all');
+    }
+}
 
-function openYouTubeModal(element) {
-    const videoId = element.dataset.videoId;
-    const videoContainer = document.getElementById('videoContainer');
-    const modal = document.getElementById('videoModal');
-  
-    videoContainer.innerHTML = `
-      <iframe width="100%" height="400" src="https://www.youtube.com/embed/${videoId}?autoplay=1"
-        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    `;
-  
-    modal.style.display = "block";
-  
-    document.querySelector(".close-modal").onclick = () => {
-      modal.style.display = "none";
-      videoContainer.innerHTML = "";
-    };
-  }
-  
-
-  // הקוד להפעלת מודאל ההצלחה
-document.addEventListener('DOMContentLoaded', function() {
+// אתחול טופס יצירת קשר
+function initContactForm() {
     const contactForm = document.getElementById('contact-form');
     const successModal = document.getElementById('successModal');
     const closeBtn = document.getElementById('closeSuccessModal');
     
+    if (!contactForm) return;
+    
     // מאזין לשליחת הטופס
-    if (contactForm) {
-      contactForm.addEventListener('submit', function(e) {
-        e.preventDefault(); // מניעת התנהגות ברירת המחדל של הטופס
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
         
         // הצגת אנימציית טעינה בכפתור
         const submitButton = this.querySelector('button[type="submit"]');
@@ -553,56 +950,55 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.disabled = true;
         submitButton.innerHTML = '<span class="loading-spinner"></span> שולח...';
         
-        // דימוי שליחת נתונים לשרת (במציאות היית משתמש ב-fetch או AJAX)
+        // דימוי שליחת נתונים לשרת
         setTimeout(function() {
-          // שליחה מוצלחת - ריקון הטופס והצגת המודאל
-          contactForm.reset();
-          
-          // החזרת הכפתור למצב הרגיל
-          submitButton.disabled = false;
-          submitButton.textContent = originalText;
-          
-          // הצגת מודאל ההצלחה
-          showSuccessModal();
-        }, 1500); // דימוי של השהיה ברשת - 1.5 שניות
-      });
-    }
+            // שליחה מוצלחת - ריקון הטופס והצגת המודאל
+            contactForm.reset();
+            
+            // החזרת הכפתור למצב הרגיל
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+            
+            // הצגת מודאל ההצלחה
+            showSuccessModal();
+        }, 1500);
+    });
     
     // פונקציה להצגת המודאל
     function showSuccessModal() {
-      if (!successModal) return;
-      
-      successModal.style.display = 'flex';
-      // טריק קטן כדי לגרום לאנימציה להופיע אחרי שהמודאל מוצג
-      setTimeout(function() {
-        successModal.classList.add('show');
-      }, 10);
+        if (!successModal) return;
+        
+        successModal.style.display = 'flex';
+        setTimeout(function() {
+            successModal.classList.add('show');
+        }, 10);
     }
     
     // סגירת המודאל בלחיצה על כפתור הסגירה
     if (closeBtn) {
-      closeBtn.addEventListener('click', closeSuccessModal);
+        closeBtn.addEventListener('click', closeSuccessModal);
     }
     
     // פונקציה לסגירת המודאל
     function closeSuccessModal() {
-      if (!successModal) return;
-      
-      successModal.classList.remove('show');
-      setTimeout(function() {
-        successModal.style.display = 'none';
-      }, 300); // המתנה לאנימציית הדעיכה להסתיים
+        if (!successModal) return;
+        
+        successModal.classList.remove('show');
+        setTimeout(function() {
+            successModal.style.display = 'none';
+        }, 300);
     }
     
     // סגירת המודאל בלחיצה מחוץ לתוכן המודאל
     window.addEventListener('click', function(event) {
-      if (event.target === successModal) {
-        closeSuccessModal();
-      }
+        if (event.target === successModal) {
+            closeSuccessModal();
+        }
     });
-  });
+}
 
-document.addEventListener('DOMContentLoaded', function() {
+// אתחול מפה
+function initMap() {
     const mapContainer = document.querySelector('.embedded-map');
     if (mapContainer) {
         mapContainer.addEventListener('click', function() {
@@ -610,4 +1006,58 @@ document.addEventListener('DOMContentLoaded', function() {
             window.open(googleMapsUrl, '_blank');
         });
     }
-});
+}
+
+// בדיקת תמיכה בשפה עברית וכיוון RTL
+function checkRTLSupport() {
+    const isRTLLanguage = /^(he|ar|fa|ur)\b/.test(navigator.language);
+    
+    if (isRTLLanguage && document.dir !== 'rtl') {
+        document.dir = 'rtl';
+    }
+}
+
+// אתחול גלילה חלקה של קישורים פנימיים בעמוד
+function initSmoothScrolling() {
+    document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+}
+
+// אתחול חץ הגלילה
+function initScrollArrow() {
+    const scrollArrow = document.querySelector('.scroll-arrow');
+    
+    if (scrollArrow) {
+        // הוספת מאזין אירוע ללחיצה על החץ
+        scrollArrow.addEventListener('click', function() {
+            scrollArrow.classList.add('hidden');
+            
+            const aboutSection = document.getElementById('about');
+            if (aboutSection) {
+                aboutSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+        
+        // הסתרת החץ בעת גלילה מטה
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 200) {
+                scrollArrow.classList.add('hidden');
+            } else {
+                scrollArrow.classList.remove('hidden');
+            }
+        });
+    }
+}
