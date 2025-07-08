@@ -148,12 +148,12 @@ function addGalleryCSS() {
         }
 
         .filter-btn:hover {
-            border-color:rgb(255, 149, 0);
+            border-color:#b9955b;
             color: white;
         }
 
         .filter-btn.active {
-            background: rgb(255, 149, 0);
+            background:rgb(222, 180, 113);
             color: black;
             border-color: black;
         }
@@ -345,7 +345,7 @@ function addGalleryCSS() {
         @media (max-width: 480px) {
             .filter-buttons {
                 gap: 6px;
-                margin: 15px 0;
+                margin: 8px 0;
                 padding: 0 5px;
             }
             
