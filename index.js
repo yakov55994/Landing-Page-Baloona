@@ -21,7 +21,7 @@ const galleryData = [
         title: "הצעת נישואין",
         description: "קשת בלונים לחתונה",
         image: "https://blue-balloon.co.il/wp-content/uploads/2021/06/1-3-768x576.jpg", // שנה לנתיב האמיתי
-        category: "weddings"
+        category: "Marriage-proposals"
     },
     {
         id: 4,
@@ -42,8 +42,9 @@ const galleryData = [
         title: "הצעת נישואין",
         description: "קשת בלונים לחתונה",
         image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmDP1zZ287J5TrDjpUclGXRSV0V65bhgw-Ug&s", // שנה לנתיב האמיתי
-        category: "weddings"
-    }
+        category: "Marriage-proposals"
+    },
+    
     // הוסף עוד פריטים לפי הצורך...
 ];
 
@@ -57,10 +58,9 @@ function createGallery() {
     const categoryNames = {
         'all': 'הכל',
         'birthdays': 'ימי הולדת',
-        'weddings': 'חתונות',
-        'corporate': 'אירועי חברה',
-        'holidays': 'חגים',
-        'bar-mitzvah': 'בר/בת מצווה'
+        'Marriage-proposals': 'הצעות נישואין',
+        'bar-mitzvah': 'בר/בת מצווה',
+
     };
 
     const filterButtons = categories.map(category => 
@@ -350,8 +350,8 @@ function addGalleryCSS() {
             }
             
             .filter-btn {
-                padding: 8px 16px;
-                font-size: 12px;
+                padding: 6px 12px;
+                font-size: 11px;
             }
             
             .gallery-container {
