@@ -49,37 +49,73 @@ const galleryData = [
 ];
 
 // פונקציה ליצירת הגלריה
-function createGallery() {
+async function createGallery(selectedCategory = 'all') {
     const gallerySection = document.getElementById('gallery');
     if (!gallerySection) return;
 
-    // יצירת כפתורי הפילטר
-    const categories = ['all', ...new Set(galleryData.map(item => item.category))];
+    // שמות הקטגוריות
+    const categories = [
+        'all',
+        'balloon-flowers',
+        'Arches', // שם התיקיה בדיוק כמו ב-Cloudinary
+        'photo-reviews',
+        'centerpiece',
+        'birthday-bouquets',
+        'balloon-numbers',
+        'room-arrangements',
+        'balloon',
+        'gender-reveal',
+        'balloons-for-kids',
+        'birth-of-child'
+    ];
     const categoryNames = {
         'all': 'הכל',
-        'birthdays': 'ימי הולדת',
-        'Marriage-proposals': 'הצעות נישואין',
-        'bar-mitzvah': 'בר/בת מצווה',
-
+        'balloon-flowers': 'פרחים עם בלונים',
+        'Arches': 'קשתות',
+        'photo-reviews': 'קירות צילום',
+        'centerpiece': 'שולחן מרכזי',
+        'birthday-bouquets': 'זרים ליום הולדת',
+        'balloon-numbers': 'מספרים מבלונים',
+        'room-arrangements': 'סידורי חדרים',
+        'balloon': 'כדור פורח',
+        'gender-reveal': 'גילוי מין',
+        'balloons-for-kids': 'בלונים לילדים',
+        'birth-of-child': 'הולדת הבן / בת'
     };
 
-    const filterButtons = categories.map(category => 
-        `<button class="filter-btn ${category === 'all' ? 'active' : ''}" data-filter="${category}">
+    // יצירת כפתורי פילטר
+    const filterButtons = categories.map(category => `
+        <button class="filter-btn ${category === selectedCategory ? 'active' : ''}" data-filter="${category}">
             ${categoryNames[category] || category}
-        </button>`
-    ).join('');
+        </button>
+    `).join('');
+
+    // משיכת התמונות מה-API
+    let galleryItemsArray = [];
+    if (selectedCategory === 'all') {
+        // משוך מכל הקטגוריות
+        const allImages = await Promise.all(
+            categories.filter(cat => cat !== 'all').map(async cat => {
+                const res = await fetch(`http://localhost:3001/api/images/${cat}`);
+                const images = await res.json();
+                return images.map(img => ({ ...img, category: cat }));
+            })
+        );
+        galleryItemsArray = allImages.flat();
+    } else {
+        const res = await fetch(`http://localhost:3001/api/images/${selectedCategory}`);
+        galleryItemsArray = (await res.json()).map(img => ({ ...img, category: selectedCategory }));
+    }
 
     // יצירת פריטי הגלריה
-    const galleryItems = galleryData.map(item => `
+    const galleryItems = galleryItemsArray.map(item => `
         <div class="gallery-item" data-category="${item.category}">
-            <img src="${item.image}" alt="${item.title}" loading="lazy">
-            <div class="gallery-info">
-                
-            </div>
+            <img src="${item.url}" alt="" loading="lazy">
+            <div class="gallery-info"></div>
         </div>
     `).join('');
 
-    // יצירת מודל הלייטבוקס
+    // מודל לייטבוקס (כמו קודם)
     const lightboxModal = `
         <div class="lightbox-modal">
             <div class="lightbox-content">
@@ -95,15 +131,12 @@ function createGallery() {
         </div>
     `;
 
-    // שמירת הכותרת הקיימת
+    // הכנסת הכל לדף
     const existingTitle = gallerySection.querySelector('.section-title');
-    
-    // הכנסת הכל לקונטיינר
     gallerySection.innerHTML = '';
     if (existingTitle) {
         gallerySection.appendChild(existingTitle);
     }
-    
     gallerySection.insertAdjacentHTML('beforeend', `
         <div class="filter-buttons">
             ${filterButtons}
@@ -114,9 +147,19 @@ function createGallery() {
         ${lightboxModal}
     `);
 
-    // הוספת CSS
-    addGalleryCSS();
+    // מאזין לפילטרים
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            createGallery(this.dataset.filter);
+        });
+    });
+
+    // הוספת CSS (אם יש לך פונקציה כזו)
+    if (typeof addGalleryCSS === 'function') {
+        addGalleryCSS();
+    }
 }
+
 
 // פונקציה להוספת CSS
 function addGalleryCSS() {

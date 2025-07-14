@@ -1,0 +1,24 @@
+{
+  "name": "landing-page-baloona",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yakov55994/Landing-Page-Baloona.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/yakov55994/Landing-Page-Baloona/issues"
+  },
+  "homepage": "https://github.com/yakov55994/Landing-Page-Baloona#readme",
+  "dependencies": {
+    "cloudinary": "^2.7.0"
+  }
+}
