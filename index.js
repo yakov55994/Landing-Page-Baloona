@@ -9,9 +9,10 @@ console.log('Is localhost:', isLocalhost);
 
 // הגדרות מותאמות למובייל
 let cloudinaryConfig = JSON.parse(localStorage.getItem('cloudinaryConfig')) || {
-    cloudName: 'your-cloud-name',
-    apiKey: 'your-api-key',
-    uploadPreset: 'your-preset'
+    cloudName: 'dbbivwbbt',
+    apiKey: '238115521785214',
+    uploadPreset: 'ml_default',
+    folder: 'gallery'
 };
 
 // תיקון בעיית CORS למובייל
@@ -152,62 +153,72 @@ async function loadFromLocalServer(selectedCategory) {
 
 // טעינה מ-Cloudinary מותאמת למובייל
 async function loadFromCloudinaryMobile(selectedCategory) {
-    // שימוש ב-API פשוט יותר שעובד במובייל
-    const categoriesToLoad = selectedCategory === 'all' ? Object.keys(categories) : [selectedCategory];
+    console.log('Loading images from Cloudinary folder:', cloudinaryConfig.folder);
     
-    for (const category of categoriesToLoad) {
-        try {
-            // חיפוש תמונות לפי tags
-            const searchUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/${category}.json`;
-            
-            // ניסיון ללא CORS proxy תחילה
-            let response;
-            try {
-                response = await fetch(searchUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-            } catch (corsError) {
-                // אם יש בעיית CORS, ננסה עם proxy
-                console.log('CORS issue, trying with proxy...');
-                response = await fetch(CORS_PROXY + encodeURIComponent(searchUrl));
-            }
+    try {
+        // URL לטעינת כל התמונות מהתקייה הראשית
+        const searchUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/${cloudinaryConfig.folder}.json`;
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.resources && data.resources.length > 0) {
-                    const processedImages = processCloudinaryResponse(data, category);
-                    galleryData.push(...processedImages);
+        let response;
+        try {
+            response = await fetch(searchUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Basic ${btoa(`api_key:${cloudinaryConfig.apiKey}:`)}` // אימות עם API Key
                 }
-            }
-        } catch (error) {
-            console.warn(`Failed to load category ${category} from Cloudinary:`, error);
+            });
+        } catch (corsError) {
+            console.log('CORS issue, trying with proxy...');
+            response = await fetch(CORS_PROXY + encodeURIComponent(searchUrl));
         }
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.resources && data.resources.length > 0) {
+                // עיבוד כל התמונות וזיהוי הקטגוריה מהתת-תיקייה
+                const processedImages = processCloudinaryResponse(data);
+                galleryData = processedImages; // שמור את כל התמונות
+            }
+        } else {
+            console.warn('No images found in folder:', cloudinaryConfig.folder);
+        }
+    } catch (error) {
+        console.error('Error loading from Cloudinary:', error);
     }
-    
+
+    // סינון לפי קטגוריה אם בחרו אחת ספציפית
+    filteredImages = selectedCategory === 'all'
+        ? galleryData
+        : galleryData.filter(item => item.category === selectedCategory);
+
     if (galleryData.length > 0) {
         localStorage.setItem('galleryData', JSON.stringify(galleryData));
     }
 }
 
 // עיבוד תגובה מ-Cloudinary
-function processCloudinaryResponse(data, category) {
+function processCloudinaryResponse(data) {
     if (!data || !data.resources) return [];
-    
-    return data.resources.map((resource, index) => ({
-        id: resource.public_id || `${category}_${index}_${Date.now()}`,
-        publicId: resource.public_id,
-        url: resource.secure_url || resource.url,
-        thumbnail: generateOptimizedUrl(resource.secure_url || resource.url, 'thumbnail'),
-        image: generateOptimizedUrl(resource.secure_url || resource.url, 'medium'),
-        fullsize: generateOptimizedUrl(resource.secure_url || resource.url, 'large'),
-        title: resource.context?.custom?.title || `${categories[category]} ${index + 1}`,
-        description: resource.context?.custom?.description || `תמונה יפה של ${categories[category]}`,
-        category: category,
-        uploadDate: resource.created_at || new Date().toISOString()
-    }));
+
+    return data.resources.map((resource, index) => {
+        // קבל את שם התת-תיקייה מה-public_id
+        const folderPath = resource.public_id.split('/'); // מחלק את הנתיב לפי "/"
+        const category = folderPath.length > 1 ? folderPath[1] : 'all'; // השתמש בתת-תיקייה השנייה
+
+        return {
+            id: resource.public_id || `image_${index}_${Date.now()}`,
+            publicId: resource.public_id,
+            url: resource.secure_url || resource.url,
+            thumbnail: generateOptimizedUrl(resource.secure_url || resource.url, 'thumbnail'),
+            image: generateOptimizedUrl(resource.secure_url || resource.url, 'medium'),
+            fullsize: generateOptimizedUrl(resource.secure_url || resource.url, 'large'),
+            title: resource.context?.custom?.title || `${categories[category] || 'תמונה'} ${index + 1}`,
+            description: resource.context?.custom?.description || `תמונה יפה של ${categories[category] || 'כללי'}`,
+            category: category, // הקטגוריה נקבעת לפי התת-תיקייה
+            uploadDate: resource.created_at || new Date().toISOString()
+        };
+    });
 }
 
 // יצירת URLs מאופטמים לגדלים שונים
