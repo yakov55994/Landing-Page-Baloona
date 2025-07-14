@@ -71,69 +71,43 @@ async function createGallery(selectedCategory = 'all') {
 }
 
 // טעינת נתונים לפרודקשן
-async function loadGalleryDataProduction(selectedCategory) {
+async function loadGalleryDataProduction(selectedCategory = 'all') {
     console.log('📂 Loading gallery data for production...');
-    
     try {
-        // 1. טעינה מ-localStorage
         const savedData = localStorage.getItem('galleryData');
-        const savedConfig = localStorage.getItem('cloudinaryConfig');
-        
         if (savedData) {
             const parsed = JSON.parse(savedData);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 console.log('✅ Found saved gallery data:', parsed.length, 'images');
                 galleryData = parsed;
-                // סינון לפי קטגוריה אם נבחרה
-                filteredImages = selectedCategory === 'all' 
-                    ? galleryData 
+                filteredImages = selectedCategory === 'all'
+                    ? galleryData
                     : galleryData.filter(item => item.category === selectedCategory);
-                if (filteredImages.length > 0) {
-                    console.log('✅ Using localStorage data for category:', selectedCategory);
-                    return; // יציאה מהפונקציה אם נמצאו נתונים תקינים
+                return; // הפסק כאן, אל תמשיך ל-Fallback
+            }
+        }
+        throw new Error('No valid data in localStorage');
+    } catch (error) {
+        console.error('❌ Error loading gallery data:', error);
+        // טען מ-Cloudinary רק אם יש הגדרות תקינות
+        const savedConfig = localStorage.getItem('cloudinaryConfig');
+        if (savedConfig) {
+            cloudinaryConfig = JSON.parse(savedConfig);
+            if (cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name') {
+                await loadFromCloudinaryProduction(selectedCategory);
+                if (galleryData.length > 0) {
+                    localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                    filteredImages = selectedCategory === 'all'
+                        ? galleryData
+                        : galleryData.filter(item => item.category === selectedCategory);
+                    return;
                 }
             }
         }
-        
-        // 2. טעינת הגדרות Cloudinary
-        if (savedConfig) {
-            cloudinaryConfig = JSON.parse(savedConfig);
-            console.log('✅ Found Cloudinary config:', cloudinaryConfig);
-        } else {
-            console.warn('⚠️ No Cloudinary config found in localStorage');
-            cloudinaryConfig = { cloudName: 'your-cloud-name' }; // ברירת מחדל זמנית
-        }
-        
-        // 3. טעינה מ-Cloudinary אם אין נתונים תקינים ב-localStorage
-        if (cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name') {
-            console.log('☁️ Attempting to load from Cloudinary...');
-            await loadFromCloudinaryProduction(selectedCategory);
-            
-            if (galleryData.length > 0) {
-                console.log('✅ Saving Cloudinary data to localStorage');
-                localStorage.setItem('galleryData', JSON.stringify(galleryData));
-                filteredImages = selectedCategory === 'all' 
-                    ? galleryData 
-                    : galleryData.filter(item => item.category === selectedCategory);
-                return;
-            }
-        }
-        
-        // 4. נפילה ל-fallback אם הכל נכשל
-        console.log('📦 No Cloudinary data, loading fallback');
-        loadProductionFallbackData();
-        filteredImages = selectedCategory === 'all' 
-            ? galleryData 
-            : galleryData.filter(item => item.category === selectedCategory);
-        localStorage.setItem('galleryData', JSON.stringify(galleryData));
-        
-    } catch (error) {
-        console.error('❌ Error loading gallery data:', error);
-        loadProductionFallbackData();
-        filteredImages = selectedCategory === 'all' 
-            ? galleryData 
-            : galleryData.filter(item => item.category === selectedCategory);
-        localStorage.setItem('galleryData', JSON.stringify(galleryData));
+        console.warn('⚠️ No Cloudinary data or config, gallery will be empty');
+        galleryData = [];
+        filteredImages = [];
+        // הסר את השימוש ב-loadProductionFallbackData כאן
     }
 }
 
