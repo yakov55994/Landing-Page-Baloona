@@ -1,24 +1,25 @@
-// תיקון בעיות מובייל - גרסה מתוקנת לגלריה
+// תיקון גלריה לעבודה באתר מפורסם (לא רק localhost)
+// גרסה שעובדת גם ב-Cloudflare Pages ואתרים מפורסמים אחרים
 
-// בדיקת תמיכה במובייל
+console.log('🌐 Production Gallery Loading...');
+
+// זיהוי סביבה
+const isLocalhost = window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1' || 
+                   window.location.hostname.includes('local');
+
+const isProduction = !isLocalhost;
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-console.log('Mobile detected:', isMobile);
-console.log('Is localhost:', isLocalhost);
+console.log('🎯 Environment:', { isLocalhost, isProduction, isMobile });
 
-// הגדרות מותאמות למובייל
-let cloudinaryConfig = JSON.parse(localStorage.getItem('cloudinaryConfig')) || {
-    cloudName: 'your-cloud-name',
-    apiKey: 'your-api-key',
-    uploadPreset: 'your-preset'
-};
+// נתוני גלריה
+let galleryData = [];
+let currentImageIndex = 0;
+let filteredImages = [];
 
-// תיקון בעיית CORS למובייל
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-
-// קטגוריות עם fallback
-let categories = JSON.parse(localStorage.getItem('categories')) || {
+// קטגוריות
+const categories = {
     'birthday-bouquets': '🎂 זרים ליום הולדת',
     'balloon-numbers': '🔢 מספרים מבלונים',
     'arches': '🌈 קשתות',
@@ -32,163 +33,121 @@ let categories = JSON.parse(localStorage.getItem('categories')) || {
     'birth-celebration': '🍼 הולדת הבן / בת'
 };
 
-let galleryData = [];
-let currentImageIndex = 0;
-let filteredImages = [];
+// הגדרות Cloudinary (יטענו מ-localStorage או ברירת מחדל)
+let cloudinaryConfig = {};
 
-// פונקציה ראשית מתוקנת למובייל
+// פונקציה ראשית - מותאמת לפרודקשן
 async function createGallery(selectedCategory = 'all') {
+    console.log('🎨 Creating gallery for:', selectedCategory);
+    
     const gallerySection = document.getElementById('gallery');
     if (!gallerySection) {
-        console.error('Gallery section not found');
+        console.error('❌ Gallery section not found');
         return;
     }
 
-    console.log('Creating gallery for category:', selectedCategory);
-    showLoadingState(gallerySection, true);
+    showLoadingState(gallerySection);
 
     try {
-        // טעינת נתונים עם fallback למובייל
-        await loadGalleryDataMobileFriendly(selectedCategory);
+        // טעינת נתונים - תמיד מ-localStorage בפרודקשן
+        await loadGalleryDataProduction(selectedCategory);
         
         if (galleryData.length === 0) {
-            console.warn('No gallery data found, using demo data');
-            loadDemoData();
+            console.log('📦 No data found, loading fallback images');
+            loadProductionFallbackData();
         }
         
         buildGalleryUI(gallerySection, selectedCategory);
+        addProductionCSS();
         initGalleryEvents();
-        addMobileOptimizedCSS();
         
-        console.log('Gallery created successfully with', galleryData.length, 'images');
+        console.log('✅ Gallery created successfully with', galleryData.length, 'images');
         
     } catch (error) {
-        console.error('Error creating gallery:', error);
-        showErrorState(gallerySection, 'שגיאה בטעינת הגלריה');
-        loadDemoData(); // fallback לנתוני דמו
+        console.error('❌ Error creating gallery:', error);
+        loadProductionFallbackData();
         buildGalleryUI(gallerySection, selectedCategory);
-    } finally {
-        showLoadingState(gallerySection, false);
     }
 }
 
-// טעינת נתונים ידידותית למובייל
-async function loadGalleryDataMobileFriendly(selectedCategory) {
-    console.log('Loading gallery data for mobile...');
+// טעינת נתונים לפרודקשן
+async function loadGalleryDataProduction(selectedCategory) {
+    console.log('📂 Loading gallery data for production...');
     
-    // תחילה - בדיקת localStorage
-    const savedData = JSON.parse(localStorage.getItem('galleryData')) || [];
-    
-    if (savedData.length > 0) {
-        console.log('Found saved data:', savedData.length, 'images');
-        galleryData = savedData;
-        return;
-    }
-
-    // אם אין נתונים שמורים - ננסה לטעון מהשרת מקומי
-    if (isLocalhost) {
-        try {
-            console.log('Trying to load from local server...');
-            await loadFromLocalServer(selectedCategory);
-            if (galleryData.length > 0) return;
-        } catch (error) {
-            console.warn('Local server not available:', error);
-        }
-    }
-
-    // אם גם זה לא עובד - ננסה מ-Cloudinary עם fallback
-    if (cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name') {
-        try {
-            console.log('Trying to load from Cloudinary...');
-            await loadFromCloudinaryMobile(selectedCategory);
-            if (galleryData.length > 0) return;
-        } catch (error) {
-            console.warn('Cloudinary loading failed:', error);
-        }
-    }
-
-    // אם כלום לא עובד - נטען נתוני דמו
-    console.log('Loading demo data as fallback');
-    loadDemoData();
-}
-
-// טעינה מהשרת המקומי עם timeout
-async function loadFromLocalServer(selectedCategory) {
-    const timeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 5000)
-    );
-
-    const categoriesToLoad = selectedCategory === 'all' ? Object.keys(categories) : [selectedCategory];
-    const promises = categoriesToLoad.map(async category => {
-        try {
-            const fetchPromise = fetch(`/api/images/${category}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                }
-            });
-            
-            const response = await Promise.race([fetchPromise, timeout]);
-            
-            if (response.ok) {
-                const images = await response.json();
-                return images.map(img => ({ ...img, category }));
+    // בפרודקשן - תמיד מ-localStorage תחילה
+    try {
+        // נסה לטעון מ-localStorage
+        const savedData = localStorage.getItem('galleryData');
+        const savedConfig = localStorage.getItem('cloudinaryConfig');
+        
+        if (savedData) {
+            const parsed = JSON.parse(savedData);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                console.log('✅ Found saved gallery data:', parsed.length, 'images');
+                galleryData = parsed;
+                return;
             }
-            return [];
-        } catch (error) {
-            console.warn(`Failed to load category ${category}:`, error);
-            return [];
         }
-    });
-
-    const results = await Promise.all(promises);
-    galleryData = results.flat().filter(Boolean);
-    
-    if (galleryData.length > 0) {
-        localStorage.setItem('galleryData', JSON.stringify(galleryData));
+        
+        if (savedConfig) {
+            cloudinaryConfig = JSON.parse(savedConfig);
+            console.log('✅ Found Cloudinary config');
+        }
+        
+        // אם יש הגדרות Cloudinary, נסה לטעון משם
+        if (cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name') {
+            console.log('☁️ Trying to load from Cloudinary...');
+            await loadFromCloudinaryProduction(selectedCategory);
+            
+            if (galleryData.length > 0) {
+                // שמור בזיכרון המטמון
+                localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                return;
+            }
+        }
+        
+    } catch (error) {
+        console.warn('⚠️ Error loading data:', error);
     }
+    
+    console.log('📦 Loading fallback data');
+    loadProductionFallbackData();
 }
 
-// טעינה מ-Cloudinary מותאמת למובייל
-async function loadFromCloudinaryMobile(selectedCategory) {
-    // שימוש ב-API פשוט יותר שעובד במובייל
+// טעינה מ-Cloudinary לפרודקשן
+async function loadFromCloudinaryProduction(selectedCategory) {
+    if (!cloudinaryConfig.cloudName) return;
+    
     const categoriesToLoad = selectedCategory === 'all' ? Object.keys(categories) : [selectedCategory];
     
     for (const category of categoriesToLoad) {
         try {
-            // חיפוש תמונות לפי tags
+            // ניסיון לטעינה ישירה מ-Cloudinary
             const searchUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/${category}.json`;
             
-            // ניסיון ללא CORS proxy תחילה
-            let response;
-            try {
-                response = await fetch(searchUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-            } catch (corsError) {
-                // אם יש בעיית CORS, ננסה עם proxy
-                console.log('CORS issue, trying with proxy...');
-                response = await fetch(CORS_PROXY + encodeURIComponent(searchUrl));
-            }
+            const response = await fetch(searchUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                signal: AbortSignal.timeout(5000)
+            });
 
             if (response.ok) {
                 const data = await response.json();
                 if (data.resources && data.resources.length > 0) {
                     const processedImages = processCloudinaryResponse(data, category);
                     galleryData.push(...processedImages);
+                    console.log(`✅ Loaded ${processedImages.length} images from category: ${category}`);
                 }
+            } else {
+                console.warn(`⚠️ Failed to load category ${category}: ${response.status}`);
             }
+            
         } catch (error) {
-            console.warn(`Failed to load category ${category} from Cloudinary:`, error);
+            console.warn(`⚠️ Error loading category ${category}:`, error);
         }
-    }
-    
-    if (galleryData.length > 0) {
-        localStorage.setItem('galleryData', JSON.stringify(galleryData));
     }
 }
 
@@ -200,9 +159,9 @@ function processCloudinaryResponse(data, category) {
         id: resource.public_id || `${category}_${index}_${Date.now()}`,
         publicId: resource.public_id,
         url: resource.secure_url || resource.url,
-        thumbnail: generateOptimizedUrl(resource.secure_url || resource.url, 'thumbnail'),
-        image: generateOptimizedUrl(resource.secure_url || resource.url, 'medium'),
-        fullsize: generateOptimizedUrl(resource.secure_url || resource.url, 'large'),
+        thumbnail: generateCloudinaryUrl(resource.secure_url || resource.url, 'w_300,h_200,c_fill,q_auto,f_auto'),
+        image: generateCloudinaryUrl(resource.secure_url || resource.url, 'w_800,h_600,c_limit,q_auto,f_auto'),
+        fullsize: generateCloudinaryUrl(resource.secure_url || resource.url, 'w_1200,h_900,c_limit,q_auto,f_auto'),
         title: resource.context?.custom?.title || `${categories[category]} ${index + 1}`,
         description: resource.context?.custom?.description || `תמונה יפה של ${categories[category]}`,
         category: category,
@@ -210,103 +169,167 @@ function processCloudinaryResponse(data, category) {
     }));
 }
 
-// יצירת URLs מאופטמים לגדלים שונים
-function generateOptimizedUrl(originalUrl, size) {
-    if (!originalUrl) return '';
+// יצירת URL מאופטם ל-Cloudinary
+function generateCloudinaryUrl(originalUrl, transformations) {
+    if (!originalUrl || !cloudinaryConfig.cloudName) return originalUrl;
     
-    const transformations = {
-        thumbnail: 'w_300,h_200,c_fill,q_auto,f_auto',
-        medium: 'w_800,h_600,c_limit,q_auto,f_auto',
-        large: 'w_1200,h_900,c_limit,q_auto,f_auto'
-    };
-    
-    // אם זה URL של Cloudinary
     if (originalUrl.includes('cloudinary.com')) {
-        return originalUrl.replace('/upload/', `/upload/${transformations[size]}/`);
+        return originalUrl.replace('/upload/', `/upload/${transformations}/`);
     }
     
-    // אם זה URL רגיל, נחזיר אותו כמו שהוא
     return originalUrl;
 }
 
-// טעינת נתוני דמו למובייל
-function loadDemoData() {
+// נתוני fallback מותאמים לפרודקשן
+function loadProductionFallbackData() {
+    console.log('📦 Loading production fallback data...');
+    
     galleryData = [
+        // זרים ליום הולדת
         {
-            id: 'demo_1',
-            title: "זר בלונים ליום הולדת",
-            description: "זר בלונים צבעוני ומיוחד ליום הולדת",
-            url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800",
-            thumbnail: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&h=200&fit=crop&auto=format",
-            image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format",
-            fullsize: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200&auto=format",
-            category: "birthday-bouquets"
+            id: 'prod_bd1',
+            title: 'זר בלונים מיוחד ליום הולדת',
+            description: 'זר בלונים צבעוני ועליז לחגיגת יום הולדת',
+            url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200&auto=format&q=80',
+            category: 'birthday-bouquets'
         },
         {
-            id: 'demo_2',
-            title: "מספרים מבלונים",
-            description: "בלוני מספרים מיוחדים לחגיגות",
-            url: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800",
-            thumbnail: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=300&h=200&fit=crop&auto=format",
-            image: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&auto=format",
-            fullsize: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=1200&auto=format",
-            category: "balloon-numbers"
+            id: 'prod_bd2',
+            title: 'זר בלונים אלגנטי',
+            description: 'זר בלונים מעוצב בסגנון אלגנטי',
+            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&auto=format&q=80',
+            category: 'birthday-bouquets'
+        },
+        
+        // מספרים מבלונים
+        {
+            id: 'prod_bn1',
+            title: 'בלוני מספרים זהובים',
+            description: 'בלוני מספרים מיוחדים בצבע זהב מבריק',
+            url: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=1200&auto=format&q=80',
+            category: 'balloon-numbers'
         },
         {
-            id: 'demo_3',
-            title: "קשת בלונים מרהיבה",
-            description: "קשת בלונים צבעונית לכניסת אירוע",
-            url: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800",
-            thumbnail: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop&auto=format",
-            image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&auto=format",
-            fullsize: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1200&auto=format",
-            category: "arches"
+            id: 'prod_bn2',
+            title: 'מספרי בלונים צבעוניים',
+            description: 'בלוני מספרים בצבעים עזים ומרהיבים',
+            url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&q=80',
+            category: 'balloon-numbers'
+        },
+        
+        // קשתות
+        {
+            id: 'prod_arch1',
+            title: 'קשת בלונים מרהיבה',
+            description: 'קשת בלונים גדולה וצבעונית לכניסת אירוע',
+            url: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1200&auto=format&q=80',
+            category: 'arches'
         },
         {
-            id: 'demo_4',
-            title: "פרחים עם בלונים",
-            description: "שילוב יפה של פרחים ובלונים",
-            url: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800",
-            thumbnail: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&auto=format",
-            image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&auto=format",
-            fullsize: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&auto=format",
-            category: "balloon-flowers"
+            id: 'prod_arch2',
+            title: 'קשת בלונים מינימליסטית',
+            description: 'קשת בלונים בעיצוב נקי ומינימליסטי',
+            url: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=1200&auto=format&q=80',
+            category: 'arches'
+        },
+        
+        // פרחים עם בלונים
+        {
+            id: 'prod_bf1',
+            title: 'שילוב פרחים ובלונים מרהיב',
+            description: 'עיצוב מיוחד המשלב פרחים טריים עם בלונים צבעוניים',
+            url: 'https://images.unsplash.com/photo-1546541865-a1e0de5ac8dc?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1546541865-a1e0de5ac8dc?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1546541865-a1e0de5ac8dc?w=1200&auto=format&q=80',
+            category: 'balloon-flowers'
         },
         {
-            id: 'demo_5',
-            title: "מרכז שולחן מיוחד",
-            description: "עיצוב מרכז שולחן עם בלונים",
-            url: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800",
-            thumbnail: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=300&h=200&fit=crop&auto=format",
-            image: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800&auto=format",
-            fullsize: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=1200&auto=format",
-            category: "centerpiece"
+            id: 'prod_bf2',
+            title: 'זר פרחים עם בלונים אלגנטי',
+            description: 'זר פרחים טריים בשילוב בלונים בעיצוב אלגנטי',
+            url: 'https://images.unsplash.com/photo-1563473213013-de2a0133c100?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1563473213013-de2a0133c100?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1563473213013-de2a0133c100?w=1200&auto=format&q=80',
+            category: 'balloon-flowers'
         },
+        
+        // מרכזי שולחן
         {
-            id: 'demo_6',
-            title: "בלונים לילדים",
-            description: "בלונים צבעוניים ועליזים לילדים",
-            url: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800",
-            thumbnail: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop&auto=format",
-            image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&auto=format",
-            fullsize: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1200&auto=format",
-            category: "balloons-for-kids"
+            id: 'prod_cp1',
+            title: 'מרכז שולחן עם בלונים',
+            description: 'עיצוב מרכז שולחן מיוחד עם בלונים ופרחים',
+            url: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&auto=format&q=80',
+            category: 'centerpiece'
+        },
+        
+        // סידורי חדרים
+        {
+            id: 'prod_room1',
+            title: 'עיצוב חדר עם בלונים',
+            description: 'סידור חדר מלא עם בלונים ועיטורים',
+            url: 'https://images.unsplash.com/photo-1519167758481-83f29c5c6573?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1519167758481-83f29c5c6573?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1519167758481-83f29c5c6573?w=1200&auto=format&q=80',
+            category: 'room-arrangements'
+        },
+        
+        // קירות צילום
+        {
+            id: 'prod_photo1',
+            title: 'קיר צילום עם בלונים',
+            description: 'רקע צילום מיוחד עם בלונים צבעוניים',
+            url: 'https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?w=1200&auto=format&q=80',
+            category: 'photo-walls'
+        },
+        
+        // בלונים לילדים
+        {
+            id: 'prod_kids1',
+            title: 'בלונים עליזים לילדים',
+            description: 'בלונים צבעוניים ועליזים שמשמחים את הילדים',
+            url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&q=80',
+            thumbnail: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=200&fit=crop&auto=format&q=80',
+            fullsize: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&q=80',
+            category: 'balloons-for-kids'
         }
     ];
     
-    console.log('Demo data loaded:', galleryData.length, 'images');
+    console.log('✅ Production fallback data loaded:', galleryData.length, 'images');
+    
+    // שמור בזיכרון המטמון לשימוש עתידי
+    try {
+        localStorage.setItem('galleryDataFallback', JSON.stringify(galleryData));
+    } catch (e) {
+        console.warn('⚠️ Failed to save fallback data to localStorage');
+    }
 }
 
-// בניית ממשק מותאם למובייל
+// בניית ממשק הגלריה
 function buildGalleryUI(gallerySection, selectedCategory) {
-    console.log('Building UI for', galleryData.length, 'images');
+    console.log('🎨 Building UI for category:', selectedCategory);
     
     // סינון תמונות
     filteredImages = selectedCategory === 'all' 
         ? galleryData 
         : galleryData.filter(item => item.category === selectedCategory);
 
-    console.log('Filtered images:', filteredImages.length);
+    console.log('🔍 Filtered images:', filteredImages.length);
 
     // יצירת כפתורי פילטר
     const categoryKeys = ['all', ...Object.keys(categories)];
@@ -317,15 +340,15 @@ function buildGalleryUI(gallerySection, selectedCategory) {
         return `
             <button class="filter-btn ${isActive}" 
                     data-filter="${category}"
-                    onclick="filterGallery('${category}')"
+                    onclick="handleFilterClick('${category}')"
                     type="button">
                 ${categoryName}
             </button>
         `;
     }).join('');
 
-    // יצירת פריטי גלריה עם lazy loading
-    const galleryItems = filteredImages.map((item, index) => `
+    // יצירת פריטי גלריה
+    const galleryItems = filteredImages.length > 0 ? filteredImages.map((item, index) => `
         <div class="gallery-item" 
              data-category="${item.category}"
              data-index="${index}">
@@ -333,7 +356,7 @@ function buildGalleryUI(gallerySection, selectedCategory) {
                  alt="${item.title || 'תמונה'}" 
                  loading="lazy"
                  onclick="openLightbox(${index})"
-                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkNGO16DXlCDZhNin16jXktef158ZgOKAjTwvdGV4dD48L3N2Zz4K';">
+                 onerror="handleImageError(this, '${item.url}')">
             <div class="gallery-overlay">
                 <div class="gallery-info">
                     <h3>${item.title || 'ללא כותרת'}</h3>
@@ -342,33 +365,10 @@ function buildGalleryUI(gallerySection, selectedCategory) {
                 </div>
             </div>
         </div>
-    `).join('');
+    `).join('') : '<div class="no-images">אין תמונות להצגה בקטגוריה זו</div>';
 
-    // לייטבוקס מותאם למובייל
-    const lightboxModal = `
-        <div class="lightbox-modal" id="lightboxModal" onclick="closeLightboxOnBackdrop(event)">
-            <div class="lightbox-content" onclick="event.stopPropagation()">
-                <button class="close-lightbox" onclick="closeLightbox()" type="button" aria-label="סגור">
-                    <span>&times;</span>
-                </button>
-                <img class="lightbox-image" src="" alt="" id="lightboxImage">
-                <div class="lightbox-info">
-                    <h3 class="lightbox-title" id="lightboxTitle"></h3>
-                    <p class="lightbox-desc" id="lightboxDesc"></p>
-                    <span class="lightbox-category" id="lightboxCategory"></span>
-                </div>
-                <button class="lightbox-prev" onclick="navigateLightbox(-1)" type="button" aria-label="תמונה קודמת">
-                    <span>❮</span>
-                </button>
-                <button class="lightbox-next" onclick="navigateLightbox(1)" type="button" aria-label="תמונה הבאה">
-                    <span>❯</span>
-                </button>
-                <div class="lightbox-counter">
-                    <span id="currentImageNum">1</span> / <span id="totalImagesNum">${filteredImages.length}</span>
-                </div>
-            </div>
-        </div>
-    `;
+    // לייטבוקס
+    const lightboxModal = createLightboxHTML();
 
     // מונה תמונות
     const imageCounter = `
@@ -396,60 +396,93 @@ function buildGalleryUI(gallerySection, selectedCategory) {
             ${imageCounter}
         </div>
         <div class="gallery-container" id="galleryContainer">
-            ${galleryItems || '<p class="no-images">אין תמונות להצגה</p>'}
+            ${galleryItems}
         </div>
         ${lightboxModal}
     `);
 
-    console.log('UI built successfully');
+    console.log('✅ UI built successfully');
 }
 
-// פונקציות לייטבוקס מתוקנות
-function openLightbox(index) {
-    console.log('Opening lightbox for image', index);
+// יצירת HTML ללייטבוקס
+function createLightboxHTML() {
+    return `
+        <div class="lightbox-modal" id="lightboxModal" onclick="closeLightboxOnBackdrop(event)">
+            <div class="lightbox-content" onclick="event.stopPropagation()">
+                <button class="close-lightbox" onclick="closeLightbox()" type="button" aria-label="סגור">×</button>
+                <img class="lightbox-image" src="" alt="" id="lightboxImage">
+                <div class="lightbox-info">
+                    <h3 class="lightbox-title" id="lightboxTitle"></h3>
+                    <p class="lightbox-desc" id="lightboxDesc"></p>
+                    <span class="lightbox-category" id="lightboxCategory"></span>
+                </div>
+                <button class="lightbox-prev" onclick="navigateLightbox(-1)" type="button" aria-label="תמונה קודמת">❮</button>
+                <button class="lightbox-next" onclick="navigateLightbox(1)" type="button" aria-label="תמונה הבאה">❯</button>
+                <div class="lightbox-counter">
+                    <span id="currentImageNum">1</span> / <span id="totalImagesNum">${filteredImages.length}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// פונקציות עזר
+function handleFilterClick(category) {
+    console.log('🔍 Filter clicked:', category);
     
-    if (!filteredImages[index]) {
-        console.error('Image not found at index', index);
-        return;
+    // עדכון כפתורים
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-filter="${category}"]`)?.classList.add('active');
+    
+    // יצירת גלריה מחדש
+    createGallery(category);
+}
+
+function handleImageError(img, fallbackUrl) {
+    console.warn('⚠️ Image failed to load:', img.src);
+    
+    if (fallbackUrl && img.src !== fallbackUrl) {
+        img.src = fallbackUrl;
+    } else {
+        img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkNGO16DXlCDZhNin16rXktef158ZgOKAjTwvdGV4dD48L3N2Zz4K';
     }
+}
+
+function showLoadingState(container) {
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>טוען תמונות...</p>
+        </div>
+    `;
+}
+
+// פונקציות לייטבוקס
+function openLightbox(index) {
+    if (!filteredImages[index]) return;
 
     currentImageIndex = index;
     const image = filteredImages[index];
     const modal = document.getElementById('lightboxModal');
     
-    if (!modal) {
-        console.error('Lightbox modal not found');
-        return;
-    }
+    if (!modal) return;
     
     // עדכון תוכן
-    const lightboxImage = document.getElementById('lightboxImage');
-    const lightboxTitle = document.getElementById('lightboxTitle');
-    const lightboxDesc = document.getElementById('lightboxDesc');
-    const lightboxCategory = document.getElementById('lightboxCategory');
-    const currentImageNum = document.getElementById('currentImageNum');
-    const totalImagesNum = document.getElementById('totalImagesNum');
-    
-    if (lightboxImage) {
-        lightboxImage.src = image.fullsize || image.image || image.url;
-        lightboxImage.alt = image.title || 'תמונה';
-    }
-    
-    if (lightboxTitle) lightboxTitle.textContent = image.title || 'ללא כותרת';
-    if (lightboxDesc) lightboxDesc.textContent = image.description || 'ללא תיאור';
-    if (lightboxCategory) lightboxCategory.textContent = categories[image.category] || image.category;
-    if (currentImageNum) currentImageNum.textContent = index + 1;
-    if (totalImagesNum) totalImagesNum.textContent = filteredImages.length;
+    document.getElementById('lightboxImage').src = image.fullsize || image.url;
+    document.getElementById('lightboxTitle').textContent = image.title || 'ללא כותרת';
+    document.getElementById('lightboxDesc').textContent = image.description || 'ללא תיאור';
+    document.getElementById('lightboxCategory').textContent = categories[image.category] || image.category;
+    document.getElementById('currentImageNum').textContent = index + 1;
+    document.getElementById('totalImagesNum').textContent = filteredImages.length;
 
     // הצגת מודל
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-    
-    console.log('Lightbox opened');
 }
 
 function closeLightbox() {
-    console.log('Closing lightbox');
     const modal = document.getElementById('lightboxModal');
     if (modal) {
         modal.classList.remove('active');
@@ -475,125 +508,35 @@ function navigateLightbox(direction) {
     openLightbox(currentImageIndex);
 }
 
-// פילטור גלריה
-function filterGallery(category) {
-    console.log('Filtering gallery by category:', category);
-    
-    // הסרת active מכל הכפתורים
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // הוספת active לכפתור הנוכחי
-    document.querySelector(`[data-filter="${category}"]`)?.classList.add('active');
-    
-    // יצירת הגלריה מחדש
-    createGallery(category);
-}
-
-// מצבי טעינה ושגיאה
-function showLoadingState(container, show) {
-    if (show) {
-        container.innerHTML = `
-            <div class="loading-state">
-                <div class="loading-spinner"></div>
-                <p>טוען תמונות...</p>
-            </div>
-        `;
-    }
-}
-
-function showErrorState(container, message) {
-    container.innerHTML = `
-        <div class="error-state">
-            <div class="error-icon">⚠️</div>
-            <h3>שגיאה</h3>
-            <p>${message}</p>
-            <button class="retry-btn" onclick="createGallery()" type="button">נסה שוב</button>
-        </div>
-    `;
-}
-
 // אתחול אירועים
 function initGalleryEvents() {
-    console.log('Initializing gallery events');
-    
     // תמיכה במקלדת
-    document.addEventListener('keydown', handleKeyboardNavigation);
-    
-    // תמיכה במגע למובייל
-    initTouchSupport();
-    
-    // מניעת zoom במובייל בלחיצה כפולה
-    if (isMobile) {
-        document.addEventListener('touchend', function(e) {
-            const now = new Date().getTime();
-            const timeSince = now - lastTouchEnd;
-            if ((timeSince < 300) && (timeSince > 0)) {
-                e.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-    }
-}
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('lightboxModal');
+        if (!modal || !modal.classList.contains('active')) return;
 
-let lastTouchEnd = 0;
-
-function handleKeyboardNavigation(e) {
-    const modal = document.getElementById('lightboxModal');
-    if (!modal || !modal.classList.contains('active')) return;
-
-    switch (e.key) {
-        case 'Escape':
-            closeLightbox();
-            break;
-        case 'ArrowLeft':
-            navigateLightbox(-1);
-            break;
-        case 'ArrowRight':
-            navigateLightbox(1);
-            break;
-    }
-}
-
-function initTouchSupport() {
-    let touchStartX = 0;
-    let touchEndX = 0;
-    
-    const modal = document.getElementById('lightboxModal');
-    if (!modal) return;
-
-    modal.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, {passive: true});
-
-    modal.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipeGesture();
-    }, {passive: true});
-
-    function handleSwipeGesture() {
-        const swipeThreshold = 50;
-        const difference = touchStartX - touchEndX;
-
-        if (Math.abs(difference) > swipeThreshold) {
-            if (difference > 0) {
-                navigateLightbox(1);
-            } else {
+        switch (e.key) {
+            case 'Escape':
+                closeLightbox();
+                break;
+            case 'ArrowLeft':
                 navigateLightbox(-1);
-            }
+                break;
+            case 'ArrowRight':
+                navigateLightbox(1);
+                break;
         }
-    }
+    });
 }
 
-// CSS מותאם למובייל
-function addMobileOptimizedCSS() {
-    if (document.getElementById('mobile-gallery-styles')) return;
+// CSS לפרודקשן
+function addProductionCSS() {
+    if (document.getElementById('production-gallery-css')) return;
 
     const style = document.createElement('style');
-    style.id = 'mobile-gallery-styles';
+    style.id = 'production-gallery-css';
     style.textContent = `
-        /* סגנונות מותאמים למובייל */
+        /* CSS מותאם לפרודקשן */
         .filter-section {
             margin-bottom: 30px;
             text-align: center;
@@ -602,7 +545,7 @@ function addMobileOptimizedCSS() {
         .filter-buttons {
             display: flex;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             margin: 20px 0;
             flex-wrap: wrap;
             padding: 0 15px;
@@ -614,14 +557,13 @@ function addMobileOptimizedCSS() {
             background: white;
             border-radius: 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
             font-size: 13px;
             color: #333;
             font-weight: 500;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
         .filter-btn:hover,
@@ -629,13 +571,15 @@ function addMobileOptimizedCSS() {
             border-color: #4CAF50;
             background: #4CAF50;
             color: white;
-            transform: scale(0.98);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(76,175,80,0.3);
         }
 
         .filter-btn.active {
             background: #4CAF50;
             color: white;
             border-color: #4CAF50;
+            box-shadow: 0 4px 8px rgba(76,175,80,0.3);
         }
 
         .gallery-counter {
@@ -651,10 +595,10 @@ function addMobileOptimizedCSS() {
 
         .gallery-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
             padding: 0 15px;
-            max-width: 100%;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -663,24 +607,33 @@ function addMobileOptimizedCSS() {
             cursor: pointer;
             overflow: hidden;
             border-radius: 12px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             background: white;
-            height: 200px;
+            height: 300px;
+            transition: all 0.3s ease;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
 
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
         .gallery-item:active {
-            transform: scale(0.98);
+            transform: translateY(-2px);
         }
 
         .gallery-item img {
             width: 100%;
-            height: 70%;
+            height: 75%;
             object-fit: cover;
             display: block;
             transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
         }
 
         .gallery-overlay {
@@ -688,28 +641,27 @@ function addMobileOptimizedCSS() {
             bottom: 0;
             left: 0;
             right: 0;
-            height: 30%;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4), transparent);
+            height: 25%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.6), transparent);
             color: white;
             display: flex;
             align-items: flex-end;
-            padding: 12px;
+            padding: 15px;
         }
 
         .gallery-info h3 {
-            margin: 0 0 4px 0;
-            color: white;
-            font-size: 0.9em;
+            margin: 0 0 5px 0;
+            font-size: 1.1em;
             font-weight: 600;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
             line-height: 1.2;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
         .gallery-info p {
-            margin: 0 0 4px 0;
-            color: rgba(255,255,255,0.9);
-            font-size: 0.75em;
+            margin: 0 0 5px 0;
+            font-size: 0.85em;
             line-height: 1.3;
+            opacity: 0.9;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -719,14 +671,14 @@ function addMobileOptimizedCSS() {
 
         .category-tag {
             background: rgba(76,175,80,0.8);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 0.7em;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
             align-self: flex-start;
+            backdrop-filter: blur(5px);
         }
 
-        /* לייטבוקס מותאם למובייל */
+        /* לייטבוקס */
         .lightbox-modal {
             display: none;
             position: fixed;
@@ -738,7 +690,7 @@ function addMobileOptimizedCSS() {
             z-index: 2000;
             justify-content: center;
             align-items: center;
-            touch-action: manipulation;
+            backdrop-filter: blur(5px);
         }
 
         .lightbox-modal.active {
@@ -747,32 +699,43 @@ function addMobileOptimizedCSS() {
 
         .lightbox-content {
             position: relative;
-            width: 95%;
-            max-width: 95%;
-            max-height: 95%;
+            max-width: 90%;
+            max-height: 90%;
             display: flex;
             flex-direction: column;
+            animation: lightboxZoom 0.3s ease-out;
+        }
+
+        @keyframes lightboxZoom {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .lightbox-image {
-            width: 100%;
+            max-width: 100%;
             max-height: 70vh;
             object-fit: contain;
             border-radius: 8px;
-            background: #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .lightbox-info {
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
             background: rgba(0,0,0,0.8);
             border-radius: 0 0 8px 8px;
-            margin-top: auto;
+            backdrop-filter: blur(10px);
         }
 
         .lightbox-title {
-            font-size: 1.2em;
+            font-size: 1.3em;
             margin-bottom: 8px;
             color: #4CAF50;
         }
@@ -780,40 +743,35 @@ function addMobileOptimizedCSS() {
         .lightbox-desc {
             margin-bottom: 8px;
             line-height: 1.4;
-            font-size: 0.9em;
         }
 
         .lightbox-category {
             background: rgba(76,175,80,0.8);
-            padding: 4px 8px;
+            padding: 5px 10px;
             border-radius: 12px;
-            font-size: 0.8em;
+            font-size: 0.9em;
             display: inline-block;
         }
 
         .close-lightbox {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            color: white;
+            top: -45px;
+            right: 0;
             background: rgba(0,0,0,0.6);
+            color: white;
             border: none;
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
             font-size: 24px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
 
-        .close-lightbox:active {
+        .close-lightbox:hover {
             background: rgba(76,175,80,0.8);
-            transform: scale(0.95);
+            transform: scale(1.1);
         }
 
         .lightbox-prev, .lightbox-next {
@@ -823,56 +781,55 @@ function addMobileOptimizedCSS() {
             background: rgba(0,0,0,0.6);
             color: white;
             border: none;
-            font-size: 20px;
             padding: 12px 8px;
             cursor: pointer;
-            border-radius: 4px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            z-index: 10;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
 
-        .lightbox-prev:active, .lightbox-next:active {
+        .lightbox-prev:hover, .lightbox-next:hover {
             background: rgba(76,175,80,0.8);
-            transform: translateY(-50%) scale(0.95);
         }
 
         .lightbox-prev {
-            left: 10px;
+            left: -50px;
+            border-radius: 0 8px 8px 0;
         }
 
         .lightbox-next {
-            right: 10px;
+            right: -50px;
+            border-radius: 8px 0 0 8px;
         }
 
         .lightbox-counter {
             position: absolute;
-            top: 10px;
+            top: -45px;
             left: 50%;
             transform: translateX(-50%);
-            color: white;
             background: rgba(0,0,0,0.6);
-            padding: 6px 12px;
+            color: white;
+            padding: 8px 12px;
             border-radius: 15px;
-            font-size: 12px;
-            z-index: 10;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
         }
 
-        /* מצבי טעינה ושגיאה */
-        .loading-state, .error-state {
+        /* מצבי טעינה */
+        .loading-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 60px 20px;
             color: #666;
         }
 
         .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #4CAF50;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -880,45 +837,31 @@ function addMobileOptimizedCSS() {
             100% { transform: rotate(360deg); }
         }
 
-        .error-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .retry-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .retry-btn:active {
-            background: #45a049;
-            transform: scale(0.98);
-        }
-
-        .no-images {
+        .no-images, .no-results {
             text-align: center;
             color: #999;
             font-style: italic;
             padding: 40px 20px;
+            grid-column: 1 / -1;
         }
 
-        .no-results {
-            color: #999;
-            font-style: italic;
+        /* רספונסיביות לטאבלט */
+        @media (max-width: 1024px) {
+            .gallery-container {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 18px;
+            }
+            
+            .gallery-item {
+                height: 280px;
+            }
         }
 
-        /* רספונסיביות מתקדמת */
-        @media (max-width: 480px) {
+        /* רספונסיביות למובייל */
+        @media (max-width: 768px) {
             .filter-buttons {
-                gap: 6px;
-                padding: 0 10px;
+                gap: 8px;
+                margin: 15px 0;
             }
             
             .filter-btn {
@@ -928,24 +871,77 @@ function addMobileOptimizedCSS() {
             
             .gallery-container {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+                gap: 15px;
                 padding: 0 10px;
             }
             
             .gallery-item {
-                height: 180px;
+                height: 220px;
+            }
+            
+            .gallery-overlay {
+                padding: 12px;
+            }
+            
+            .gallery-info h3 {
+                font-size: 1em;
+            }
+            
+            .gallery-info p {
+                font-size: 0.8em;
+                -webkit-line-clamp: 1;
+            }
+            
+            .lightbox-prev {
+                left: 10px;
+            }
+            
+            .lightbox-next {
+                right: 10px;
+            }
+            
+            .close-lightbox {
+                top: -35px;
+                width: 35px;
+                height: 35px;
+                font-size: 20px;
+            }
+            
+            .lightbox-counter {
+                top: -35px;
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
+
+        /* מובייל קטן */
+        @media (max-width: 480px) {
+            .filter-buttons {
+                gap: 6px;
+                padding: 0 5px;
+            }
+            
+            .filter-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+            
+            .gallery-container {
+                gap: 12px;
+                padding: 0 8px;
+            }
+            
+            .gallery-item {
+                height: 200px;
             }
             
             .gallery-overlay {
                 padding: 10px;
             }
             
-            .gallery-info h3 {
-                font-size: 0.8em;
-            }
-            
-            .gallery-info p {
-                font-size: 0.7em;
+            .lightbox-content {
+                max-width: 95%;
+                max-height: 95%;
             }
             
             .lightbox-image {
@@ -953,38 +949,33 @@ function addMobileOptimizedCSS() {
             }
             
             .lightbox-info {
-                padding: 12px;
-            }
-            
-            .lightbox-title {
-                font-size: 1em;
-            }
-            
-            .lightbox-desc {
-                font-size: 0.85em;
+                padding: 15px;
             }
         }
 
-        @media (max-width: 360px) {
-            .gallery-container {
-                gap: 10px;
-                padding: 0 8px;
-            }
-            
-            .gallery-item {
-                height: 160px;
-            }
-            
-            .filter-btn {
-                padding: 6px 10px;
-                font-size: 11px;
-            }
+        /* אנימציות */
+        .gallery-item {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards;
         }
 
-        /* תמיכה במכשירים עם notch */
-        @supports (padding: max(0px)) {
-            .lightbox-modal {
-                padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+        .gallery-item:nth-child(1) { animation-delay: 0.1s; }
+        .gallery-item:nth-child(2) { animation-delay: 0.2s; }
+        .gallery-item:nth-child(3) { animation-delay: 0.3s; }
+        .gallery-item:nth-child(4) { animation-delay: 0.4s; }
+        .gallery-item:nth-child(5) { animation-delay: 0.5s; }
+        .gallery-item:nth-child(6) { animation-delay: 0.6s; }
+        .gallery-item:nth-child(7) { animation-delay: 0.7s; }
+        .gallery-item:nth-child(8) { animation-delay: 0.8s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
@@ -997,184 +988,196 @@ function addMobileOptimizedCSS() {
             will-change: opacity, visibility;
         }
 
-        /* מניעת בחירת טקסט במובייל */
-        .gallery-item,
-        .filter-btn,
-        .lightbox-modal {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        /* שיפור נגישות */
+        /* נגישות */
         .filter-btn:focus,
         .close-lightbox:focus,
         .lightbox-prev:focus,
-        .lightbox-next:focus,
-        .retry-btn:focus {
+        .lightbox-next:focus {
             outline: 2px solid #4CAF50;
             outline-offset: 2px;
         }
 
-        /* אנימציות מוקטנות למובייל */
+        /* אנימציות מוקטנות למי שמעדיף */
         @media (prefers-reduced-motion: reduce) {
             .gallery-item,
             .filter-btn,
             .lightbox-content {
+                animation: none;
                 transition: none;
             }
             
             .loading-spinner {
                 animation: none;
+                border: 4px solid #4CAF50;
             }
         }
     `;
     document.head.appendChild(style);
 }
 
-// פונקציות עזר נוספות למובייל
-
-// בדיקת רשת
-function checkNetworkStatus() {
-    if ('connection' in navigator) {
-        const connection = navigator.connection;
-        console.log('Network type:', connection.effectiveType);
-        console.log('Downlink:', connection.downlink);
+// פונקציות סנכרון עם דף הניהול
+function syncWithAdminPanel() {
+    try {
+        const adminData = localStorage.getItem('galleryData');
+        const adminCategories = localStorage.getItem('categories');
+        const adminConfig = localStorage.getItem('cloudinaryConfig');
         
-        // אם הרשת איטית, נטען תמונות קטנות יותר
-        if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
-            return 'slow';
-        }
-    }
-    return 'normal';
-}
-
-// טעינה מותאמת לרשת
-function loadImageWithNetworkOptimization(imageUrl, element) {
-    const networkStatus = checkNetworkStatus();
-    
-    if (networkStatus === 'slow') {
-        // בשביל רשת איטית, נטען תמונה קטנה יותר
-        const optimizedUrl = imageUrl.replace(/w_\d+/, 'w_200').replace(/h_\d+/, 'h_150');
-        element.src = optimizedUrl;
-    } else {
-        element.src = imageUrl;
-    }
-}
-
-// מחיקת מטמון ישן
-function clearOldCache() {
-    const cacheKeys = ['galleryData', 'galleryDataCache', 'categories', 'cloudinaryConfig'];
-    const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    
-    cacheKeys.forEach(key => {
-        const data = localStorage.getItem(key);
-        if (data) {
-            try {
-                const parsed = JSON.parse(data);
-                if (parsed.timestamp && parsed.timestamp < oneWeekAgo) {
-                    localStorage.removeItem(key);
-                    console.log('Removed old cache:', key);
+        let hasUpdates = false;
+        
+        if (adminData) {
+            const parsed = JSON.parse(adminData);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                if (JSON.stringify(parsed) !== JSON.stringify(galleryData)) {
+                    galleryData = parsed;
+                    hasUpdates = true;
+                    console.log('✅ Synced gallery data from admin panel');
                 }
-            } catch (e) {
-                // אם הנתונים לא תקינים, נמחק אותם
-                localStorage.removeItem(key);
             }
         }
-    });
+        
+        if (adminConfig) {
+            const parsed = JSON.parse(adminConfig);
+            if (JSON.stringify(parsed) !== JSON.stringify(cloudinaryConfig)) {
+                cloudinaryConfig = parsed;
+                hasUpdates = true;
+                console.log('✅ Synced Cloudinary config from admin panel');
+            }
+        }
+        
+        return hasUpdates;
+    } catch (error) {
+        console.warn('⚠️ Failed to sync with admin panel:', error);
+        return false;
+    }
 }
 
-// API ציבורי מותאם למובייל
-window.mobileGalleryAPI = {
-    // רענון עם אופטימיזציה למובייל
-    refresh: async (category = 'all') => {
-        console.log('Mobile refresh initiated');
-        clearOldCache();
-        await createGallery(category);
+// API ציבורי לפרודקשן
+window.productionGallery = {
+    // אתחול הגלריה
+    init: (category = 'all') => createGallery(category),
+    
+    // רענון מלא
+    refresh: async () => {
+        console.log('🔄 Refreshing gallery...');
+        galleryData = [];
+        await createGallery();
     },
     
-    // בדיקת סטטוס
-    getStatus: () => ({
-        isMobile,
-        isLocalhost,
-        imagesLoaded: galleryData.length,
-        filteredImages: filteredImages.length,
-        networkStatus: checkNetworkStatus()
-    }),
-    
-    // הגדרת מצב דמו
-    enableDemoMode: () => {
-        localStorage.removeItem('galleryData');
-        loadDemoData();
+    // טעינת נתוני דמו
+    loadDemo: () => {
+        console.log('🎨 Loading demo data...');
+        loadProductionFallbackData();
         createGallery();
     },
     
-    // ניקוי מטמון מלא
-    clearAllCache: () => {
-        localStorage.clear();
+    // סנכרון עם דף הניהול
+    sync: () => {
+        console.log('🔄 Syncing with admin panel...');
+        if (syncWithAdminPanel()) {
+            createGallery();
+            return true;
+        }
+        return false;
+    },
+    
+    // ניקוי מטמון
+    clearCache: () => {
+        console.log('🗑️ Clearing cache...');
+        localStorage.removeItem('galleryData');
+        localStorage.removeItem('galleryDataFallback');
         galleryData = [];
-        filteredImages = [];
-        console.log('All cache cleared');
+        loadProductionFallbackData();
+        createGallery();
+    },
+    
+    // קבלת סטטוס
+    getStatus: () => ({
+        environment: isProduction ? 'production' : 'development',
+        totalImages: galleryData.length,
+        filteredImages: filteredImages.length,
+        hasCloudinaryConfig: cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name',
+        isMobile,
+        lastUpdate: new Date().toISOString()
+    }),
+    
+    // עדכון הגדרות Cloudinary
+    updateCloudinaryConfig: (config) => {
+        cloudinaryConfig = { ...cloudinaryConfig, ...config };
+        localStorage.setItem('cloudinaryConfig', JSON.stringify(cloudinaryConfig));
+        console.log('✅ Cloudinary config updated');
+    },
+    
+    // הוספת תמונה חדשה
+    addImage: (imageData) => {
+        const newImage = {
+            id: Date.now().toString(),
+            ...imageData,
+            uploadDate: new Date().toISOString()
+        };
+        galleryData.push(newImage);
+        localStorage.setItem('galleryData', JSON.stringify(galleryData));
+        createGallery();
+        console.log('✅ Image added:', newImage.title);
     }
 };
 
 // אתחול אוטומטי
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎈 Mobile Gallery System Loading...');
-    console.log('Device info:', {
-        isMobile,
-        isLocalhost,
-        userAgent: navigator.userAgent,
-        screen: `${screen.width}x${screen.height}`,
-        viewport: `${window.innerWidth}x${window.innerHeight}`
-    });
+    console.log('🌐 Production Gallery System Loading...');
+    console.log('Environment:', { isProduction, isLocalhost, isMobile });
     
-    // ניקוי מטמון ישן
-    clearOldCache();
+    // טעינת הגדרות מ-localStorage
+    try {
+        const savedConfig = localStorage.getItem('cloudinaryConfig');
+        if (savedConfig) {
+            cloudinaryConfig = JSON.parse(savedConfig);
+        }
+    } catch (e) {
+        console.warn('⚠️ Failed to load Cloudinary config');
+    }
     
     // אתחול הגלריה
     createGallery().then(() => {
-        console.log('✅ Gallery initialized successfully');
+        console.log('✅ Production Gallery loaded successfully!');
+        
+        // הגדרת סנכרון אוטומטי עם דף הניהול כל דקה
+        setInterval(() => {
+            if (syncWithAdminPanel()) {
+                console.log('🔄 Auto-sync triggered');
+            }
+        }, 60000);
+        
     }).catch(error => {
-        console.error('❌ Gallery initialization failed:', error);
-        // נסה שוב עם נתוני דמו
-        loadDemoData();
+        console.error('❌ Failed to load gallery:', error);
+        // נסה עם נתוני fallback
+        loadProductionFallbackData();
         createGallery();
     });
-    
-    // הודעת דיבוג למובייל
-    if (isMobile) {
-        console.log('📱 Mobile optimizations enabled');
-        
-        // הצגת מידע דיבוג על המסך במובייל (רק לפיתוח)
-        if (window.location.search.includes('debug=true')) {
-            const debugInfo = document.createElement('div');
-            debugInfo.style.cssText = 'position:fixed;top:0;left:0;background:rgba(0,0,0,0.8);color:white;padding:10px;font-size:12px;z-index:9999;';
-            debugInfo.innerHTML = `
-                📱 Mobile Debug<br>
-                Images: ${galleryData.length}<br>
-                Network: ${checkNetworkStatus()}<br>
-                LocalHost: ${isLocalhost}<br>
-                Viewport: ${window.innerWidth}x${window.innerHeight}
-            `;
-            document.body.appendChild(debugInfo);
-            
-            setTimeout(() => debugInfo.remove(), 5000);
+});
+
+// מאזין לשינויים ב-localStorage (לסנכרון בין כרטיסיות)
+window.addEventListener('storage', function(e) {
+    if (e.key === 'galleryData' || e.key === 'cloudinaryConfig') {
+        console.log('📡 Storage changed, syncing...');
+        if (syncWithAdminPanel()) {
+            createGallery();
         }
     }
 });
 
-// יצוא לשימוש חיצונی
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        createGallery,
-        openLightbox,
-        closeLightbox,
-        filterGallery,
-        mobileGalleryAPI: window.mobileGalleryAPI
-    };
-}
+// מאזין לטעינת העמוד מחדש
+window.addEventListener('beforeunload', function() {
+    // שמירה אחרונה של נתונים
+    if (galleryData.length > 0) {
+        try {
+            localStorage.setItem('galleryDataBackup', JSON.stringify({
+                data: galleryData,
+                timestamp: Date.now()
+            }));
+        } catch (e) {
+            console.warn('⚠️ Failed to save backup data');
+        }
+    }
+});
 
-console.log('🎈 Mobile-optimized Gallery System loaded!');
-console.log('Available APIs:', Object.keys(window.mobileGalleryAPI || {}));
+console.log('🌐 Production Gallery Script Loaded!');
