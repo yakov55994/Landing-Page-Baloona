@@ -1,164 +1,66 @@
 // הוסף את זה בתחילת הקובץ index.js שלך, לפני ה-DOMContentLoaded
 
-// נתוני הגלריה
-const galleryData = [
-    {
-        id: 1,
-        title: "בר מצווה ",
-        description: "עיצוב בלונים מיוחד לבר מצווה",
-        image: "https://www.iballoon.co.il/wp-content/uploads/2019/12/balloons-bar-mitzvah2.jpg", // שנה לנתיב האמיתי
-        category: "bar-mitzvah"
-    },
-    {
-        id: 2,
-        title: "יום הולדת ",
-        description: "עמודי בלונים ליום הולדת",
-        image: "https://www.iballoon.co.il/wp-content/uploads/2021/07/mom-bitrday-ballons-1001x1024.jpg", // שנה לנתיב האמיתי
-        category: "birthdays"
-    },
-    {
-        id: 3,
-        title: "הצעת נישואין",
-        description: "קשת בלונים לחתונה",
-        image: "https://blue-balloon.co.il/wp-content/uploads/2021/06/1-3-768x576.jpg", // שנה לנתיב האמיתי
-        category: "Marriage-proposals"
-    },
-    {
-        id: 4,
-        title: "בר מצווה ",
-        description: "עיצוב בלונים מיוחד לבר מצווה",
-        image: "https://yambalon.co.il/wp-content/uploads/2022/01/IMG-20211122-WA0106-300x450.jpg", // שנה לנתיב האמיתי
-        category: "bar-mitzvah"
-    },
-    {
-        id: 5,
-        title: "יום הולדת ",
-        description: "עמודי בלונים ליום הולדת",
-        image: "https://www.tulipflowers.co.il/Cat_433626_626.jpg", // שנה לנתיב האמיתי
-        category: "birthdays"
-    },
-    {
-        id: 6,
-        title: "הצעת נישואין",
-        description: "קשת בלונים לחתונה",
-        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmDP1zZ287J5TrDjpUclGXRSV0V65bhgw-Ug&s", // שנה לנתיב האמיתי
-        category: "Marriage-proposals"
-    },
-    
-    // הוסף עוד פריטים לפי הצורך...
+// רשימת קטגוריות (תיקיות ב-Cloudinary)
+const categories = [
+  { key: 'Arches', name: 'קשתות' },
+  { key: 'balloon-flowers', name: 'פרחים עם בלונים' },
+  { key: 'balloon-numbers', name: 'מספרים מבלונים' },
+  { key: 'room-arrangements', name: 'סידורי חדרים' },
+  { key: 'photo-reviews', name: 'ביקורות צילום' },
+  { key: 'balloon', name: 'כדור פורח' },
+  { key: 'gender-reveal', name: 'גילוי מין' },
+  { key: 'balloons-for-kids', name: 'בלונים לילדים' },
+  { key: 'birth-of-child', name: 'הולדת הבן / בת' },
+  { key: 'centerpiece', name: 'שולחן מרכזי' }
 ];
 
-// פונקציה ליצירת הגלריה
-async function createGallery(selectedCategory = 'all') {
-    const gallerySection = document.getElementById('gallery');
-    if (!gallerySection) return;
-
-    // שמות הקטגוריות
-    const categories = [
-        'all',
-        'balloon-flowers',
-        'Arches', // שם התיקיה בדיוק כמו ב-Cloudinary
-        'photo-reviews',
-        'centerpiece',
-        'birthday-bouquets',
-        'balloon-numbers',
-        'room-arrangements',
-        'balloon',
-        'gender-reveal',
-        'balloons-for-kids',
-        'birth-of-child'
-    ];
-    const categoryNames = {
-        'all': 'הכל',
-        'balloon-flowers': 'פרחים עם בלונים',
-        'Arches': 'קשתות',
-        'photo-reviews': 'קירות צילום',
-        'centerpiece': 'שולחן מרכזי',
-        'birthday-bouquets': 'זרים ליום הולדת',
-        'balloon-numbers': 'מספרים מבלונים',
-        'room-arrangements': 'סידורי חדרים',
-        'balloon': 'כדור פורח',
-        'gender-reveal': 'גילוי מין',
-        'balloons-for-kids': 'בלונים לילדים',
-        'birth-of-child': 'הולדת הבן / בת'
-    };
-
-    // יצירת כפתורי פילטר
-    const filterButtons = categories.map(category => `
-        <button class="filter-btn ${category === selectedCategory ? 'active' : ''}" data-filter="${category}">
-            ${categoryNames[category] || category}
-        </button>
-    `).join('');
-
-    // משיכת התמונות מה-API
-    let galleryItemsArray = [];
-    if (selectedCategory === 'all') {
-        // משוך מכל הקטגוריות
-        const allImages = await Promise.all(
-            categories.filter(cat => cat !== 'all').map(async cat => {
-                const res = await fetch(`http://localhost:3001/api/images/${cat}`);
-                const images = await res.json();
-                return images.map(img => ({ ...img, category: cat }));
-            })
-        );
-        galleryItemsArray = allImages.flat();
-    } else {
-        const res = await fetch(`http://localhost:3001/api/images/${selectedCategory}`);
-        galleryItemsArray = (await res.json()).map(img => ({ ...img, category: selectedCategory }));
-    }
-
-    // יצירת פריטי הגלריה
-    const galleryItems = galleryItemsArray.map(item => `
-        <div class="gallery-item" data-category="${item.category}">
-            <img src="${item.url}" alt="" loading="lazy">
-            <div class="gallery-info"></div>
-        </div>
-    `).join('');
-
-    // מודל לייטבוקס (כמו קודם)
-    const lightboxModal = `
-        <div class="lightbox-modal">
-            <div class="lightbox-content">
-                <span class="close-lightbox">&times;</span>
-                <img class="lightbox-image" src="" alt="">
-                <div class="lightbox-info">
-                    <h3 class="lightbox-title"></h3>
-                    <p class="lightbox-desc"></p>
-                </div>
-                <button class="lightbox-prev">&#10094;</button>
-                <button class="lightbox-next">&#10095;</button>
-            </div>
-        </div>
-    `;
-
-    // הכנסת הכל לדף
-    const existingTitle = gallerySection.querySelector('.section-title');
-    gallerySection.innerHTML = '';
-    if (existingTitle) {
-        gallerySection.appendChild(existingTitle);
-    }
-    gallerySection.insertAdjacentHTML('beforeend', `
-        <div class="filter-buttons">
-            ${filterButtons}
-        </div>
-        <div class="gallery-container">
-            ${galleryItems}
-        </div>
-        ${lightboxModal}
-    `);
-
-    // מאזין לפילטרים
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            createGallery(this.dataset.filter);
-        });
-    });
-
-    // הוספת CSS (אם יש לך פונקציה כזו)
-    if (typeof addGalleryCSS === 'function') {
-        addGalleryCSS();
-    }
+// פונקציה לטעינת תמונות מקטגוריה
+async function fetchCloudinaryImages(folder) {
+  const cloudName = 'dbbivwbbt'; // שנה לשם שלך ב-Cloudinary אם צריך
+  const url = `https://res.cloudinary.com/${cloudName}/image/list/gallery/${folder}.json`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.resources.map(img => img.secure_url);
+  } catch (e) {
+    return [];
+  }
 }
+
+// יצירת הגלריה
+async function createGallery(selectedCategory = categories[0].key) {
+  const gallerySection = document.getElementById('gallery');
+  if (!gallerySection) return;
+
+  gallerySection.innerHTML = 'טוען...';
+  const images = await fetchCloudinaryImages(selectedCategory);
+
+  if (!images.length) {
+    gallerySection.innerHTML = 'לא נמצאו תמונות בקטגוריה זו.';
+    return;
+  }
+
+  gallerySection.innerHTML = images.map(url => `
+    <div class="gallery-item">
+      <img src="${url}" alt="" loading="lazy">
+    </div>
+  `).join('');
+}
+
+// יצירת תפריט קטגוריות דינמי (אם יש לך select)
+document.addEventListener('DOMContentLoaded', () => {
+  const select = document.getElementById('categorySelect');
+  if (select) {
+    select.innerHTML = categories.map(cat => `<option value="${cat.key}">${cat.name}</option>`).join('');
+    select.addEventListener('change', function() {
+      createGallery(this.value);
+    });
+    createGallery(select.value);
+  } else {
+    createGallery();
+  }
+});
 
 
 // פונקציה להוספת CSS
