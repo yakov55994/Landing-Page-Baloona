@@ -2,7 +2,22 @@
 
 class CategoriesRenderer {
     constructor() {
-        this.currentCategory = 'bar-mitzvah'; // קטגוריה ברירת מחדל
+        this.currentCategory = 'all'; // קטגוריה ברירת מחדל
+        this.galleryData = JSON.parse(localStorage.getItem('galleryData')) || [];
+        this.categories = {
+            'bar-mitzvah': 'בר מצווה',
+            'birthday-bouquets': '🎂 זרים ליום הולדת',
+            'balloon-numbers': '🔢 מספרים מבלונים',
+            'arches': '🌈 קשתות',
+            'balloon-flowers': '🌺 פרחים עם בלונים',
+            'centerpiece': '🍽️ מרכזי שולחן',
+            'room-arrangements': '🏠 סידורי חדרים',
+            'photo-walls': '📸 קירות צילום',
+            'balloon-sphere': '🎯 כדור פורח',
+            'gender-reveal': '👶 גילוי מין',
+            'balloons-for-kids': '🧸 בלונים לילדים',
+            'birth-celebration': '🍼 הולדת הבן / בת'
+        };
     }
 
     // אתחול הקטגוריות והתוכן
@@ -19,10 +34,11 @@ class CategoriesRenderer {
         const tabsContainer = document.querySelector('.category-tabs');
         if (!tabsContainer) return;
 
-        const categories = CategoriesManager.getAllCategories();
-        const tabsHTML = categories.map((category, index) => {
-            const activeClass = index === 0 ? 'active' : '';
-            return `<div class="category-tab ${activeClass}" data-category="${category.id}">${category.name}</div>`;
+        const categoryKeys = ['all', ...Object.keys(this.categories)];
+        const tabsHTML = categoryKeys.map((category, index) => {
+            const activeClass = (category === this.currentCategory || (index === 0 && this.currentCategory === 'all')) ? 'active' : '';
+            const categoryName = category === 'all' ? '🎈 הכל' : this.categories[category];
+            return `<div class="category-tab ${activeClass}" data-category="${category}">${categoryName}</div>`;
         }).join('');
 
         tabsContainer.innerHTML = tabsHTML;
@@ -33,171 +49,132 @@ class CategoriesRenderer {
         const gallerySection = document.querySelector('#gallery');
         if (!gallerySection) return;
 
-        // מוצא את המיקום אחרי הטאבים
         const tabsContainer = gallerySection.querySelector('.category-tabs');
         
-        // בונה תוכן לכל קטגוריה
-        const categories = CategoriesManager.getAllCategories();
-        const contentHTML = categories.map((category, index) => {
-            const videos = CategoriesManager.getVideosByCategory(category.id);
-            const activeClass = index === 0 ? 'active' : '';
-            
-            const videosHTML = videos.map(video => 
-                CategoriesManager.buildVideoHTML(video)
-            ).join('');
+        const contentHTML = Object.keys(this.categories).map(category => {
+            const filteredImages = this.currentCategory === 'all' 
+                ? this.galleryData 
+                : this.galleryData.filter(item => item.category === category);
+            const activeClass = category === this.currentCategory ? 'active' : '';
+
+            const imagesHTML = filteredImages.map(item => `
+                <div class="gallery-item">
+                    <img src="${item.thumbnail || item.url}" 
+                         alt="${item.title || 'תמונה'}" 
+                         loading="lazy">
+                    <div class="gallery-info">
+                        <h3>${item.title || 'ללא כותרת'}</h3>
+                        <p>${item.description || 'ללא תיאור'}</p>
+                        <span class="category-tag">${this.categories[item.category] || item.category}</span>
+                    </div>
+                </div>
+            `).join('');
 
             return `
-                <div class="category-content ${activeClass}" id="${category.id}">
+                <div class="category-content ${activeClass}" id="${category}">
                     <div class="video-grid-wrapper">
-                        ${videosHTML}
+                        ${imagesHTML || '<div class="no-images">אין תמונות בקטגוריה זו</div>'}
                     </div>
                 </div>
             `;
         }).join('');
 
-        // הוסף את התוכן אחרי הטאבים
         tabsContainer.insertAdjacentHTML('afterend', contentHTML);
     }
 
-    // בניית ההמלצות
+    // בניית ההמלצות (מותאם לתמונות)
     renderRecommendations() {
         const recommendationsContainer = document.querySelector('#recommendations .modern-gallery');
         if (!recommendationsContainer) return;
 
-        const recommendations = CategoriesManager.getAllRecommendations();
-        const recommendationsHTML = recommendations.map(recommendation => 
-            CategoriesManager.buildRecommendationHTML(recommendation)
-        ).join('');
+        const recommendations = this.galleryData.slice(0, 4); // דוגמה: 4 תמונות ראשונות כהמלצות
+        const recommendationsHTML = recommendations.map(item => `
+            <div class="gallery-item">
+                <img src="${item.thumbnail || item.url}" 
+                     alt="${item.title || 'תמונה'}" 
+                     loading="lazy">
+                <div class="gallery-info">
+                    <h3>${item.title || 'ללא כותרת'}</h3>
+                    <p>${item.description || 'ללא תיאור'}</p>
+                </div>
+            </div>
+        `).join('');
 
-        recommendationsContainer.innerHTML = recommendationsHTML;
+        recommendationsContainer.innerHTML = recommendationsHTML || '<div class="no-recommendations">אין המלצות</div>';
     }
 
-    // בניית הלהיטים
+    // בניית הלהיטים (מותאם לתמונות)
     renderHits() {
         const hitsContainer = document.querySelector('#videos .modern-gallery');
         if (!hitsContainer) return;
 
-        const hits = CategoriesManager.getAllHits();
-        const hitsHTML = hits.map(hit => 
-            CategoriesManager.buildHitHTML(hit)
-        ).join('');
+        const hits = this.galleryData.filter(item => item.uploadDate > '2025-06-14'); // דוגמה: תמונות מהחודש האחרון
+        const hitsHTML = hits.map(item => `
+            <div class="gallery-item">
+                <img src="${item.thumbnail || item.url}" 
+                     alt="${item.title || 'תמונה'}" 
+                     loading="lazy">
+                <div class="gallery-info">
+                    <h3>${item.title || 'ללא כותרת'}</h3>
+                    <p>${item.description || 'ללא תיאור'}</p>
+                </div>
+            </div>
+        `).join('');
 
-        hitsContainer.innerHTML = hitsHTML;
+        hitsContainer.innerHTML = hitsHTML || '<div class="no-hits">אין להיטים</div>';
     }
 
     // קישור אירועים
     bindEvents() {
-        // אירועי לחיצה על טאבים
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('category-tab')) {
                 this.switchCategory(e.target.dataset.category);
-            }
-        });
-
-        // אירועי לחיצה על סרטונים
-        document.addEventListener('click', (e) => {
-            const videoItem = e.target.closest('.video-carousel-item');
-            if (videoItem) {
-                this.playVideo(videoItem);
             }
         });
     }
 
     // החלפת קטגוריה
     switchCategory(categoryId) {
-        // עדכן את הטאב הפעיל
-        document.querySelectorAll('.category-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
+        document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
         document.querySelector(`[data-category="${categoryId}"]`).classList.add('active');
 
-        // עדכן את התוכן הפעיל
-        document.querySelectorAll('.category-content').forEach(content => {
-            content.classList.remove('active');
-        });
+        document.querySelectorAll('.category-content').forEach(content => content.classList.remove('active'));
         document.getElementById(categoryId).classList.add('active');
 
         this.currentCategory = categoryId;
-    }
-
-    // הפעלת סרטון
-    playVideo(videoItem) {
-        const video = videoItem.querySelector('video');
-        const overlay = videoItem.querySelector('.event-overlay');
-        
-        if (video.paused) {
-            // עצור את כל הסרטונים האחרים
-            document.querySelectorAll('.event-video').forEach(v => {
-                if (v !== video) {
-                    v.pause();
-                    v.closest('.video-carousel-item').querySelector('.event-overlay').style.opacity = '1';
-                }
-            });
-            
-            video.play();
-            overlay.style.opacity = '0';
-        } else {
-            video.pause();
-            overlay.style.opacity = '1';
-        }
-    }
-
-    // פונקציות עזר נוספות
-    addNewVideo(categoryId, videoData) {
-        if (!categoriesData.videos[categoryId]) {
-            categoriesData.videos[categoryId] = [];
-        }
-        categoriesData.videos[categoryId].push(videoData);
-        
-        // רענן את התצוגה אם זו הקטגוריה הפעילה
-        if (this.currentCategory === categoryId) {
-            this.renderCategoryContent();
-        }
-    }
-
-    removeVideo(categoryId, videoId) {
-        if (categoriesData.videos[categoryId]) {
-            categoriesData.videos[categoryId] = categoriesData.videos[categoryId]
-                .filter(video => video.id !== videoId);
-            
-            // רענן את התצוגה אם זו הקטגוריה הפעילה
-            if (this.currentCategory === categoryId) {
-                this.renderCategoryContent();
-            }
-        }
-    }
-
-    // עדכון מידע סרטון
-    updateVideo(categoryId, videoId, newData) {
-        if (categoriesData.videos[categoryId]) {
-            const videoIndex = categoriesData.videos[categoryId]
-                .findIndex(video => video.id === videoId);
-            
-            if (videoIndex !== -1) {
-                categoriesData.videos[categoryId][videoIndex] = {
-                    ...categoriesData.videos[categoryId][videoIndex],
-                    ...newData
-                };
-                
-                // רענן את התצוגה אם זו הקטגוריה הפעילה
-                if (this.currentCategory === categoryId) {
-                    this.renderCategoryContent();
-                }
-            }
-        }
     }
 }
 
 // אתחול כאשר הדף נטען
 document.addEventListener('DOMContentLoaded', () => {
-    // ודא שקובץ הנתונים נטען
-    if (typeof CategoriesManager !== 'undefined') {
-        const renderer = new CategoriesRenderer();
-        renderer.init();
-        
-        // הפוך את הרנדרר זמין גלובלית לשימוש אחר
-        window.categoriesRenderer = renderer;
-    } else {
-        console.error('CategoriesManager לא נטען. ודא שקובץ categories-data.js נטען לפני קובץ זה.');
+    const renderer = new CategoriesRenderer();
+    renderer.init();
+    window.categoriesRenderer = renderer;
+
+    // טעינת נתונים מ-Cloudinary אם אין ב-localStorage
+    if (renderer.galleryData.length === 0) {
+        const cloudinaryConfig = JSON.parse(localStorage.getItem('cloudinaryConfig')) || {};
+        if (cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name') {
+            console.log('☁️ Loading from Cloudinary...');
+            fetch(`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/gallery.json`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.resources) {
+                        renderer.galleryData = data.resources.map(resource => ({
+                            id: resource.public_id,
+                            url: resource.secure_url,
+                            thumbnail: resource.secure_url.replace('/upload/', '/upload/w_300,h_200,c_fill,q_auto,f_auto/'),
+                            fullsize: resource.secure_url.replace('/upload/', '/upload/w_1200,h_900,c_limit,q_auto,f_auto/'),
+                            title: resource.context?.custom?.title || 'תמונה',
+                            description: resource.context?.custom?.description || 'תמונה יפה',
+                            category: resource.tags?.[0] || 'all',
+                            uploadDate: resource.created_at
+                        }));
+                        localStorage.setItem('galleryData', JSON.stringify(renderer.galleryData));
+                        renderer.init(); // רענון לאחר טעינה
+                    }
+                })
+                .catch(error => console.error('❌ Error loading from Cloudinary:', error));
+        }
     }
 });
