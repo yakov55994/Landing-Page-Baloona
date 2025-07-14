@@ -74,9 +74,8 @@ async function createGallery(selectedCategory = 'all') {
 async function loadGalleryDataProduction(selectedCategory) {
     console.log('📂 Loading gallery data for production...');
     
-    // בפרודקשן - תמיד מ-localStorage תחילה
     try {
-        // נסה לטעון מ-localStorage
+        // 1. טעינה מ-localStorage
         const savedData = localStorage.getItem('galleryData');
         const savedConfig = localStorage.getItem('cloudinaryConfig');
         
@@ -85,45 +84,72 @@ async function loadGalleryDataProduction(selectedCategory) {
             if (Array.isArray(parsed) && parsed.length > 0) {
                 console.log('✅ Found saved gallery data:', parsed.length, 'images');
                 galleryData = parsed;
-                return;
+                // סינון לפי קטגוריה אם נבחרה
+                filteredImages = selectedCategory === 'all' 
+                    ? galleryData 
+                    : galleryData.filter(item => item.category === selectedCategory);
+                if (filteredImages.length > 0) {
+                    console.log('✅ Using localStorage data for category:', selectedCategory);
+                    return; // יציאה מהפונקציה אם נמצאו נתונים תקינים
+                }
             }
         }
         
+        // 2. טעינת הגדרות Cloudinary
         if (savedConfig) {
             cloudinaryConfig = JSON.parse(savedConfig);
-            console.log('✅ Found Cloudinary config');
+            console.log('✅ Found Cloudinary config:', cloudinaryConfig);
+        } else {
+            console.warn('⚠️ No Cloudinary config found in localStorage');
+            cloudinaryConfig = { cloudName: 'your-cloud-name' }; // ברירת מחדל זמנית
         }
         
-        // אם יש הגדרות Cloudinary, נסה לטעון משם
+        // 3. טעינה מ-Cloudinary אם אין נתונים תקינים ב-localStorage
         if (cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name') {
-            console.log('☁️ Trying to load from Cloudinary...');
+            console.log('☁️ Attempting to load from Cloudinary...');
             await loadFromCloudinaryProduction(selectedCategory);
             
             if (galleryData.length > 0) {
-                // שמור בזיכרון המטמון
+                console.log('✅ Saving Cloudinary data to localStorage');
                 localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                filteredImages = selectedCategory === 'all' 
+                    ? galleryData 
+                    : galleryData.filter(item => item.category === selectedCategory);
                 return;
             }
         }
         
+        // 4. נפילה ל-fallback אם הכל נכשל
+        console.log('📦 No Cloudinary data, loading fallback');
+        loadProductionFallbackData();
+        filteredImages = selectedCategory === 'all' 
+            ? galleryData 
+            : galleryData.filter(item => item.category === selectedCategory);
+        localStorage.setItem('galleryData', JSON.stringify(galleryData));
+        
     } catch (error) {
-        console.warn('⚠️ Error loading data:', error);
+        console.error('❌ Error loading gallery data:', error);
+        loadProductionFallbackData();
+        filteredImages = selectedCategory === 'all' 
+            ? galleryData 
+            : galleryData.filter(item => item.category === selectedCategory);
+        localStorage.setItem('galleryData', JSON.stringify(galleryData));
     }
-    
-    console.log('📦 Loading fallback data');
-    loadProductionFallbackData();
 }
 
 // טעינה מ-Cloudinary לפרודקשן
 async function loadFromCloudinaryProduction(selectedCategory) {
-    if (!cloudinaryConfig.cloudName) return;
+    if (!cloudinaryConfig.cloudName || cloudinaryConfig.cloudName === 'your-cloud-name') {
+        console.warn('⚠️ Invalid Cloudinary cloudName:', cloudinaryConfig.cloudName);
+        return;
+    }
     
     const categoriesToLoad = selectedCategory === 'all' ? Object.keys(categories) : [selectedCategory];
     
     for (const category of categoriesToLoad) {
         try {
-            // ניסיון לטעינה ישירה מ-Cloudinary
-            const searchUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/${category}.json`;
+            const searchUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/gallery-${category}.json`;
+            console.log('📡 Fetching from Cloudinary:', searchUrl);
             
             const response = await fetch(searchUrl, {
                 method: 'GET',
@@ -140,9 +166,11 @@ async function loadFromCloudinaryProduction(selectedCategory) {
                     const processedImages = processCloudinaryResponse(data, category);
                     galleryData.push(...processedImages);
                     console.log(`✅ Loaded ${processedImages.length} images from category: ${category}`);
+                } else {
+                    console.warn(`⚠️ No images found for category: ${category}`);
                 }
             } else {
-                console.warn(`⚠️ Failed to load category ${category}: ${response.status}`);
+                console.warn(`⚠️ Failed to load category ${category}: ${response.status} ${response.statusText}`);
             }
             
         } catch (error) {
@@ -162,8 +190,8 @@ function processCloudinaryResponse(data, category) {
         thumbnail: generateCloudinaryUrl(resource.secure_url || resource.url, 'w_300,h_200,c_fill,q_auto,f_auto'),
         image: generateCloudinaryUrl(resource.secure_url || resource.url, 'w_800,h_600,c_limit,q_auto,f_auto'),
         fullsize: generateCloudinaryUrl(resource.secure_url || resource.url, 'w_1200,h_900,c_limit,q_auto,f_auto'),
-        title: resource.context?.custom?.title || `${categories[category]} ${index + 1}`,
-        description: resource.context?.custom?.description || `תמונה יפה של ${categories[category]}`,
+        title: resource.context?.custom?.title || `${categories[category] || category} ${index + 1}`,
+        description: resource.context?.custom?.description || `תמונה יפה של ${categories[category] || category}`,
         category: category,
         uploadDate: resource.created_at || new Date().toISOString()
     }));
