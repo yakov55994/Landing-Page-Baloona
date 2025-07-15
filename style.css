@@ -1568,244 +1568,108 @@ video-carousel-item:hover {
 
 /* Media Queries - בסיסי */
 @media (max-width: 768px) {
-    .hero{
-        height: 15vh;
-    }
-    .name {
-        font-size: 2.8rem;
-    }
-    
-    .title-hebrew {
-        font-size: 1.5rem;
+    /* תיקון גובה hero */
+    .hero {
+        height: 25vh; /* במקום 15vh */
+        margin-top: 2vh;
+        margin-bottom: 2vh;
+        padding: 20px 0;
     }
     
-    .section-title {
-        font-size: 1.8rem;
+    /* תיקון תמונת פרופיל */
+    .profile-image-container {
+        width: 120px; /* במקום 160px */
+        height: 120px;
+        bottom: -40px; /* במקום -60px */
     }
     
-    .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .videos-grid, .events-video-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .social-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-    }
-    
-    .social-icon-wrapper {
-        width: 70px;
-        height: 70px;
-    }
-    
-    .video-grid-wrapper {
-        grid-template-columns: repeat(1, 1fr);
-    }
-
+    /* תיקון תמונת כיסוי */
     .cover-photo-container {
-        width: 100%;
-        position: relative;
-        max-height: 150px;
-        overflow: hidden;
-        background-color: #1c1c1c; /* Fallback if image doesn't load */
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        max-height: 200px; /* במקום 150px */
     }
     
     .cover-image {
-        border-radius: 10px;
-        width: 100%;
-        height: auto;
-        /* שינוי מ-contain ל-cover על מנת שהתמונה תמלא את הרוחב */
-        object-fit: cover; 
-        /* אפשרות להגדיר לתמונה למלא את גובה המיכל באופן מושלם */
-        max-height: 350px;
-        border-bottom-left-radius: 8px;
-        border-bottom-right-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-
-    .category-tabs {
-        flex-wrap: wrap; /* במקום nowrap */
-        justify-content: center; /* מרכז את השורות */
-    }
-
-    .category-tab {
-        flex: 0 0 calc(50% - 10px); /* כל טאאב תופס חצי שורה עם מרווח */
-        text-align: center;
+        border-radius: 15px; /* במקום 10px */
+        max-height: 200px;
     }
     
-    /* התאמות סקציית כתובת למובייל */
-    .address-container {
-        margin-top: 30px;
-        padding: 20px;
+    /* תיקון כותרות */
+    .title-hebrew {
+        font-size: 1.8rem; /* במקום 1.5rem */
+        margin-top: 20px;
     }
     
-    .address-content {
-        grid-template-columns: 1fr;
-        gap: 20px;
+    .occupation {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
     }
     
-    .map-section {
-        order: 2;
-    }
-    
-    .navigation-buttons {
-        order: 1;
-    }
-    
-    .address-title {
-        font-size: 1.3em;
-    }
-    
-    .address-text {
-        font-size: 1em;
-    }
-    
-    .nav-btn {
-        padding: 10px 16px;
-        font-size: 0.9em;
-    }
-    
-    .embedded-map {
-        height: 200px;
-    }
-
-    /* תיקונים כלליים למסכים קטנים */
-    .section {
-        padding: 40px 15px; /* רווח קטן יותר בסקשנים */
-    }
-    
-    /* שיפור גודל כותרת ראשית */
-    .name {
-        font-size: 40px; /* גודל מתאים יותר למובייל */
-    }
-    
-    /* שיפור סידור האייקונים החברתיים */
+    /* תיקון אייקונים חברתיים */
     .social-grid {
         grid-template-columns: repeat(4, 1fr);
-        grid-template-areas: 
-            "item1 item2 item3"
-            "item4 item5 item6"
-            "item7 item8 .";
         gap: 15px;
+        padding: 20px 10px;
+    }
+    
+    .social-icon-wrapper {
+        width: 60px; /* במקום 70px */
+        height: 60px;
+    }
+    
+    .social-icon-inner {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .icon {
+        width: 24px; /* במקום 28px */
+        height: 24px;
     }
 }
 
 /* התאמות למסכים קטנים מאוד */
-@media (max-width: 480px) {
-    /* כותרת ראשית מוקטנת */
-    .name {
-        font-size: 52px;
-        margin-top: 10px;
+@media (max-width: 360px) {
+    .hero {
+        height: 18vh;
+        padding: 10px 0;
     }
     
-    /* התאמת קרוסלת וידאו למובייל */
-    .video-carousel-item {
-        min-width: 300px;
-        flex: 0 0 300;
+    .profile-image-container {
+        width: 80px;
+        height: 80px;
+        bottom: -25px;
+    }
+    
+    .cover-photo-container {
+        max-height: 120px;
+    }
+    
+    .cover-image {
+        max-height: 120px;
     }
     
     .title-hebrew {
         font-size: 1.3rem;
+        margin-top: 10px;
     }
     
     .occupation {
-        font-size: 1rem;
+        font-size: 0.9rem;
     }
     
-    /* סידור טוב יותר של אייקונים חברתיים */
     .social-grid {
         grid-template-columns: repeat(2, 1fr);
-        grid-template-areas: 
-            "item1 item2"
-            "item3 item4"
-            "item5 item6"
-            "item7 item8";
-        gap: 10px;
+        gap: 8px;
     }
     
     .social-icon-wrapper {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .social-icon-inner {
-        width: 42px;
-        height: 42px;
-    }
-    
-    .social-icon-outer {
-        top: -4px;
-        left: -4px;
-        right: -4px;
-        bottom: -4px;
-        border-radius: 16px;
+        width: 45px;
+        height: 45px;
     }
     
     .icon {
-        font-size: 20px;
-        width: 16px;
-        height: 16px;
-    }
-    
-    .social-name {
-        font-size: 18px;
-    }
-    
-    
-    /* הגדרת רווחים בטופס */
-    .contact-form-container {
-        padding: 20px 15px;
-    }
-    
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    /* התאמות גלריה מודרנית */
-    .modern-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 10px;
-    }
-    
-    .gallery-info h3 {
-        font-size: 1rem;
-    }
-    
-    .gallery-info p {
-        font-size: 0.8rem;
-    }
-    
-    .lightbox-prev {
-        left: 10px;
-    }
-    
-    .lightbox-next {
-        right: 10px;
-    }
-    
-    /* התאמות סקציית כתובת */
-    .address-container {
-        padding: 15px;
-    }
-    
-    .nav-btn {
-        padding: 8px 14px;
-        font-size: 0.85em;
-    }
-    
-    .embedded-map {
-        height: 180px;
-    }
-    
-    .btn-icon {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
     }
 }
 
