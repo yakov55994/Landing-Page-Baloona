@@ -1981,26 +1981,31 @@ video-carousel-item:hover {
 
 /* מספור לקטגוריות שונות */
 .gallery-item[data-category="balloon-numbers"] .image-number {
-    background: linear-gradient(45deg, #667eea, #764ba2);
-}
+    background: #b38a49;
+    color: black;
+    font: bold;}
 
 .gallery-item[data-category="arches"] .image-number {
-    background: linear-gradient(45deg, #f093fb, #f5576c);
-}
+    background: #b38a49;
+    color: black;
+    font: bold;}
 
 .gallery-item[data-category="flowers-balloons"] .image-number {
-    background: linear-gradient(45deg, #4facfe, #00f2fe);
+    background: #b38a49;
+    color: black;
+    font: bold;
 }
 
 .gallery-item[data-category="kids-balloons"] .image-number {
-    background: linear-gradient(45deg, #43e97b, #38f9d7);
-}
+    background: #b38a49;
+    color: black;
+    font: bold;}
 
 /* עיצוב למספור בדף האדמין */
 .admin-container .image-number {
-    background: rgba(78, 205, 196, 0.9);
-    color: white;
-    font-weight: 700;
+    background: #b38a49;
+    color: black;
+    font: bold;
 }
 
 /* הוספות לגלריה בקרוסלה */

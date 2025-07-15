@@ -2,8 +2,7 @@
 
 // בדיקת תמיכה במובייל
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-// const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 // console.log('Mobile detected:', isMobile);
 // console.log('Is localhost:', isLocalhost);
 
@@ -92,7 +91,7 @@ async function loadFromLocalServer(selectedCategory) {
         setTimeout(() => reject(new Error('Timeout')), 5000)
     );
     try {
-        const fetchPromise = fetch('http://localhost:3001/api/balloon-gallery', {
+        const fetchPromise = fetch('https://baloona-server.onrender.com/api/gallery', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -259,16 +258,17 @@ function buildGalleryUI(gallerySection, selectedCategory) {
     const selectedCategoryName = categories[selectedCategory] || categories[categoryKeys[0]];
     const selectedIcon = getCategoryIcon(selectedCategory);
 
-    // יצירת פריטי גלריה עם lazy loading ומספור
+    // יצירת פריטי גלריה עם lazy loading ומספור + אירוע לחיצה
     const galleryItems = filteredImages.map((item, index) => `
         <div class="gallery-item" 
              data-category="${item.category}"
-             data-index="${index}">
+             data-index="${index}"
+             onclick="openLightbox(${index})" 
+             style="cursor: pointer;">
             <div class="image-number">${item.imageNumber || index + 1}</div>
             <img src="${item.thumbnail || item.url}" 
-                 alt="${item.title || 'תמונה'}" 
+                 alt="${item.title }" 
                  loading="lazy"
-                 onclick="openLightbox(${index})"
                  onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkNGO16DXlDwvdGV4dD48L3N2Zz4K';">
             <div class="gallery-overlay">
                 <div class="gallery-info">
@@ -276,33 +276,6 @@ function buildGalleryUI(gallerySection, selectedCategory) {
             </div>
         </div>
     `).join('');
-
-    // לייטבוקס מותאם למובייל עם תמיכה במספור
-    const lightboxModal = `
-        <div class="lightbox-modal" id="lightboxModal" onclick="closeLightboxOnBackdrop(event)">
-            <div class="lightbox-content" onclick="event.stopPropagation()">
-                <button class="close-lightbox" onclick="closeLightbox()" type="button" aria-label="סגור">
-                    <span>&times;</span>
-                </button>
-                <img class="lightbox-image" src="" alt="" id="lightboxImage">
-                <div class="lightbox-info">
-                    <h3 class="lightbox-title" id="lightboxTitle"></h3>
-                    <p class="lightbox-desc" id="lightboxDesc"></p>
-                    <span class="lightbox-category" id="lightboxCategory"></span>
-                    <div class="lightbox-image-number" id="lightboxImageNumber"></div>
-                </div>
-                <button class="lightbox-prev" onclick="navigateLightbox(-1)" type="button" aria-label="תמונה קודמת">
-                    <span>❮</span>
-                </button>
-                <button class="lightbox-next" onclick="navigateLightbox(1)" type="button" aria-label="תמונה הבאה">
-                    <span>❯</span>
-                </button>
-                <div class="lightbox-counter">
-                    <span id="currentImageNum">1</span> / <span id="totalImagesNum">${filteredImages.length}</span>
-                </div>
-            </div>
-        </div>
-    `;
 
     // מונה תמונות
     const imageCounter = `
@@ -341,13 +314,53 @@ function buildGalleryUI(gallerySection, selectedCategory) {
         <div class="gallery-container" id="galleryContainer">
             ${galleryItems || '<p class="no-images">אין תמונות להצגה</p>'}
         </div>
-        ${lightboxModal}
     `);
+
+    // יצירת לייטבוקס מותאם למובייל עם תמיכה במספור
+    createLightboxModal(filteredImages.length);
 
     // אתחול הדרופדאון
     initDropdownEvents();
 
     console.log('UI built successfully');
+}
+// פונקציה נפרדת ליצירת הלייטבוקס
+function createLightboxModal(totalImages) {
+    // מחיקת לייטבוקס קיים אם יש
+    const existingLightbox = document.getElementById('lightboxModal');
+    if (existingLightbox) {
+        existingLightbox.remove();
+    }
+
+    const lightboxModal = `
+        <div class="lightbox-modal" id="lightboxModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center;" onclick="closeLightboxOnBackdrop(event)">
+            <div class="lightbox-content" onclick="event.stopPropagation()" style="position: relative; max-width: 90%; max-height: 90%; text-align: center;">
+                <button class="close-lightbox" onclick="closeLightbox()" type="button" aria-label="סגור" style="position: absolute; top: -40px; right: -40px; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; z-index: 10;">
+                    <span>&times;</span>
+                </button>
+                <img class="lightbox-image" src="" alt="" id="lightboxImage" style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 8px;">
+                <div class="lightbox-info" style="color: white; padding: 20px; background: rgba(0,0,0,0.8); border-radius: 8px; margin-top: 20px;">
+                    <h3 class="lightbox-title" id="lightboxTitle" style="color: #4CAF50; margin-bottom: 10px;"></h3>
+                    <p class="lightbox-desc" id="lightboxDesc" style="margin-bottom: 15px;"></p>
+                    <span class="lightbox-category" id="lightboxCategory" style="background: rgba(76,175,80,0.8); padding: 6px 12px; border-radius: 15px; font-size: 0.9em; display: inline-block; margin-bottom: 15px;"></span>
+                    <div class="lightbox-image-number" id="lightboxImageNumber" style="background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 20px; font-size: 0.9em; display: inline-block; border: 1px solid rgba(255, 255, 255, 0.2);"></div>
+                </div>
+                <button class="lightbox-prev" onclick="navigateLightbox(-1)" type="button" aria-label="תמונה קודמת" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 24px; padding: 15px 12px; cursor: pointer; border-radius: 8px;">
+                    <span>❮</span>
+                </button>
+                <button class="lightbox-next" onclick="navigateLightbox(1)" type="button" aria-label="תמונה הבאה" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: white; border: none; font-size: 24px; padding: 15px 12px; cursor: pointer; border-radius: 8px;">
+                    <span>❯</span>
+                </button>
+                <div class="lightbox-counter" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 14px;">
+                    <span id="currentImageNum">1</span> / <span id="totalImagesNum">${totalImages}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // הוספת הלייטבוקס ל-body
+    document.body.insertAdjacentHTML('beforeend', lightboxModal);
+    console.log('Lightbox modal created and added to body');
 }
 
 // פונקציה לקבלת אייקון קטגוריה
@@ -435,7 +448,7 @@ function selectCategory(category) {
 
 // פונקציות לייטבוקס מתוקנות עם מספור
 function openLightbox(index) {
-    console.log('Opening lightbox for image', index);
+    console.log('openLightbox called for index:', index, 'filteredImages:', filteredImages);
     
     if (!filteredImages[index]) {
         console.error('Image not found at index', index);
@@ -450,6 +463,14 @@ function openLightbox(index) {
         console.error('Lightbox modal not found');
         return;
     }
+    modal.style.display = 'flex';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
+    modal.style.zIndex = '9999';
     
     // עדכון תוכן
     const lightboxImage = document.getElementById('lightboxImage');
@@ -465,14 +486,13 @@ function openLightbox(index) {
         lightboxImage.alt = image.title || 'תמונה';
     }
     
-    if (lightboxTitle) lightboxTitle.textContent = image.title || 'ללא כותרת';
-    if (lightboxDesc) lightboxDesc.textContent = image.description || 'ללא תיאור';
     if (lightboxCategory) lightboxCategory.textContent = categories[image.category] || image.category;
     if (lightboxImageNumber) lightboxImageNumber.textContent = `תמונה מספר ${image.imageNumber || index + 1}`;
     if (currentImageNum) currentImageNum.textContent = index + 1;
     if (totalImagesNum) totalImagesNum.textContent = filteredImages.length;
 
     // הצגת מודל
+    modal.style.display = 'flex';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
@@ -483,7 +503,8 @@ function closeLightbox() {
     console.log('Closing lightbox');
     const modal = document.getElementById('lightboxModal');
     if (modal) {
-        modal.classList.remove('active');
+        modal.style.display = 'none';
+modal.classList.remove('active');
         document.body.style.overflow = '';
     }
 }
@@ -496,13 +517,12 @@ function closeLightboxOnBackdrop(event) {
 
 function navigateLightbox(direction) {
     currentImageIndex += direction;
-    
+    console.log('navigateLightbox', direction, 'currentImageIndex:', currentImageIndex, 'filteredImages:', filteredImages);
     if (currentImageIndex < 0) {
         currentImageIndex = filteredImages.length - 1;
     } else if (currentImageIndex >= filteredImages.length) {
         currentImageIndex = 0;
     }
-    
     openLightbox(currentImageIndex);
 }
 
@@ -627,21 +647,20 @@ function addMobileOptimizedCSS() {
             display: inline-block;
             margin: 20px 0;
         }
-
         .dropdown-toggle {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             padding: 15px 25px;
-            border: 2px solid #4CAF50;
+            border: 2px solid #b38a49;
             background: white;
             border-radius: 30px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: inherit;
             font-size: 16px;
-            color: #4CAF50;
+            color: #b38a49;
             font-weight: 600;
             box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
             touch-action: manipulation;
@@ -650,14 +669,14 @@ function addMobileOptimizedCSS() {
         }
 
         .dropdown-toggle:hover {
-            background: #4CAF50;
+            background: #b38a49;
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
         }
 
         .dropdown-toggle.active {
-            background: #4CAF50;
+            background: #b38a49;
             color: white;
             border-radius: 30px 30px 15px 15px;
         }
@@ -680,7 +699,7 @@ function addMobileOptimizedCSS() {
             min-width: 300px;
             max-width: 90vw;
             background: white;
-            border: 2px solid #4CAF50;
+            border: 2px solid #b38a49;
             border-top: none;
             border-radius: 0 0 20px 20px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
@@ -848,7 +867,7 @@ function addMobileOptimizedCSS() {
             position: absolute;
             top: 8px;
             right: 8px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(221, 16, 16, 0.7);
             color: white;
             padding: 4px 8px;
             border-radius: 12px;
@@ -915,7 +934,7 @@ function addMobileOptimizedCSS() {
         }
 
         .lightbox-modal.active {
-            display: flex;
+            display: flex !important;
         }
 
         .lightbox-content {
@@ -966,7 +985,7 @@ function addMobileOptimizedCSS() {
         }
 
         .lightbox-image-number {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.61);
             padding: 6px 12px;
             border-radius: 15px;
             font-size: 0.85em;
@@ -1316,6 +1335,34 @@ document.addEventListener('DOMContentLoaded', function() {
             
             setTimeout(() => debugInfo.remove(), 5000);
         }
+    }
+
+    if (!document.getElementById('lightboxModal')) {
+        document.body.insertAdjacentHTML('beforeend', `
+            <div class="lightbox-modal" id="lightboxModal" onclick="closeLightboxOnBackdrop(event)">
+                <div class="lightbox-content" onclick="event.stopPropagation()">
+                    <button class="close-lightbox" onclick="closeLightbox()" type="button" aria-label="סגור">
+                        <span>&times;</span>
+                    </button>
+                    <img class="lightbox-image" src="" alt="" id="lightboxImage">
+                    <div class="lightbox-info">
+                        <h3 class="lightbox-title" id="lightboxTitle"></h3>
+                        <p class="lightbox-desc" id="lightboxDesc"></p>
+                        <span class="lightbox-category" id="lightboxCategory"></span>
+                        <div class="lightbox-image-number" id="lightboxImageNumber"></div>
+                    </div>
+                    <button class="lightbox-prev" onclick="navigateLightbox(-1)" type="button" aria-label="תמונה קודמת">
+                        <span>❮</span>
+                    </button>
+                    <button class="lightbox-next" onclick="navigateLightbox(1)" type="button" aria-label="תמונה הבאה">
+                        <span>❯</span>
+                    </button>
+                    <div class="lightbox-counter">
+                        <span id="currentImageNum">1</span> / <span id="totalImagesNum">0</span>
+                    </div>
+                </div>
+            </div>
+        `);
     }
 });
 

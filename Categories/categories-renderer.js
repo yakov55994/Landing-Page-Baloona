@@ -2,16 +2,42 @@
 
 class CategoriesRenderer {
     constructor() {
-        this.currentCategory = 'bar-mitzvah'; // קטגוריה ברירת מחדל
+        this.currentCategory = null; // קטגוריה ברירת מחדל
+        this.galleryData = [];
     }
 
     // אתחול הקטגוריות והתוכן
-    init() {
+    async init() {
+        await this.loadGalleryDataFromAPI();
         this.renderCategoryTabs();
-        this.renderCategoryContent();
-        // this.renderRecommendations();
-        this.renderHits();
+        this.renderImagesByCategory(this.getDefaultCategoryId());
         this.bindEvents();
+    }
+
+    // טען את כל התמונות מה-API
+    async loadGalleryDataFromAPI() {
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3001'
+            : 'https://baloona-backend.onrender.com'; // שנה ל-URL שלך
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/balloon-gallery`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+            });
+            if (response.ok) {
+                this.galleryData = await response.json();
+            } else {
+                this.galleryData = [];
+            }
+        } catch (e) {
+            this.galleryData = [];
+        }
+    }
+
+    // החזר את הקטגוריה הראשונה כברירת מחדל
+    getDefaultCategoryId() {
+        const categories = CategoriesManager.getAllCategories();
+        return categories.length > 0 ? categories[0].id : null;
     }
 
     // בניית טאבים של הקטגוריות
@@ -28,163 +54,43 @@ class CategoriesRenderer {
         tabsContainer.innerHTML = tabsHTML;
     }
 
-    // בניית תוכן הקטגוריות
-    renderCategoryContent() {
+    // הצגת תמונות לפי קטגוריה
+    renderImagesByCategory(categoryId) {
+        this.currentCategory = categoryId;
         const gallerySection = document.querySelector('#gallery');
         if (!gallerySection) return;
 
-        // מוצא את המיקום אחרי הטאבים
-        const tabsContainer = gallerySection.querySelector('.category-tabs');
-        
-        // בונה תוכן לכל קטגוריה
-        const categories = CategoriesManager.getAllCategories();
-        const contentHTML = categories.map((category, index) => {
-            const videos = CategoriesManager.getVideosByCategory(category.id);
-            const activeClass = index === 0 ? 'active' : '';
-            
-            const videosHTML = videos.map(video => 
-                CategoriesManager.buildVideoHTML(video)
-            ).join('');
+        // סנן תמונות לפי קטגוריה
+        const filteredImages = this.galleryData.filter(img => img.category === categoryId);
 
-            return `
-                <div class="category-content ${activeClass}" id="${category.id}">
-                    <div class="video-grid-wrapper">
-                        ${videosHTML}
-                    </div>
-                </div>
-            `;
-        }).join('');
+        // בנה HTML
+        const imagesHTML = filteredImages.length > 0 ? filteredImages.map(img => `
+            <div class="gallery-item">
+                <img onclick="openLightbox(${index})" style="cursor: pointer src="${img.thumbnail || img.url}" alt="${img.title || ''}">
+            </div>
+        `).join('') : '<p>אין תמונות בקטגוריה זו</p>';
 
-        // הוסף את התוכן אחרי הטאבים
-        tabsContainer.insertAdjacentHTML('afterend', contentHTML);
-    }
+        // שמור את הטאבים (אם קיימים)
+        const tabs = document.querySelector('.category-tabs');
+        gallerySection.innerHTML = '';
+        if (tabs) gallerySection.appendChild(tabs);
+        gallerySection.insertAdjacentHTML('beforeend', `<div class="gallery-container">${imagesHTML}</div>`);
 
-    // בניית ההמלצות
-    // renderRecommendations() {
-    //     const recommendationsContainer = document.querySelector('#recommendations .modern-gallery');
-    //     if (!recommendationsContainer) return;
-
-    //     const recommendations = CategoriesManager.getAllRecommendations();
-    //     const recommendationsHTML = recommendations.map(recommendation => 
-    //         CategoriesManager.buildRecommendationHTML(recommendation)
-    //     ).join('');
-
-    //     recommendationsContainer.innerHTML = recommendationsHTML;
-    // }
-
-    // בניית הלהיטים
-    renderHits() {
-        const hitsContainer = document.querySelector('#videos .modern-gallery');
-        if (!hitsContainer) return;
-
-        const hits = CategoriesManager.getAllHits();
-        const hitsHTML = hits.map(hit => 
-            CategoriesManager.buildHitHTML(hit)
-        ).join('');
-
-        hitsContainer.innerHTML = hitsHTML;
+        // עדכן טאבים
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.category === categoryId) tab.classList.add('active');
+        });
     }
 
     // קישור אירועים
     bindEvents() {
-        // אירועי לחיצה על טאבים
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('category-tab')) {
-                this.switchCategory(e.target.dataset.category);
+                const categoryId = e.target.dataset.category;
+                this.renderImagesByCategory(categoryId);
             }
         });
-
-        // אירועי לחיצה על סרטונים
-        document.addEventListener('click', (e) => {
-            const videoItem = e.target.closest('.video-carousel-item');
-            if (videoItem) {
-                this.playVideo(videoItem);
-            }
-        });
-    }
-
-    // החלפת קטגוריה
-    switchCategory(categoryId) {
-        // עדכן את הטאב הפעיל
-        document.querySelectorAll('.category-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelector(`[data-category="${categoryId}"]`).classList.add('active');
-
-        // עדכן את התוכן הפעיל
-        document.querySelectorAll('.category-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        document.getElementById(categoryId).classList.add('active');
-
-        this.currentCategory = categoryId;
-    }
-
-    // הפעלת סרטון
-    playVideo(videoItem) {
-        const video = videoItem.querySelector('video');
-        const overlay = videoItem.querySelector('.event-overlay');
-        
-        if (video.paused) {
-            // עצור את כל הסרטונים האחרים
-            document.querySelectorAll('.event-video').forEach(v => {
-                if (v !== video) {
-                    v.pause();
-                    v.closest('.video-carousel-item').querySelector('.event-overlay').style.opacity = '1';
-                }
-            });
-            
-            video.play();
-            overlay.style.opacity = '0';
-        } else {
-            video.pause();
-            overlay.style.opacity = '1';
-        }
-    }
-
-    // פונקציות עזר נוספות
-    addNewVideo(categoryId, videoData) {
-        if (!categoriesData.videos[categoryId]) {
-            categoriesData.videos[categoryId] = [];
-        }
-        categoriesData.videos[categoryId].push(videoData);
-        
-        // רענן את התצוגה אם זו הקטגוריה הפעילה
-        if (this.currentCategory === categoryId) {
-            this.renderCategoryContent();
-        }
-    }
-
-    removeVideo(categoryId, videoId) {
-        if (categoriesData.videos[categoryId]) {
-            categoriesData.videos[categoryId] = categoriesData.videos[categoryId]
-                .filter(video => video.id !== videoId);
-            
-            // רענן את התצוגה אם זו הקטגוריה הפעילה
-            if (this.currentCategory === categoryId) {
-                this.renderCategoryContent();
-            }
-        }
-    }
-
-    // עדכון מידע סרטון
-    updateVideo(categoryId, videoId, newData) {
-        if (categoriesData.videos[categoryId]) {
-            const videoIndex = categoriesData.videos[categoryId]
-                .findIndex(video => video.id === videoId);
-            
-            if (videoIndex !== -1) {
-                categoriesData.videos[categoryId][videoIndex] = {
-                    ...categoriesData.videos[categoryId][videoIndex],
-                    ...newData
-                };
-                
-                // רענן את התצוגה אם זו הקטגוריה הפעילה
-                if (this.currentCategory === categoryId) {
-                    this.renderCategoryContent();
-                }
-            }
-        }
     }
 }
 

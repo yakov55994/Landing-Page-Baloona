@@ -1,6 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-const { getImagesByCategory, getAllImageUrlsPaginated } = require('./API_cloudLinary');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: 'dbbivwbbt', // שנה לפי הצורך
+  api_key: '238115521785214', // שנה לפי הצורך
+  api_secret: '9bRCAaiAyLL-tGdRGUdrdvgnqMc' // שנה לפי הצורך
+});
 
 const app = express();
 const PORT = 3001;
@@ -45,40 +51,15 @@ app.get('/api/images/:category', async (req, res) => {
 // API: קבל את כל התמונות בגלריה עם מספור משופר
 app.get('/api/gallery', async (req, res) => {
   try {
-    console.log('Loading full gallery with numbering...');
-    const images = await getAllImageUrlsPaginated();
-    
-    // עיבוד מתקדם עם מספור ומטא-דטה
-    const processedImages = images.map((img, index) => {
-      const category = extractCategoryFromPath(img.public_id || img.folder);
-      
-      return {
-        ...img,
-        imageNumber: index + 1,
-        category: category,
-        thumbnailUrl: generateOptimizedUrl(img.secure_url || img.url, 'thumbnail'),
-        mediumUrl: generateOptimizedUrl(img.secure_url || img.url, 'medium'),
-        fullsizeUrl: generateOptimizedUrl(img.secure_url || img.url, 'fullsize'),
-        uploadDate: img.created_at || new Date().toISOString(),
-        tags: img.tags || [category, 'gallery'],
-        metadata: {
-          width: img.width,
-          height: img.height,
-          format: img.format,
-          size: img.bytes,
-          publicId: img.public_id
-        }
-      };
+    const result = await cloudinary.api.resources({
+      resource_type: 'image',
+      type: 'upload',
+      prefix: 'balloon-gallery/', // שנה לפי הצורך
+      max_results: 100
     });
-    
-    console.log(`Returning ${processedImages.length} images with enhanced numbering`);
-    res.json(processedImages);
+    res.json(result.resources);
   } catch (err) {
-    console.error('Error fetching gallery:', err);
-    res.status(500).json({ 
-      error: 'שגיאה בשליפת גלריה', 
-      details: err.message 
-    });
+    res.status(500).json({ error: 'שגיאה בשליפת תמונות' });
   }
 });
 
