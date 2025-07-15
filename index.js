@@ -92,7 +92,7 @@ async function loadFromLocalServer(selectedCategory) {
         setTimeout(() => reject(new Error('Timeout')), 5000)
     );
     try {
-        const fetchPromise = fetch('http://localhost:3001/api/gallery', {
+        const fetchPromise = fetch('http://localhost:3001/api/balloon-gallery', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
