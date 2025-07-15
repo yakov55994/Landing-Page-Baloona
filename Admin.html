@@ -762,7 +762,7 @@
         }
 
         function loadConfig() {
-            const savedConfig = JSON.parse(localStorage.getItem('cloudinaryConfig')) || {};
+            const savedConfig =  {};
             cloudinaryConfig = { ...cloudinaryConfig, ...savedConfig };
             
             document.getElementById('cloudName').value = cloudinaryConfig.cloudName || '';

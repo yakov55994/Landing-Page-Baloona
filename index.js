@@ -8,7 +8,7 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 // console.log('Is localhost:', isLocalhost);
 
 // הגדרות מותאמות למובייל
-let cloudinaryConfig = JSON.parse(localStorage.getItem('cloudinaryConfig')) || {
+let cloudinaryConfig =  {
     cloudName: 'dbbivwbbt',
     apiKey: '549784497364423',
     uploadPreset: 'balloon_gallery',
