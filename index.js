@@ -4,8 +4,8 @@
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 // const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-console.log('Mobile detected:', isMobile);
-console.log('Is localhost:', isLocalhost);
+// console.log('Mobile detected:', isMobile);
+// console.log('Is localhost:', isLocalhost);
 
 // הגדרות מותאמות למובייל
 let cloudinaryConfig = JSON.parse(localStorage.getItem('cloudinaryConfig')) || {
