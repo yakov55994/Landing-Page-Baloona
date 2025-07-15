@@ -188,48 +188,48 @@ const categoriesData = {
     },
 
     // נתונים של תמונות ההמלצות
-    recommendations: [
-        {
-            id: 1,
-            imageSrc: '/images/Recommendations/1.png',
-            alt: 'המלצה 1',
-            title: 'המלצה 1',
-            description: '',
-            category: 'performances'
-        },
-        {
-            id: 2,
-            imageSrc: '/images/Recommendations/2.jpg',
-            alt: 'המלצה 2',
-            title: 'המלצה 2',
-            description: '',
-            category: 'studio'
-        },
-        {
-            id: 3,
-            imageSrc: '/images/Recommendations/3.jpg',
-            alt: 'המלצה 3',
-            title: 'המלצה 3',
-            description: '',
-            category: 'events'
-        },
-        {
-            id: 4,
-            imageSrc: '/images/Recommendations/4.jpg',
-            alt: 'המלצה 4',
-            title: 'המלצה 4',
-            description: '',
-            category: 'performances'
-        },
-        {
-            id: 5,
-            imageSrc: '/images/Recommendations/5.jpg',
-            alt: 'המלצה 5',
-            title: 'המלצה 5',
-            description: '',
-            category: 'studio'
-        }
-    ],
+    // recommendations: [
+    //     {
+    //         id: 1,
+    //         imageSrc: '/images/Recommendations/1.png',
+    //         alt: 'המלצה 1',
+    //         title: 'המלצה 1',
+    //         description: '',
+    //         category: 'performances'
+    //     },
+    //     {
+    //         id: 2,
+    //         imageSrc: '/images/Recommendations/2.jpg',
+    //         alt: 'המלצה 2',
+    //         title: 'המלצה 2',
+    //         description: '',
+    //         category: 'studio'
+    //     },
+    //     {
+    //         id: 3,
+    //         imageSrc: '/images/Recommendations/3.jpg',
+    //         alt: 'המלצה 3',
+    //         title: 'המלצה 3',
+    //         description: '',
+    //         category: 'events'
+    //     },
+    //     {
+    //         id: 4,
+    //         imageSrc: '/images/Recommendations/4.jpg',
+    //         alt: 'המלצה 4',
+    //         title: 'המלצה 4',
+    //         description: '',
+    //         category: 'performances'
+    //     },
+    //     {
+    //         id: 5,
+    //         imageSrc: '/images/Recommendations/5.jpg',
+    //         alt: 'המלצה 5',
+    //         title: 'המלצה 5',
+    //         description: '',
+    //         category: 'studio'
+    //     }
+    // ],
 
     // נתונים של הלהיטים - כעת תמונות
     hits: [

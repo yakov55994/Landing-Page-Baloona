@@ -4,7 +4,7 @@ const cloudinary = require('cloudinary').v2;
 cloudinary.config({
   cloud_name: 'dbbivwbbt',
   api_key: '549784497364423',
-  api_secret: '9bRCAaiAyLL-tGdRGUdrdvgnqMc'
+  api_secret: 'Pzn6bz27n3YIBbD2dbP8Uu8SGY8'
 });
 
 // קבלת כל התמונות עם מספור משופר
@@ -14,13 +14,13 @@ async function getAllImageUrlsPaginated() {
   let imageCounter = 1;
 
   console.log('🎈 Loading all images from Cloudinary with numbering...');
-
+  
   do {
     try {
-      const result = await cloudinary.api.resources({
-        resource_type: 'image',
-        type: 'upload',
-        max_results: 500,
+    const result = await cloudinary.api.resources({
+      resource_type: 'image',
+      type: 'upload',
+      max_results: 500,
         next_cursor: nextCursor,
         prefix: 'balloon-gallery/', // מסנן רק תמונות מהגלריה
         context: true, // כולל context data
@@ -42,7 +42,7 @@ async function getAllImageUrlsPaginated() {
             }));
 
       allResources = allResources.concat(numberedResources);
-      nextCursor = result.next_cursor;
+    nextCursor = result.next_cursor;
 
       console.log(`📸 Loaded batch: ${numberedResources.length} images (Total: ${allResources.length})`);
 
@@ -51,7 +51,7 @@ async function getAllImageUrlsPaginated() {
       break;
     }
   } while (nextCursor);
-
+  
   console.log(`✅ Total images loaded with numbering: ${allResources.length}`);
   return allResources;
 }

@@ -9,7 +9,7 @@ class CategoriesRenderer {
     init() {
         this.renderCategoryTabs();
         this.renderCategoryContent();
-        this.renderRecommendations();
+        // this.renderRecommendations();
         this.renderHits();
         this.bindEvents();
     }
@@ -60,17 +60,17 @@ class CategoriesRenderer {
     }
 
     // בניית ההמלצות
-    renderRecommendations() {
-        const recommendationsContainer = document.querySelector('#recommendations .modern-gallery');
-        if (!recommendationsContainer) return;
+    // renderRecommendations() {
+    //     const recommendationsContainer = document.querySelector('#recommendations .modern-gallery');
+    //     if (!recommendationsContainer) return;
 
-        const recommendations = CategoriesManager.getAllRecommendations();
-        const recommendationsHTML = recommendations.map(recommendation => 
-            CategoriesManager.buildRecommendationHTML(recommendation)
-        ).join('');
+    //     const recommendations = CategoriesManager.getAllRecommendations();
+    //     const recommendationsHTML = recommendations.map(recommendation => 
+    //         CategoriesManager.buildRecommendationHTML(recommendation)
+    //     ).join('');
 
-        recommendationsContainer.innerHTML = recommendationsHTML;
-    }
+    //     recommendationsContainer.innerHTML = recommendationsHTML;
+    // }
 
     // בניית הלהיטים
     renderHits() {

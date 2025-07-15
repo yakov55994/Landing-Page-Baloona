@@ -82,41 +82,8 @@ async function createGallery(selectedCategory = null) {
 // טעינת נתונים ידידותית למובייל
 async function loadGalleryDataMobileFriendly(selectedCategory) {
     console.log('Loading gallery data for mobile...');
-    
-    // תחילה - בדיקת localStorage
-    const savedData = JSON.parse(localStorage.getItem('galleryData')) || [];
-    
-    if (savedData.length > 0) {
-        console.log('Found saved data:', savedData.length, 'images');
-        galleryData = savedData;
-        return;
-    }
-
-    // אם אין נתונים שמורים - ננסה לטעון מהשרת מקומי
-    if (isLocalhost) {
-        try {
-            console.log('Trying to load from local server...');
-            await loadFromLocalServer(selectedCategory);
-            if (galleryData.length > 0) return;
-        } catch (error) {
-            console.warn('Local server not available:', error);
-        }
-    }
-
-    // אם גם זה לא עובד - ננסה מ-Cloudinary עם fallback
-    if (cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name') {
-        try {
-            console.log('Trying to load from Cloudinary...');
-            await loadFromCloudinaryMobile(selectedCategory);
-            if (galleryData.length > 0) return;
-        } catch (error) {
-            console.warn('Cloudinary loading failed:', error);
-        }
-    }
-
-    // אם כלום לא עובד - נטען נתוני דמו
-    console.log('Loading demo data as fallback');
-    loadDemoData();
+    // תמיד נטען מהשרת בלבד
+    await loadFromLocalServer(selectedCategory);
 }
 
 // טעינה מהשרת המקומי עם timeout - תמיכה מלאה במספור
@@ -124,7 +91,6 @@ async function loadFromLocalServer(selectedCategory) {
     const timeout = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Timeout')), 5000)
     );
-
     try {
         const fetchPromise = fetch('http://localhost:3001/api/gallery', {
             method: 'GET',
@@ -133,12 +99,9 @@ async function loadFromLocalServer(selectedCategory) {
                 'Cache-Control': 'no-cache'
             }
         });
-        
         const response = await Promise.race([fetchPromise, timeout]);
-        
         if (response.ok) {
             const images = await response.json();
-            // עיבוד התמונות עם מספור אוטומטי
             galleryData = images.map((img, index) => ({
                 id: img.public_id || `image_${index}_${Date.now()}`,
                 publicId: img.public_id,
@@ -148,12 +111,8 @@ async function loadFromLocalServer(selectedCategory) {
                 fullsize: generateOptimizedUrl(img.url || img.secure_url, 'large'),
                 category: extractCategoryFromPath(img.public_id || img.folder),
                 uploadDate: img.created_at || new Date().toISOString(),
-                imageNumber: index + 1 // הוספת מספר תמונה
+                imageNumber: index + 1
             }));
-            
-            if (galleryData.length > 0) {
-                localStorage.setItem('galleryData', JSON.stringify(galleryData));
-            }
         } else {
             galleryData = [];
         }
