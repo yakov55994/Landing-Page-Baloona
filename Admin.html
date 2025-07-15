@@ -202,10 +202,23 @@
             font-size: 0.9rem;
         }
 
+        .image-number {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
         .delete-btn {
             position: absolute;
             top: 10px;
-            right: 10px;
+            left: 10px;
             background: rgba(255, 107, 107, 0.9);
             color: white;
             border: none;
@@ -388,11 +401,11 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="newCategoryKey">מפתח קטגוריה (באנגלית)</label>
-                            <input type="text" id="newCategoryKey" placeholder="wedding-flowers">
+                            <input type="text" id="newCategoryKey" placeholder="balloon-flowers">
                         </div>
                         <div class="form-group">
                             <label for="newCategoryName">שם קטגוריה (בעברית)</label>
-                            <input type="text" id="newCategoryName" placeholder="פרחים לחתונה">
+                            <input type="text" id="newCategoryName" placeholder="פרחים מבלונים">
                         </div>
                     </div>
                     <button class="btn btn-success" onclick="addCategory()">➕ הוסף קטגוריה</button>
@@ -454,72 +467,351 @@
         // נתונים גלובליים
         let galleryData = [];
         let categories = {
-  'birthday-bouquets': 'זרים ליום הולדת',
-  'balloon-numbers': 'מספרים מבלונים',
-  'room-arrangements': 'סידורי חדרים',
-  'flowers-balloons': 'פרחים עם בלונים',
-  'photo-walls': 'קירות צילום',
-  'arches': 'קשתות',
-  'hot-air-balloon': 'כדור פורח',
-  'gender-reveal': 'גילוי מין',
-  'kids-balloons': 'בלונים לילדים',
-  'birth-of-child': 'הולדת הבן / בת',
-  'centerpiece': 'מרכזי שולחן'
-};
-let cloudinaryConfig = {
-    cloudName: 'dbbivwbbt',
-    apiKey: '549784497364423',
-   uploadPreset: 'balloon_gallery',
-    folder: 'balloon-gallery'
-};
-        // אתחול העמוד
-        // נטען את הגלריה מהשרת
+            '': 'בחר קטגוריה',
+            'room-arrangements': 'סידורי חדרים',
+            'balloon-numbers': 'מספרים מבלונים',
+            'arches': 'קשתות',
+            'photo-reviews': 'קירות צילום',
+            'flowers-balloons': 'פרחים מבלונים',
+            'kids-balloons': 'בלונים לילדים',
+            'gender-reveal': 'גילוי מין',
+            'balloon-bouquet': 'זר בלונים',
+            'centerpiece': 'שולחן מרכזי',
+            'birth-celebration': 'הולדת בן / בת'
+        };
+        
+        let cloudinaryConfig = {
+            cloudName: 'dbbivwbbt',
+            apiKey: '549784497364423',
+            uploadPreset: 'balloon_gallery',
+            folder: 'balloon-gallery'
+        };
+
+        // פונקציה מתוקנת לטעינת הגלריה עם fallback
         async function loadGalleryFromServer() {
+            console.log('🔄 Loading gallery data...');
+            showMessage('טוען נתוני גלריה...', 'success');
+            
             try {
+                // ניסיון ראשון - מהשרת המקומי
                 const response = await fetch('http://localhost:3001/api/gallery');
                 if (response.ok) {
                     const data = await response.json();
-                    // נבנה אובייקטים תואמים למבנה הקיים
-                    galleryData = data.map(img => ({
+                    console.log('✅ Loaded from local server:', data.length, 'images');
+                    
+                    galleryData = data.map((img, index) => ({
                         id: img.public_id || Date.now() + Math.random(),
                         publicId: img.public_id,
                         url: img.url || img.secure_url,
-                        thumbnail: (img.url || img.secure_url).replace('/upload/', '/upload/w_300,h_200,c_fill,q_auto,f_auto/'),
-                        fullsize: (img.url || img.secure_url).replace('/upload/', '/upload/w_1200,h_800,c_limit,q_auto,f_auto/'),
-                        title: img.public_id || 'תמונה',
-                        description: img.folder || '',
-                        category: img.folder ? img.folder.split('/').pop() : '',
-                        uploadDate: img.created_at || new Date().toISOString()
+                        thumbnail: generateOptimizedUrl(img.url || img.secure_url, 'thumbnail'),
+                        fullsize: generateOptimizedUrl(img.url || img.secure_url, 'fullsize'),
+                        title: img.context?.custom?.title || `תמונה מספר ${index + 1}`,
+                        category: extractCategoryFromPath(img.public_id || img.folder),
+                        uploadDate: img.created_at || new Date().toISOString(),
+                        imageNumber: index + 1
                     }));
-                } else {
-                    galleryData = [];
+                    
+                    // שמירה ב-localStorage כגיבוי
+                    localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                    localStorage.setItem('galleryDataTimestamp', Date.now().toString());
+                    updateConnectionStatus('connected');
+                    return;
                 }
-            } catch (e) {
-                galleryData = [];
+            } catch (error) {
+                console.warn('⚠️ Local server not available, trying Cloudinary...');
+            }
+
+            // ניסיון שני - ישירות מ-Cloudinary
+            try {
+                await loadFromCloudinaryDirect();
+                if (galleryData.length > 0) {
+                    console.log('✅ Loaded from Cloudinary:', galleryData.length, 'images');
+                    localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                    localStorage.setItem('galleryDataTimestamp', Date.now().toString());
+                    updateConnectionStatus('cloudinary');
+                    return;
+                }
+            } catch (error) {
+                console.warn('⚠️ Cloudinary not available, using localStorage...');
+            }
+
+            // ניסיון שלישי - מ-localStorage
+            const savedData = JSON.parse(localStorage.getItem('galleryData')) || [];
+            const timestamp = localStorage.getItem('galleryDataTimestamp');
+            
+            if (savedData.length > 0) {
+                console.log('📱 Using saved data:', savedData.length, 'images');
+                galleryData = savedData;
+                updateConnectionStatus('offline');
+                
+                // בדיקה אם הנתונים ישנים (יותר מ-24 שעות)
+                if (timestamp && (Date.now() - parseInt(timestamp)) > 24 * 60 * 60 * 1000) {
+                    console.log('⏰ Data is old, trying to refresh in background...');
+                    setTimeout(() => refreshDataInBackground(), 2000);
+                }
+                return;
+            }
+
+            // אם אין כלום - נתוני דמו
+            console.log('📝 No data found, loading demo data');
+            loadDemoDataForAdmin();
+            updateConnectionStatus('demo');
+        }
+
+        // טעינה ישירה מ-Cloudinary
+        async function loadFromCloudinaryDirect() {
+            if (!cloudinaryConfig.cloudName || cloudinaryConfig.cloudName === 'your-cloud-name') {
+                throw new Error('Cloudinary not configured');
+            }
+
+            // נשתמש ב-API הציבורי של Cloudinary
+            const searchUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/${cloudinaryConfig.folder}.json`;
+            
+            try {
+                const response = await fetch(searchUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.resources && data.resources.length > 0) {
+                        galleryData = data.resources.map((resource, index) => ({
+                            id: resource.public_id || `image_${index}_${Date.now()}`,
+                            publicId: resource.public_id,
+                            url: resource.secure_url || resource.url,
+                            thumbnail: generateOptimizedUrl(resource.secure_url || resource.url, 'thumbnail'),
+                            fullsize: generateOptimizedUrl(resource.secure_url || resource.url, 'fullsize'),
+                            title: `תמונה מספר ${index + 1}`,
+                            category: extractCategoryFromPath(resource.public_id),
+                            uploadDate: resource.created_at || new Date().toISOString(),
+                            imageNumber: index + 1
+                        }));
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading from Cloudinary:', error);
+            }
+            
+            throw new Error('Could not load from Cloudinary');
+        }
+
+        // רענון נתונים ברקע
+        async function refreshDataInBackground() {
+            try {
+                console.log('🔄 Refreshing data in background...');
+                const oldCount = galleryData.length;
+                
+                await loadFromCloudinaryDirect();
+                
+                if (galleryData.length > 0) {
+                    localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                    localStorage.setItem('galleryDataTimestamp', Date.now().toString());
+                    refreshGallery();
+                    updateStats();
+                    
+                    if (galleryData.length !== oldCount) {
+                        showMessage(`הנתונים עודכנו ברקע! נמצאו ${galleryData.length} תמונות`, 'success');
+                    }
+                }
+            } catch (error) {
+                console.warn('Background refresh failed:', error);
             }
         }
 
+        // נתוני דמו לאדמין
+        function loadDemoDataForAdmin() {
+            galleryData = [];
+            
+            console.log('📝 Demo data loaded for admin');
+        }
+
+        // עדכון מצב החיבור
+        function updateConnectionStatus(status) {
+            // זה יעבוד רק אם יש לנו את האינדיקטור
+            const statusElement = document.getElementById('connectionStatus');
+            const indicatorElement = document.getElementById('connectionIndicator');
+            
+            if (statusElement && indicatorElement) {
+                switch(status) {
+                    case 'connected':
+                        statusElement.textContent = 'מחובר לשרת ✓';
+                        indicatorElement.className = 'status-indicator connected';
+                        break;
+                    case 'cloudinary':
+                        statusElement.textContent = 'מחובר ל-Cloudinary ✓';
+                        indicatorElement.className = 'status-indicator connected';
+                        break;
+                    case 'offline':
+                        statusElement.textContent = 'לא מקוון (נתונים שמורים)';
+                        indicatorElement.className = 'status-indicator disconnected';
+                        break;
+                    case 'demo':
+                        statusElement.textContent = 'מצב דמו';
+                        indicatorElement.className = 'status-indicator checking';
+                        break;
+                }
+            }
+        }
+
+        // יצירת URLs מאופטמים
+        function generateOptimizedUrl(originalUrl, size) {
+            if (!originalUrl) return '';
+            
+            const transformations = {
+                thumbnail: 'w_300,h_200,c_fill,q_auto,f_auto',
+                medium: 'w_800,h_600,c_limit,q_auto,f_auto',
+                fullsize: 'w_1200,h_900,c_limit,q_auto,f_auto'
+            };
+            
+            if (originalUrl.includes('cloudinary.com')) {
+                return originalUrl.replace('/upload/', `/upload/${transformations[size]}/`);
+            }
+            
+            return originalUrl;
+        }
+
+        // פונקציה לחילוץ קטגוריה מהנתיב
+        function extractCategoryFromPath(path) {
+            if (!path) return 'balloon-bouquet';
+            
+            if (path.includes('balloon-gallery/')) {
+                const parts = path.split('balloon-gallery/')[1].split('/');
+                return parts[0] || 'balloon-bouquet';
+            }
+            
+            const knownCategories = Object.keys(categories);
+            const foundCategory = knownCategories.find(cat => path.includes(cat));
+            
+            return foundCategory || 'balloon-bouquet';
+        }
+
+        // אתחול העמוד - מתוקן
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🎈 Admin Panel Loading...');
+            
+            // טעינת הגדרות
             loadConfig();
             updateCategoriesList();
             updateCategorySelects();
+            
+            // טעינת נתוני הגלריה
             await loadGalleryFromServer();
+            
+            // עדכון התצוגה
             refreshGallery();
             updateStats();
+            
+            console.log('✅ Admin Panel Ready with', galleryData.length, 'images');
+            showMessage(`טעינה הושלמה - ${galleryData.length} תמונות`, 'success');
         });
 
-        // החלפת כרטיסיות
+        // רענון הגלריה - מתוקן עם בדיקות
+        function refreshGallery() {
+            console.log('🔄 Refreshing gallery display...');
+            
+            const container = document.getElementById('galleryGrid');
+            if (!container) {
+                console.error('Gallery container not found');
+                return;
+            }
+
+            const filter = document.getElementById('filterCategory')?.value || 'all';
+            
+            let filteredData = galleryData;
+            if (filter && filter !== 'all') {
+                filteredData = galleryData.filter(img => img.category === filter);
+            }
+            
+            // מיון לפי מספר תמונה
+            filteredData.sort((a, b) => (a.imageNumber || 0) - (b.imageNumber || 0));
+            
+            container.innerHTML = '';
+            
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <h3>אין תמונות להצגה</h3>
+                        <p>בחר קטגוריה אחרת או העלה תמונות חדשות</p>
+                        <button class="btn btn-primary" onclick="manualRefresh()" style="margin-top: 15px;">
+                            🔄 נסה לטעון שוב
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredData.forEach((image, index) => {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'gallery-item';
+                imageDiv.innerHTML = `
+                    <div class="image-number">${image.imageNumber || index + 1}</div>
+                    <img src="${image.thumbnail}" alt="${image.title}" loading="lazy" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkdGO16DXlDwvdGV4dD48L3N2Zz4K';">
+                    <button class="delete-btn" onclick="deleteImage('${image.id}')">&times;</button>
+                    <div class="gallery-item-info">
+                        <h4>${image.title}</h4>
+                        <p>${categories[image.category] || image.category}</p>
+                    </div>
+                `;
+                container.appendChild(imageDiv);
+            });
+            
+            console.log('✅ Gallery refreshed with', filteredData.length, 'images');
+        }
+
+        // הוספת תמונה לגלריה - מתוקן
+        async function addImageToGallery(imageInfo, category) {
+            console.log('➕ Adding new image to gallery:', imageInfo.public_id);
+            
+            const newImage = {
+                id: imageInfo.public_id || `image_${Date.now()}_${Math.random()}`,
+                publicId: imageInfo.public_id,
+                url: imageInfo.secure_url || imageInfo.url,
+                thumbnail: generateOptimizedUrl(imageInfo.secure_url, 'thumbnail'),
+                fullsize: generateOptimizedUrl(imageInfo.secure_url, 'fullsize'),
+                title: `תמונה מספר ${galleryData.length + 1}`,
+                    category: category,
+                uploadDate: new Date().toISOString(),
+                imageNumber: galleryData.length + 1
+            };
+            
+            // הוספה לנתונים המקומיים
+            galleryData.push(newImage);
+            
+            // שמירה ב-localStorage
+            localStorage.setItem('galleryData', JSON.stringify(galleryData));
+            localStorage.setItem('galleryDataTimestamp', Date.now().toString());
+            
+            // עדכון התצוגה
+            refreshGallery();
+            updateStats();
+            
+            showMessage('התמונה נוספה בהצלחה!', 'success');
+            console.log('✅ Image added successfully');
+        }
+
+        // פונקציה לרענון ידני של הנתונים
+        async function manualRefresh() {
+            showMessage('מרענן נתונים...', 'success');
+            
+            try {
+                await loadGalleryFromServer();
+                refreshGallery();
+                updateStats();
+                showMessage(`רענון הושלם - ${galleryData.length} תמונות`, 'success');
+            } catch (error) {
+                showMessage('שגיאה ברענון הנתונים', 'error');
+                console.error('Manual refresh error:', error);
+            }
+        }
+
+        // שאר הפונקציות נשארות זהות...
         function switchTab(tabName) {
-            // הסרת active מכל הכרטיסיות
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            // הוספת active לכרטיסייה הנוכחית
             event.target.classList.add('active');
             document.getElementById(tabName + 'Tab').classList.add('active');
         }
 
-        // שמירת הגדרות
         function saveConfig() {
             const config = {
                 cloudName: document.getElementById('cloudName').value,
@@ -528,24 +820,19 @@ let cloudinaryConfig = {
             };
             
             localStorage.setItem('cloudinaryConfig', JSON.stringify(config));
-            cloudinaryConfig = config;
+            cloudinaryConfig = { ...cloudinaryConfig, ...config };
             showMessage('ההגדרות נשמרו בהצלחה!', 'success');
         }
 
-        // טעינת הגדרות
         function loadConfig() {
-            if (cloudinaryConfig.cloudName) {
-                document.getElementById('cloudName').value = cloudinaryConfig.cloudName;
-            }
-            if (cloudinaryConfig.uploadPreset) {
-                document.getElementById('uploadPreset').value = cloudinaryConfig.uploadPreset;
-            }
-            if (cloudinaryConfig.apiKey) {
-                document.getElementById('apiKey').value = cloudinaryConfig.apiKey;
-            }
+            const savedConfig = JSON.parse(localStorage.getItem('cloudinaryConfig')) || {};
+            cloudinaryConfig = { ...cloudinaryConfig, ...savedConfig };
+            
+            document.getElementById('cloudName').value = cloudinaryConfig.cloudName || '';
+            document.getElementById('uploadPreset').value = cloudinaryConfig.uploadPreset || '';
+            document.getElementById('apiKey').value = cloudinaryConfig.apiKey || '';
         }
 
-        // הוספת קטגוריה
         function addCategory() {
             const key = document.getElementById('newCategoryKey').value.trim();
             const name = document.getElementById('newCategoryName').value.trim();
@@ -567,7 +854,6 @@ let cloudinaryConfig = {
             showMessage('הקטגוריה נוספה בהצלחה!', 'success');
         }
 
-        // עדכון רשימת קטגוריות
         function updateCategoriesList() {
             const container = document.getElementById('categoriesList');
             container.innerHTML = '';
@@ -583,7 +869,6 @@ let cloudinaryConfig = {
             });
         }
 
-        // מחיקת קטגוריה
         function deleteCategory(key) {
             if (confirm('אתה בטוח שברצונך למחוק את הקטגוריה הזו?')) {
                 delete categories[key];
@@ -594,50 +879,40 @@ let cloudinaryConfig = {
             }
         }
 
-        // קטגוריות קבועות בעברית בלבד
-        const fixedCategories = [
-            { key: 'balloon-numbers', name: 'מספרים מבלונים' },
-            { key: 'room-arrangements', name: 'סידורי חדרים' },
-            { key: 'balloon-flowers', name: 'פרחים עם בלונים' },
-            { key: 'photo-reviews', name: 'קירות צילום' },
-            { key: 'Arches', name: 'קשתות' },
-            { key: 'balloon', name: 'כדור פורח' },
-            { key: 'gender-reveal', name: 'גילוי מין' },
-            { key: 'balloons-for-kids', name: 'בלונים לילדים' },
-            { key: 'birth-of-child', name: 'הולדת הבן / בת' },
-            { key: 'centerpiece', name: 'שולחן מרכזי' }
-        ];
-
-        // עדכון רשימות הקטגוריות
         function updateCategorySelects() {
             const selects = ['uploadCategory', 'filterCategory'];
             selects.forEach(selectId => {
                 const select = document.getElementById(selectId);
+                if (!select) return;
+                
                 const currentValue = select.value;
                 select.innerHTML = '';
+                
                 if (selectId === 'filterCategory') {
                     const allOption = document.createElement('option');
                     allOption.value = 'all';
                     allOption.textContent = 'הכל';
                     select.appendChild(allOption);
                 }
+                
                 if (selectId === 'uploadCategory') {
                     const defaultOption = document.createElement('option');
                     defaultOption.value = '';
                     defaultOption.textContent = '-- בחר קטגוריה --';
                     select.appendChild(defaultOption);
                 }
-                fixedCategories.forEach(cat => {
+                
+                Object.entries(categories).forEach(([key, name]) => {
                     const option = document.createElement('option');
-                    option.value = cat.key;
-                    option.textContent = cat.name;
+                    option.value = key;
+                    option.textContent = name;
                     select.appendChild(option);
                 });
+                
                 select.value = currentValue;
             });
         }
 
-        // פתיחת widget העלאה
         function openUploadWidget() {
             const category = document.getElementById('uploadCategory').value;
             
@@ -651,81 +926,75 @@ let cloudinaryConfig = {
                 return;
             }
             
+            console.log('📤 Opening upload widget for category:', category);
+            
             const widget = cloudinary.createUploadWidget({
                 cloudName: cloudinaryConfig.cloudName,
                 uploadPreset: cloudinaryConfig.uploadPreset,
                 sources: ['local', 'url', 'camera'],
                 multiple: true,
                 maxFiles: 20,
-                folder: `gallery/${category}`,
-                tags: [category, 'gallery'],
+                folder: `${cloudinaryConfig.folder}/${category}`,
+                tags: [category, 'gallery', 'balloon-gallery'],
                 transformation: [
                     {width: 1200, height: 800, crop: 'limit', quality: 'auto', fetch_format: 'auto'}
-                ]
+                ],
+                context: {
+                    custom: {
+                        category: category,
+                        gallery: 'balloon-gallery'
+                    }
+                }
             }, (error, result) => {
                 if (!error && result && result.event === "success") {
+                    console.log('✅ Upload successful:', result.info.public_id);
                     addImageToGallery(result.info, category);
+                }
+                
+                if (result && result.event === "close") {
+                    console.log('📤 Upload widget closed');
+                    setTimeout(() => {
+                        refreshGallery();
+                    }, 1000);
+                }
+                
+                if (error) {
+                    console.error('❌ Upload error:', error);
+                    showMessage('שגיאה בהעלאת התמונה', 'error');
                 }
             });
             
             widget.open();
         }
 
-        // הוספת תמונה לגלריה
-        async function addImageToGallery(imageInfo, category) {
-            // אחרי העלאה, פשוט נרענן מהשרת
-            await loadGalleryFromServer();
-            refreshGallery();
-            updateStats();
-            showMessage('התמונה נוספה בהצלחה!', 'success');
-        }
-
-        // רענון הגלריה
-        function refreshGallery() {
-            const container = document.getElementById('galleryGrid');
-            const filter = document.getElementById('filterCategory').value;
-            
-            let filteredData = galleryData;
-            if (filter && filter !== 'all') {
-                filteredData = galleryData.filter(img => img.category === filter);
-            }
-            
-            container.innerHTML = '';
-            
-            filteredData.forEach(image => {
-                const imageDiv = document.createElement('div');
-                imageDiv.className = 'gallery-item';
-                imageDiv.innerHTML = `
-                    <img src="${image.thumbnail}" alt="${image.title}" loading="lazy">
-                    <button class="delete-btn" onclick="deleteImage(${image.id})">&times;</button>
-                    <div class="gallery-item-info">
-                        <h4>${image.title}</h4>
-                        <p>${categories[image.category] || image.category}</p>
-                    </div>
-                `;
-                container.appendChild(imageDiv);
-            });
-        }
-
-        // מחיקת תמונה
         function deleteImage(imageId) {
             if (confirm('אתה בטוח שברצונך למחוק את התמונה הזו?')) {
                 galleryData = galleryData.filter(img => img.id !== imageId);
+                
+                // עדכון מספרי התמונות
+                galleryData.forEach((img, index) => {
+                    img.imageNumber = index + 1;
+                    if (!img.title.includes('מספר')) {
+                        img.title = `תמונה מספר ${index + 1}`;
+                    }
+                });
+                
                 localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                localStorage.setItem('galleryDataTimestamp', Date.now().toString());
                 refreshGallery();
                 updateStats();
                 showMessage('התמונה נמחקה בהצלחה!', 'success');
             }
         }
 
-        // פילטור גלריה
         function filterGallery() {
             refreshGallery();
         }
 
-        // עדכון סטטיסטיקות
         function updateStats() {
             const statsContainer = document.getElementById('statsGrid');
+            if (!statsContainer) return;
+            
             const totalImages = galleryData.length;
             const categoriesCount = Object.keys(categories).length;
             
@@ -748,13 +1017,18 @@ let cloudinaryConfig = {
                     <div class="stat-label">קטגוריות פעילות</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${Math.round(totalImages / categoriesCount * 10) / 10}</div>
+                    <div class="stat-number">${Math.round(totalImages / Math.max(categoriesCount, 1) * 10) / 10}</div>
                     <div class="stat-label">ממוצע לקטגוריה</div>
                 </div>
             `;
+            
+            // עדכון מונה התמונות באינדיקטור (אם קיים)
+            const imageCount = document.getElementById('imageCount');
+            if (imageCount) {
+                imageCount.textContent = totalImages.toString();
+            }
         }
 
-        // יצירת קוד לאתר
         function generateGalleryCode() {
             if (galleryData.length === 0) {
                 showMessage('אין תמונות בגלריה', 'error');
@@ -762,7 +1036,7 @@ let cloudinaryConfig = {
             }
             
             const code = `
-// קוד שנוצר אוטומטית מדף הניהול
+// קוד שנוצר אוטומטית מדף הניהול עם מספור תמונות
 const galleryData = ${JSON.stringify(galleryData, null, 4)};
 
 const categories = ${JSON.stringify(categories, null, 4)};
@@ -787,6 +1061,7 @@ function createGallery() {
 
     const galleryItems = galleryData.map(item => \`
         <div class="gallery-item" data-category="\${item.category}">
+            <div class="image-number">\${item.imageNumber || 1}</div>
             <img src="\${item.thumbnail}" 
                  data-fullsize="\${item.fullsize}"
                  alt="\${item.title}" 
@@ -806,6 +1081,7 @@ function createGallery() {
                 <div class="lightbox-info">
                     <h3 class="lightbox-title"></h3>
                     <p class="lightbox-desc"></p>
+                    <div class="lightbox-image-number"></div>
                 </div>
                 <button class="lightbox-prev">&#10094;</button>
                 <button class="lightbox-next">&#10095;</button>
@@ -834,39 +1110,37 @@ function createGallery() {
     }
 }`;
             
-            // הורדת הקוד כקובץ
             const blob = new Blob([code], { type: 'text/javascript' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'gallery-code.js';
+            a.download = 'gallery-code-with-numbers.js';
             a.click();
             URL.revokeObjectURL(url);
             
-            showMessage('קוד הגלריה נוצר והורד בהצלחה!', 'success');
+            showMessage('קוד הגלריה עם מספור נוצר והורד בהצלחה!', 'success');
         }
 
-        // ייצוא נתונים
         function exportGalleryData() {
             const data = {
                 galleryData,
                 categories,
                 cloudinaryConfig,
-                exportDate: new Date().toISOString()
+                exportDate: new Date().toISOString(),
+                version: '2.0'
             };
             
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `gallery-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `gallery-backup-with-numbers-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
             
-            showMessage('נתוני הגלריה יוצאו בהצלחה!', 'success');
+            showMessage('נתוני הגלריה יוצאו בהצלחה עם מספור!', 'success');
         }
 
-        // ייבוא נתונים
         function importGalleryData() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -880,23 +1154,27 @@ function createGallery() {
                     try {
                         const data = JSON.parse(e.target.result);
                         
-                        if (data.galleryData) galleryData = data.galleryData;
+                        if (data.galleryData) {
+                            galleryData = data.galleryData.map((img, index) => ({
+                                ...img,
+                                imageNumber: img.imageNumber || index + 1
+                            }));
+                        }
                         if (data.categories) categories = data.categories;
                         if (data.cloudinaryConfig) cloudinaryConfig = data.cloudinaryConfig;
                         
-                        // שמירה ב-localStorage
                         localStorage.setItem('galleryData', JSON.stringify(galleryData));
                         localStorage.setItem('categories', JSON.stringify(categories));
                         localStorage.setItem('cloudinaryConfig', JSON.stringify(cloudinaryConfig));
+                        localStorage.setItem('galleryDataTimestamp', Date.now().toString());
                         
-                        // עדכון הממשק
                         loadConfig();
                         updateCategoriesList();
                         updateCategorySelects();
                         refreshGallery();
                         updateStats();
                         
-                        showMessage('הנתונים יובאו בהצלחה!', 'success');
+                        showMessage('הנתונים יובאו בהצלחה עם מספור!', 'success');
                     } catch (error) {
                         showMessage('שגיאה בקריאת הקובץ', 'error');
                     }
@@ -906,37 +1184,35 @@ function createGallery() {
             input.click();
         }
 
-        // יצירת גיבוי אוטומטי
         function generateBackup() {
             const backup = {
                 galleryData,
                 categories,
                 cloudinaryConfig,
                 backupDate: new Date().toISOString(),
-                version: '1.0'
+                version: '2.0',
+                features: ['image-numbering', 'enhanced-saving', 'auto-sync']
             };
             
-            // שמירה ב-localStorage גם
             localStorage.setItem('galleryBackup', JSON.stringify(backup));
             
-            // הורדה כקובץ
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `gallery-full-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            a.download = `gallery-full-backup-v2-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
             a.click();
             URL.revokeObjectURL(url);
             
-            showMessage('גיבוי מלא נוצר בהצלחה!', 'success');
+            showMessage('גיבוי מלא עם מספור נוצר בהצלחה!', 'success');
         }
 
-        // הצגת הודעות
         function showMessage(message, type) {
             const successEl = document.getElementById('successMessage');
             const errorEl = document.getElementById('errorMessage');
             
-            // הסתרת הודעות קודמות
+            if (!successEl || !errorEl) return;
+            
             successEl.style.display = 'none';
             errorEl.style.display = 'none';
             
@@ -951,9 +1227,7 @@ function createGallery() {
             }
         }
 
-        // הוספת פונקציות מתקדמות
-        
-        // חיפוש תמונות
+        // פונקציות מתקדמות נוספות
         function searchImages() {
             const searchTerm = prompt('הקלד מילת חיפוש:');
             if (!searchTerm) return;
@@ -961,7 +1235,8 @@ function createGallery() {
             const results = galleryData.filter(img => 
                 img.title.includes(searchTerm) || 
                 img.description.includes(searchTerm) ||
-                categories[img.category].includes(searchTerm)
+                categories[img.category].includes(searchTerm) ||
+                img.imageNumber.toString().includes(searchTerm)
             );
             
             if (results.length === 0) {
@@ -969,16 +1244,18 @@ function createGallery() {
                 return;
             }
             
-            // הצגת תוצאות החיפוש
             const container = document.getElementById('galleryGrid');
+            if (!container) return;
+            
             container.innerHTML = '';
             
-            results.forEach(image => {
+            results.forEach((image, index) => {
                 const imageDiv = document.createElement('div');
                 imageDiv.className = 'gallery-item';
                 imageDiv.innerHTML = `
+                    <div class="image-number">${image.imageNumber}</div>
                     <img src="${image.thumbnail}" alt="${image.title}" loading="lazy">
-                    <button class="delete-btn" onclick="deleteImage(${image.id})">&times;</button>
+                    <button class="delete-btn" onclick="deleteImage('${image.id}')">&times;</button>
                     <div class="gallery-item-info">
                         <h4>${image.title}</h4>
                         <p>${categories[image.category] || image.category}</p>
@@ -990,54 +1267,46 @@ function createGallery() {
             showMessage(`נמצאו ${results.length} תוצאות`, 'success');
         }
 
-        // עריכת פרטי תמונה
         function editImage(imageId) {
             const image = galleryData.find(img => img.id === imageId);
             if (!image) return;
             
             const newTitle = prompt('כותרת חדשה:', image.title);
             const newDescription = prompt('תיאור חדש:', image.description);
+            const newNumber = prompt('מספר תמונה חדש:', image.imageNumber);
             
             if (newTitle !== null) image.title = newTitle;
             if (newDescription !== null) image.description = newDescription;
+            if (newNumber !== null && !isNaN(newNumber)) {
+                image.imageNumber = parseInt(newNumber);
+                galleryData.sort((a, b) => (a.imageNumber || 0) - (b.imageNumber || 0));
+            }
             
             localStorage.setItem('galleryData', JSON.stringify(galleryData));
+            localStorage.setItem('galleryDataTimestamp', Date.now().toString());
             refreshGallery();
             showMessage('פרטי התמונה עודכנו!', 'success');
         }
 
-        // העברת תמונה לקטגוריה אחרת
-        function moveImageToCategory(imageId) {
-            const image = galleryData.find(img => img.id === imageId);
-            if (!image) return;
-            
-            let options = '';
-            Object.entries(categories).forEach(([key, name]) => {
-                options += `<option value="${key}" ${key === image.category ? 'selected' : ''}>${name}</option>`;
-            });
-            
-            const newCategory = prompt('בחר קטגוריה חדשה:', image.category);
-            if (newCategory && categories[newCategory]) {
-                image.category = newCategory;
+        function reorderImages() {
+            if (confirm('זה יסדר מחדש את כל מספרי התמונות בסדר עולה. האם להמשיך?')) {
+                galleryData.forEach((img, index) => {
+                    img.imageNumber = index + 1;
+                    img.title = img.title.replace(/מספר \d+/, `מספר ${index + 1}`);
+                });
+                
                 localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                localStorage.setItem('galleryDataTimestamp', Date.now().toString());
                 refreshGallery();
                 updateStats();
-                showMessage('התמונה הועברה לקטגוריה החדשה!', 'success');
+                showMessage('מספרי התמונות סודרו מחדש!', 'success');
             }
         }
 
-        // ניקוי מטמון
         function clearCache() {
             if (confirm('זה ימחק את כל הנתונים השמורים. האם אתה בטוח?')) {
                 localStorage.clear();
                 galleryData = [];
-                categories = {
-                    'bar-mitzvah': 'בר/בת מצווה',
-                    'birthdays': 'ימי הולדת',
-                    'weddings': 'חתונות',
-                    'proposals': 'הצעות נישואין'
-                };
-                cloudinaryConfig = {};
                 
                 loadConfig();
                 updateCategoriesList();
@@ -1049,7 +1318,6 @@ function createGallery() {
             }
         }
 
-        // בדיקת חיבור לCloudinary
         async function testCloudinaryConnection() {
             if (!cloudinaryConfig.cloudName) {
                 showMessage('יש להזין Cloud Name קודם', 'error');
@@ -1061,15 +1329,17 @@ function createGallery() {
                 
                 if (response.ok) {
                     showMessage('החיבור לCloudinary תקין!', 'success');
+                    updateConnectionStatus('cloudinary');
                 } else {
                     showMessage('שגיאה בחיבור לCloudinary', 'error');
+                    updateConnectionStatus('offline');
                 }
             } catch (error) {
                 showMessage('שגיאה בחיבור לCloudinary', 'error');
+                updateConnectionStatus('offline');
             }
         }
 
-        // אופטימיזציה אוטומטית של תמונות
         function optimizeImages() {
             if (galleryData.length === 0) {
                 showMessage('אין תמונות לאופטימיזציה', 'error');
@@ -1077,7 +1347,6 @@ function createGallery() {
             }
             
             galleryData.forEach(image => {
-                // יצירת URLs מאופטמים
                 const baseUrl = image.url.split('/upload/')[0] + '/upload/';
                 const publicId = image.publicId || image.url.split('/').pop().split('.')[0];
                 
@@ -1087,14 +1356,14 @@ function createGallery() {
             });
             
             localStorage.setItem('galleryData', JSON.stringify(galleryData));
+            localStorage.setItem('galleryDataTimestamp', Date.now().toString());
             refreshGallery();
             showMessage('התמונות אופטמו בהצלחה!', 'success');
         }
 
-        // יצירת קוד CSS מותאם
         function generateCustomCSS() {
             const css = `
-/* CSS מותאם לגלריה - נוצר אוטומטית */
+/* CSS מותאם לגלריה עם מספור תמונות - נוצר אוטומטית */
 .gallery-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1131,6 +1400,22 @@ function createGallery() {
     transform: scale(1.05);
 }
 
+/* מספר תמונה */
+.image-number {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+}
+
 .gallery-info {
     padding: 15px;
     height: 30%;
@@ -1148,39 +1433,6 @@ function createGallery() {
     line-height: 1.4;
 }
 
-.filter-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 30px 0;
-    flex-wrap: wrap;
-}
-
-.filter-btn {
-    padding: 12px 24px;
-    border: 2px solid #ddd;
-    background: white;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    font-size: 14px;
-    color: #333;
-    font-weight: 500;
-}
-
-.filter-btn:hover {
-    border-color: #4ecdc4;
-    background: #4ecdc4;
-    color: white;
-}
-
-.filter-btn.active {
-    background: #4ecdc4;
-    color: white;
-    border-color: #4ecdc4;
-}
-
 /* רספונסיביות */
 @media (max-width: 768px) {
     .gallery-container {
@@ -1191,16 +1443,6 @@ function createGallery() {
     
     .gallery-item {
         height: 280px;
-    }
-    
-    .filter-buttons {
-        gap: 10px;
-        margin: 20px 0;
-    }
-    
-    .filter-btn {
-        padding: 10px 18px;
-        font-size: 13px;
     }
 }
 
@@ -1215,46 +1457,71 @@ function createGallery() {
         height: 200px;
     }
     
-    .gallery-info {
-        padding: 10px;
+    .image-number {
+        font-size: 10px;
+        padding: 2px 6px;
     }
-    
-    .gallery-info h3 {
-        font-size: 1em;
-    }
-    
-    .gallery-info p {
-        font-size: 0.8em;
-    }
-}
-            `;
+}`;
             
             const blob = new Blob([css], { type: 'text/css' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'gallery-styles.css';
+            a.download = 'gallery-styles-with-numbers.css';
             a.click();
             URL.revokeObjectURL(url);
             
-            showMessage('קובץ CSS הורד בהצלחה!', 'success');
+            showMessage('קובץ CSS עם מספור הורד בהצלחה!', 'success');
         }
 
         // הוספת כפתורים נוספים לממשק
         document.addEventListener('DOMContentLoaded', function() {
-            // הוספת כפתורים מתקדמים לטאב הגלריה
-            const galleryTab = document.getElementById('galleryTab');
-            const advancedButtons = document.createElement('div');
-            advancedButtons.style.marginTop = '20px';
-            advancedButtons.innerHTML = `
-                <button class="btn btn-secondary" onclick="searchImages()">🔍 חיפוש</button>
-                <button class="btn btn-secondary" onclick="optimizeImages()">⚡ אופטימיזציה</button>
-                <button class="btn btn-secondary" onclick="generateCustomCSS()">🎨 יצירת CSS</button>
-                <button class="btn btn-secondary" onclick="testCloudinaryConnection()">🔗 בדיקת חיבור</button>
-                <button class="btn btn-danger" onclick="clearCache()">🗑️ ניקוי מטמון</button>
-            `;
-            galleryTab.querySelector('.config-section').appendChild(advancedButtons);
+            setTimeout(() => {
+                const galleryTab = document.getElementById('galleryTab');
+                if (galleryTab) {
+                    const configSection = galleryTab.querySelector('.config-section');
+                    if (configSection) {
+                        const advancedButtons = document.createElement('div');
+                        advancedButtons.style.marginTop = '20px';
+                        advancedButtons.innerHTML = `
+                            <button class="btn btn-secondary" onclick="searchImages()">🔍 חיפוש</button>
+                            <button class="btn btn-secondary" onclick="reorderImages()">🔢 סידור מחדש</button>
+                            <button class="btn btn-secondary" onclick="optimizeImages()">⚡ אופטימיזציה</button>
+                            <button class="btn btn-secondary" onclick="generateCustomCSS()">🎨 יצירת CSS</button>
+                            <button class="btn btn-secondary" onclick="testCloudinaryConnection()">🔗 בדיקת חיבור</button>
+                            <button class="btn btn-danger" onclick="clearCache()">🗑️ ניקוי מטמון</button>
+                        `;
+                        configSection.appendChild(advancedButtons);
+                    }
+                }
+            }, 1500);
         });
+
+        // הוספת כפתור רענון ידני
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const header = document.querySelector('.admin-header');
+                if (header) {
+                    const refreshButton = document.createElement('button');
+                    refreshButton.className = 'btn btn-success';
+                    refreshButton.style.cssText = 'position: absolute; top: 20px; right: 20px; padding: 8px 16px;';
+                    refreshButton.innerHTML = '🔄 רענן נתונים';
+                    refreshButton.onclick = manualRefresh;
+                    header.style.position = 'relative';
+                    header.appendChild(refreshButton);
+                }
+            }, 1000);
+        });
+
+        // רענון אוטומטי כל 5 דקות
+        setInterval(async () => {
+            console.log('⏰ Auto-refresh check...');
+            try {
+                await refreshDataInBackground();
+            } catch (error) {
+                console.warn('Auto-refresh failed:', error);
+            }
+        }, 5 * 60 * 1000);
 
         // שמירה אוטומטית כל 30 שניות
         setInterval(() => {
@@ -1262,6 +1529,7 @@ function createGallery() {
                 localStorage.setItem('galleryData', JSON.stringify(galleryData));
                 localStorage.setItem('categories', JSON.stringify(categories));
                 localStorage.setItem('cloudinaryConfig', JSON.stringify(cloudinaryConfig));
+                localStorage.setItem('galleryDataTimestamp', Date.now().toString());
             }
         }, 30000);
 
@@ -1272,6 +1540,20 @@ function createGallery() {
                 e.returnValue = '';
             }
         });
+
+        // פונקציה לסנכרון עם השרת
+        async function syncWithServer() {
+            try {
+                await loadGalleryFromServer();
+                refreshGallery();
+                updateStats();
+                showMessage('סנכרון עם השרת הושלם!', 'success');
+            } catch (error) {
+                showMessage('שגיאה בסנכרון עם השרת', 'error');
+            }
+        }
+
+        console.log('🎈 Advanced Gallery Admin v2.1 with Persistent Data loaded!');
     </script>
 </body>
 </html>

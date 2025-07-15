@@ -2,12 +2,7 @@
 
 const categoriesData = {
     // רשימת הקטגוריות והכותרות שלהן
-    categories: [
-        { id: 'bar-mitzvah', name: 'בר מצווה' },
-        { id: 'brit-milah', name: 'ברית מילה' },
-        { id: 'birthday', name: 'יום הולדת' },
-        { id: 'Marriage-proposal', name: 'הצעת נישואין' }
-    ],
+    categories: [  ],
 
     // נתונים של התמונות לכל קטגוריה
     images: {
@@ -322,8 +317,6 @@ const CategoriesManager = {
                     <img src="${recommendation.imageSrc}" alt="${recommendation.alt}">
                     <div class="gallery-overlay">
                         <div class="gallery-info">
-                            <h3>${recommendation.title}</h3>
-                            ${recommendation.description ? `<p>${recommendation.description}</p>` : ''}
                         </div>
                         <div class="gallery-icon">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -344,8 +337,6 @@ const CategoriesManager = {
                     <img src="${hit.imageSrc}" alt="${hit.alt}">
                     <div class="gallery-overlay">
                         <div class="gallery-info">
-                            <h3>${hit.title}</h3>
-                            ${hit.description ? `<p>${hit.description}</p>` : ''}
                         </div>
                         <div class="gallery-icon">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
