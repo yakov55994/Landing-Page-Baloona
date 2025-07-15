@@ -302,8 +302,6 @@ const CategoriesManager = {
                     <img src="${image.imageSrc}" alt="${image.alt}">
                     <div class="gallery-overlay">
                         <div class="gallery-info">
-                            <h3>${image.title}</h3>
-                            ${image.description ? `<p>${image.description}</p>` : ''}
                         </div>
                         <div class="gallery-icon">
                             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

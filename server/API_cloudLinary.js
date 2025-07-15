@@ -41,9 +41,9 @@ async function saveUrlsToFile() {
 saveUrlsToFile();
 
 async function getAllImageUrlsPaginated() {
-  let allUrls = [];
+  let allResources = [];
   let nextCursor = null;
-  
+
   do {
     const result = await cloudinary.api.resources({
       resource_type: 'image',
@@ -51,14 +51,14 @@ async function getAllImageUrlsPaginated() {
       max_results: 500,
       next_cursor: nextCursor
     });
-    
-    const urls = result.resources.map(resource => resource.secure_url);
-    allUrls = allUrls.concat(urls);
-    
+
+    // הוסף את כל האובייקטים (ולא רק את ה-URL)
+    allResources = allResources.concat(result.resources);
+
     nextCursor = result.next_cursor;
   } while (nextCursor);
-  
-  return allUrls;
+
+  return allResources;
 }
 
 // קבל תמונות לפי קטגוריה
@@ -83,4 +83,4 @@ async function getImagesByCategory(category) {
   }
 }
 
-module.exports = { getImagesByCategory };
+module.exports = { getImagesByCategory, getAllImageUrlsPaginated };

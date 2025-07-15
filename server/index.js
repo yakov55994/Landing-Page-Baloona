@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { getImagesByCategory } = require('./API_cloudLinary');
+const { getImagesByCategory, getAllImageUrlsPaginated } = require('./API_cloudLinary');
 
 const app = express();
 const PORT = 3001;
@@ -20,6 +20,16 @@ app.get('/api/images/:category', async (req, res) => {
     res.json(images);
   } catch (err) {
     res.status(500).json({ error: 'שגיאה בשליפת תמונות' });
+  }
+});
+
+// API: קבל את כל התמונות בגלריה
+app.get('/api/gallery', async (req, res) => {
+  try {
+    const images = await getAllImageUrlsPaginated();
+    res.json(images);
+  } catch (err) {
+    res.status(500).json({ error: 'שגיאה בשליפת גלריה' });
   }
 });
 

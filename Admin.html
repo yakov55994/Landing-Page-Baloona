@@ -452,26 +452,58 @@
 
     <script>
         // נתונים גלובליים
-        let galleryData = JSON.parse(localStorage.getItem('galleryData')) || [];
-        let categories = JSON.parse(localStorage.getItem('categories')) || {
-            'balloon-numbers': 'מספרים מבלונים / Balloon Numbers',
-            'room-arrangements': 'סידורי חדרים / Room Arrangements',
-            'balloon-flowers': 'פרחים עם בלונים / Flowers with Balloons',
-            'photo-reviews': 'קירות צילום / Photo Reviews',
-            'Arches': 'קשתות / Arches',
-            'balloon': 'כדור פורח / Balloon',
-            'gender-reveal': 'גילוי מין / Gender Reveal',
-            'balloons-for-kids': 'בלונים לילדים / Balloons for Kids',
-            'birth-of-child': 'הולדת הבן / בת / Birth of a Son / Daughter',
-            'centerpiece': 'שולחן מרכזי / Centerpiece'
-        };
-        let cloudinaryConfig = JSON.parse(localStorage.getItem('cloudinaryConfig')) || {};
-
+        let galleryData = [];
+        let categories = {
+  'birthday-bouquets': 'זרים ליום הולדת',
+  'balloon-numbers': 'מספרים מבלונים',
+  'room-arrangements': 'סידורי חדרים',
+  'flowers-balloons': 'פרחים עם בלונים',
+  'photo-walls': 'קירות צילום',
+  'arches': 'קשתות',
+  'hot-air-balloon': 'כדור פורח',
+  'gender-reveal': 'גילוי מין',
+  'kids-balloons': 'בלונים לילדים',
+  'birth-of-child': 'הולדת הבן / בת',
+  'centerpiece': 'מרכזי שולחן'
+};
+let cloudinaryConfig = {
+    cloudName: 'dbbivwbbt',
+    apiKey: '549784497364423',
+   uploadPreset: 'balloon_gallery',
+    folder: 'balloon-gallery'
+};
         // אתחול העמוד
-        document.addEventListener('DOMContentLoaded', function() {
+        // נטען את הגלריה מהשרת
+        async function loadGalleryFromServer() {
+            try {
+                const response = await fetch('http://localhost:3001/api/gallery');
+                if (response.ok) {
+                    const data = await response.json();
+                    // נבנה אובייקטים תואמים למבנה הקיים
+                    galleryData = data.map(img => ({
+                        id: img.public_id || Date.now() + Math.random(),
+                        publicId: img.public_id,
+                        url: img.url || img.secure_url,
+                        thumbnail: (img.url || img.secure_url).replace('/upload/', '/upload/w_300,h_200,c_fill,q_auto,f_auto/'),
+                        fullsize: (img.url || img.secure_url).replace('/upload/', '/upload/w_1200,h_800,c_limit,q_auto,f_auto/'),
+                        title: img.public_id || 'תמונה',
+                        description: img.folder || '',
+                        category: img.folder ? img.folder.split('/').pop() : '',
+                        uploadDate: img.created_at || new Date().toISOString()
+                    }));
+                } else {
+                    galleryData = [];
+                }
+            } catch (e) {
+                galleryData = [];
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
             loadConfig();
             updateCategoriesList();
             updateCategorySelects();
+            await loadGalleryFromServer();
             refreshGallery();
             updateStats();
         });
@@ -640,22 +672,9 @@
         }
 
         // הוספת תמונה לגלריה
-        function addImageToGallery(imageInfo, category) {
-            const newImage = {
-                id: Date.now(),
-                publicId: imageInfo.public_id,
-                url: imageInfo.secure_url,
-                thumbnail: imageInfo.secure_url.replace('/upload/', '/upload/w_300,h_200,c_fill,q_auto,f_auto/'),
-                fullsize: imageInfo.secure_url.replace('/upload/', '/upload/w_1200,h_800,c_limit,q_auto,f_auto/'),
-                title: `${categories[category]} ${galleryData.filter(img => img.category === category).length + 1}`,
-                description: `תמונה יפה של ${categories[category]}`,
-                category: category,
-                uploadDate: new Date().toISOString()
-            };
-            
-            galleryData.push(newImage);
-            localStorage.setItem('galleryData', JSON.stringify(galleryData));
-            
+        async function addImageToGallery(imageInfo, category) {
+            // אחרי העלאה, פשוט נרענן מהשרת
+            await loadGalleryFromServer();
             refreshGallery();
             updateStats();
             showMessage('התמונה נוספה בהצלחה!', 'success');
