@@ -91,7 +91,7 @@ async function loadFromLocalServer(selectedCategory) {
         setTimeout(() => reject(new Error('Timeout')), 5000)
     );
     try {
-        const fetchPromise = fetch('https://baloona-server.onrender.com/api/gallery', {
+        const fetchPromise = fetch('https://baloona-api.yakov1002444.workers.dev/api/gallery', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -109,8 +109,8 @@ async function loadFromLocalServer(selectedCategory) {
                 image: generateOptimizedUrl(img.url || img.secure_url, 'medium'),
                 fullsize: generateOptimizedUrl(img.url || img.secure_url, 'large'),
                 category: extractCategoryFromPath(img.public_id || img.folder),
-                uploadDate: img.created_at || new Date().toISOString(),
-                imageNumber: index + 1
+                uploadDate: img.created_at || new Date().toISOString()
+                // imageNumber יתווסף רק לאחר הסינון לקטגוריה
             }));
         } else {
             galleryData = [];
@@ -194,8 +194,8 @@ function processCloudinaryResponse(data) {
             image: generateOptimizedUrl(resource.secure_url || resource.url, 'medium'),
             fullsize: generateOptimizedUrl(resource.secure_url || resource.url, 'large'),
             category: category,
-            uploadDate: resource.created_at || new Date().toISOString(),
-            imageNumber: index + 1 // הוספת מספר תמונה
+            uploadDate: resource.created_at || new Date().toISOString()
+            // imageNumber יתווסף רק לאחר הסינון לקטגוריה
         };
     });
 }
@@ -233,8 +233,13 @@ function buildGalleryUI(gallerySection, selectedCategory) {
     // סינון תמונות לקטגוריה הנבחרת
     filteredImages = galleryData.filter(item => item.category === selectedCategory);
 
-    // מיון לפי מספר תמונה
-    filteredImages.sort((a, b) => (a.imageNumber || 0) - (b.imageNumber || 0));
+    // מיון לפי תאריך (או כל שדה אחר שתרצה)
+    filteredImages.sort((a, b) => (a.uploadDate || 0) - (b.uploadDate || 0));
+
+    // מספור מחדש לכל קטגוריה
+    filteredImages.forEach((item, idx) => {
+        item.imageNumber = idx + 1;
+    });
 
     console.log('Filtered images:', filteredImages.length);
 

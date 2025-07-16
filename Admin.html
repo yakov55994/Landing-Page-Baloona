@@ -514,7 +514,7 @@ let cloudinaryConfig = {
             try {
                 updateConnectionStatus('checking');
                 
-                const response = await fetch('https://baloona-server.onrender.com/api/gallery');
+                const response = await fetch('https://baloona-api.yakov1002444.workers.dev/api/gallery');
                 
                 if (response.ok) {
                     const images = await response.json();

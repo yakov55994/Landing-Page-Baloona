@@ -18,7 +18,7 @@ class CategoriesRenderer {
     async loadGalleryDataFromAPI() {
         const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3001'
-            : 'https://baloona-backend.onrender.com'; // שנה ל-URL שלך
+            : 'https://baloona-api.yakov1002444.workers.dev/'; // שנה ל-URL שלך
         try {
             const response = await fetch(`${API_BASE_URL}/api/balloon-gallery`, {
                 method: 'GET',
