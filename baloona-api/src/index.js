@@ -10,6 +10,26 @@
 
 export default {
 	async fetch(request, env, ctx) {
-		return new Response('Hello World!');
+		// טיפול בבקשות OPTIONS (preflight)
+		if (request.method === 'OPTIONS') {
+			return new Response(null, {
+				headers: {
+					'Access-Control-Allow-Origin': 'https://baloona.pages.dev',
+					'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+					'Access-Control-Allow-Headers': 'Content-Type',
+				},
+			});
+		}
+
+		// תשובה רגילה עם CORS
+		const response = new Response('Hello World!', {
+			headers: {
+				'Content-Type': 'text/plain',
+				'Access-Control-Allow-Origin': 'https://baloona.pages.dev',
+				'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type',
+			},
+		});
+		return response;
 	},
 };
