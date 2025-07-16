@@ -639,90 +639,72 @@ function addMobileOptimizedCSS() {
     const style = document.createElement('style');
     style.id = 'mobile-gallery-styles';
     style.textContent = `
-        /* סגנונות מותאמים למובייל עם מספור תמונות */
-        .filter-section {
-            margin-bottom: 30px;
+        .filter-section, .filter-dropdown {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 30px auto;
+            position: relative;
             text-align: center;
-            position: relative;
-        }
-
-        /* Dropdown Menu למקום הכפתורים */
-        .filter-dropdown {
-            position: relative;
-            display: inline-block;
-            margin: 20px 0;
         }
         .dropdown-toggle {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             padding: 15px 25px;
             border: 2px solid #b38a49;
-            background: white;
+            background: linear-gradient(135deg, #181818 0%, #232323 100%);
             border-radius: 30px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-family: inherit;
             font-size: 16px;
-            color: #b38a49;
+            color: #ffd700;
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+            box-shadow: 0 4px 15px rgba(201, 160, 92, 0.15);
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            min-width: 250px;
+            min-width: 200px;
         }
-
-        .dropdown-toggle:hover {
-            background: #b38a49;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
-        }
-
-        .dropdown-toggle.active {
-            background: #b38a49;
-            color: white;
+        .dropdown-toggle:hover, .dropdown-toggle.active {
+            background: linear-gradient(135deg, #b38a49 0%, #c9a05c 100%);
+            color: #181818;
             border-radius: 30px 30px 15px 15px;
         }
-
         .dropdown-arrow {
             font-size: 12px;
             transition: transform 0.3s ease;
         }
-
         .dropdown-toggle.active .dropdown-arrow {
             transform: rotate(180deg);
         }
-
         .dropdown-menu {
             position: absolute;
             top: 100%;
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
-            min-width: 300px;
-            max-width: 90vw;
-            background: white;
+            max-width: 400px;
+            background: linear-gradient(135deg, #232323 0%, #181818 100%);
             border: 2px solid #b38a49;
             border-top: none;
             border-radius: 0 0 20px 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 25px rgba(201,160,92,0.10);
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
-            transform: translateX(-50%) translateY(-10px);
             transition: all 0.3s ease;
             max-height: 400px;
             overflow-y: auto;
+            margin: 0;
         }
-
         .dropdown-menu.active {
             opacity: 1;
             visibility: visible;
-            transform: translateX(-50%) translateY(0);
         }
-
         .dropdown-item {
             display: block;
             width: 100%;
@@ -734,29 +716,20 @@ function addMobileOptimizedCSS() {
             transition: all 0.3s ease;
             font-family: inherit;
             font-size: 14px;
-            color: #333;
+            color: #ffd700;
             font-weight: 500;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #b38a49;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
-
         .dropdown-item:last-child {
             border-bottom: none;
             border-radius: 0 0 18px 18px;
         }
-
-        .dropdown-item:hover {
-            background: #f8f8f8;
-            color: #4CAF50;
+        .dropdown-item:hover, .dropdown-item.active {
+            background: #b38a49;
+            color: #181818;
         }
-
-        .dropdown-item.active {
-            background: #4CAF50;
-            color: white;
-        }
-
-        /* Overlay לסגירת ה-dropdown */
         .dropdown-overlay {
             position: fixed;
             top: 0;
@@ -766,23 +739,18 @@ function addMobileOptimizedCSS() {
             z-index: 999;
             display: none;
         }
-
         .dropdown-overlay.active {
             display: block;
         }
-
         .gallery-counter {
             text-align: center;
             margin: 15px 0;
             font-size: 14px;
-            color: #666;
+            color: #ffd700;
         }
-
         .gallery-counter strong {
-            color: #4CAF50;
+            color: #ffd700;
         }
-
-        /* רשת גלריה מותאמת למחשב ומובייל */
         .gallery-container {
             display: grid;
             gap: 15px;
@@ -791,8 +759,6 @@ function addMobileOptimizedCSS() {
             margin: 0 auto;
             justify-content: center;
         }
-
-        /* מחשב - 5 תמונות בשורה */
         @media (min-width: 1024px) {
             .gallery-container {
                 grid-template-columns: repeat(5, 1fr);
@@ -800,8 +766,6 @@ function addMobileOptimizedCSS() {
                 max-width: 1000px;
             }
         }
-
-        /* טאבלט - 4 תמונות בשורה */
         @media (min-width: 768px) and (max-width: 1023px) {
             .gallery-container {
                 grid-template-columns: repeat(4, 1fr);
@@ -809,408 +773,31 @@ function addMobileOptimizedCSS() {
                 max-width: 800px;
             }
         }
-
-        /* מובייל - 3 תמונות בשורה */
         @media (min-width: 481px) and (max-width: 767px) {
             .gallery-container {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 15px;
             }
         }
-
-        /* מובייל קטן - 2 תמונות בשורה */
         @media (max-width: 480px) {
             .gallery-container {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
                 padding: 0 10px;
             }
-            
             .dropdown-toggle {
                 font-size: 14px;
                 padding: 12px 20px;
-                min-width: 200px;
+                min-width: 120px;
             }
-            
             .dropdown-menu {
-                min-width: 250px;
+                min-width: 0;
+                max-width: 98vw;
             }
-            
             .dropdown-item {
                 padding: 10px 15px;
                 font-size: 13px;
             }
-        }
-
-        .gallery-item {
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            background: white;
-            aspect-ratio: 1;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .gallery-item:active {
-            transform: scale(0.98);
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        /* מספר תמונה */
-        .image-number {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(221, 16, 16, 0.7);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            z-index: 10;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(5px);
-        }
-
-        .gallery-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 15px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .gallery-item:hover .gallery-overlay {
-            opacity: 1;
-        }
-
-        .gallery-info h3 {
-            margin: 0 0 4px 0;
-            color: white;
-            font-size: 0.9em;
-            font-weight: 600;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            line-height: 1.2;
-        }
-
-        .gallery-info p {
-            margin: 0;
-            color: rgba(255,255,255,0.9);
-            font-size: 0.75em;
-            line-height: 1.3;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        /* לייטבוקס מותאם למובייל */
-        .lightbox-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            touch-action: manipulation;
-        }
-
-        .lightbox-modal.active {
-            display: flex !important;
-        }
-
-        .lightbox-content {
-            position: relative;
-            width: 95%;
-            max-width: 95%;
-            max-height: 95%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .lightbox-image {
-            width: 100%;
-            max-height: 70vh;
-            object-fit: contain;
-            border-radius: 8px;
-            background: #000;
-        }
-
-        .lightbox-info {
-            color: white;
-            padding: 15px;
-            text-align: center;
-            background: rgba(0,0,0,0.8);
-            border-radius: 0 0 8px 8px;
-            margin-top: auto;
-        }
-
-        .lightbox-title {
-            font-size: 1.2em;
-            margin-bottom: 8px;
-            color: #4CAF50;
-        }
-
-        .lightbox-desc {
-            margin-bottom: 8px;
-            line-height: 1.4;
-            font-size: 0.9em;
-        }
-
-        .lightbox-category {
-            background: rgba(76,175,80,0.8);
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            display: inline-block;
-            margin-bottom: 8px;
-        }
-
-        .lightbox-image-number {
-            background: rgba(255, 255, 255, 0.61);
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 0.85em;
-            display: inline-block;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .close-lightbox {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: white;
-            background: rgba(0,0,0,0.6);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 24px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            z-index: 10;
-        }
-
-        .close-lightbox:active {
-            background: rgba(76,175,80,0.8);
-            transform: scale(0.95);
-        }
-
-        .lightbox-prev, .lightbox-next {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0,0,0,0.6);
-            color: white;
-            border: none;
-            font-size: 20px;
-            padding: 12px 8px;
-            cursor: pointer;
-            border-radius: 4px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            z-index: 10;
-        }
-
-        .lightbox-prev:active, .lightbox-next:active {
-            background: rgba(76,175,80,0.8);
-            transform: translateY(-50%) scale(0.95);
-        }
-
-        .lightbox-prev {
-            left: 10px;
-        }
-
-        .lightbox-next {
-            right: 10px;
-        }
-
-        .lightbox-counter {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            background: rgba(0,0,0,0.6);
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            z-index: 10;
-        }
-
-        /* מצבי טעינה ושגיאה */
-        .loading-state, .error-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-        }
-
-        .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #4CAF50;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .retry-btn {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .retry-btn:active {
-            background: #45a049;
-            transform: scale(0.98);
-        }
-
-        .no-images {
-            text-align: center;
-            color: #999;
-            font-style: italic;
-            padding: 40px 20px;
-        }
-
-        .no-results {
-            color: #999;
-            font-style: italic;
-        }
-
-        /* רספונסיביות מתקדמת */
-        @media (max-width: 360px) {
-            .gallery-container {
-                gap: 10px;
-                padding: 0 8px;
-            }
-            
-            .dropdown-toggle {
-                font-size: 13px;
-                padding: 10px 15px;
-                min-width: 180px;
-            }
-
-            .image-number {
-                font-size: 10px;
-                padding: 2px 6px;
-                top: 4px;
-                right: 4px;
-            }
-        }
-
-        /* תמיכה במכשירים עם notch */
-        @supports (padding: max(0px)) {
-            .lightbox-modal {
-                padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-            }
-        }
-
-        /* אופטימיזציה לביצועים */
-        .gallery-item img {
-            will-change: transform;
-        }
-
-        .lightbox-modal {
-            will-change: opacity, visibility;
-        }
-
-        /* מניעת בחירת טקסט במובייל */
-        .gallery-item,
-        .dropdown-toggle,
-        .dropdown-item,
-        .lightbox-modal {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        /* שיפור נגישות */
-        .dropdown-toggle:focus,
-        .dropdown-item:focus,
-        .close-lightbox:focus,
-        .lightbox-prev:focus,
-        .lightbox-next:focus,
-        .retry-btn:focus {
-            outline: 2px solid #4CAF50;
-            outline-offset: 2px;
-        }
-
-        /* אנימציות מוקטנות למובייל */
-        @media (prefers-reduced-motion: reduce) {
-            .gallery-item,
-            .dropdown-toggle,
-            .dropdown-menu,
-            .lightbox-content {
-                transition: none;
-            }
-            
-            .loading-spinner {
-                animation: none;
-            }
-        }
-
-        /* סקרול חלק לתפריט הנגלל */
-        .dropdown-menu {
-            scrollbar-width: thin;
-            scrollbar-color: #4CAF50 #f0f0f0;
-        }
-
-        .dropdown-menu::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .dropdown-menu::-webkit-scrollbar-track {
-            background: #f0f0f0;
-        }
-
-        .dropdown-menu::-webkit-scrollbar-thumb {
-            background: #4CAF50;
-            border-radius: 3px;
         }
     `;
     document.head.appendChild(style);
