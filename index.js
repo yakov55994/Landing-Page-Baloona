@@ -19,7 +19,7 @@ const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
 // קטגוריות עם fallback
 let categories = JSON.parse(localStorage.getItem('categories')) || {
-  "": "בחר קטגוריה",
+    '': 'בחר קטגורייה',
   "room-arrangements": "סידורי חדרים",
   "balloon-numbers": "מספרים מבלונים", 
   "arches": "קשתות",
@@ -28,7 +28,7 @@ let categories = JSON.parse(localStorage.getItem('categories')) || {
   "kids-balloons": "בלונים לילדים",
   "gender-reveal": "גילוי מין",
   "balloon-bouquet": "זר בלונים",
-  "centerpiece": "שולחן מרכזי",
+  "centerpiece": "מרכזי שולחן",
   "birth-celebration": "הולדת בן / בת"
 };
 
@@ -91,7 +91,7 @@ async function loadFromLocalServer(selectedCategory) {
         setTimeout(() => reject(new Error('Timeout')), 5000)
     );
     try {
-        const fetchPromise = fetch('https://baloona-api.yakov1002444.workers.dev/api/gallery', {
+        const fetchPromise = fetch('https://baloona-server.onrender.com/api/gallery', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

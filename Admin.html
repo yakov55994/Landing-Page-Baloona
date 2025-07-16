@@ -490,6 +490,7 @@
         // נתונים גלובליים
         let galleryData = [];
         let categories = {
+            '': 'בחר קטגורייה',
             'room-arrangements': 'סידורי חדרים',
             'balloon-numbers': 'מספרים מבלונים',
             'arches': 'קשתות',
@@ -498,7 +499,7 @@
             'kids-balloons': 'בלונים לילדים',
             'gender-reveal': 'גילוי מין',
             'balloon-bouquet': 'זר בלונים',
-            'centerpiece': 'שולחן מרכזי',
+            'centerpiece': 'מרכזי שולחן',
             'birth-celebration': 'הולדת בן / בת'
         };
         
@@ -514,7 +515,7 @@ let cloudinaryConfig = {
             try {
                 updateConnectionStatus('checking');
                 
-                const response = await fetch('https://baloona-api.yakov1002444.workers.dev/api/gallery');
+                const response = await fetch('https://baloona-server.onrender.com/api/gallery');
                 
                 if (response.ok) {
                     const images = await response.json();

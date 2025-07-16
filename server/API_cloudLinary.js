@@ -313,7 +313,7 @@ function getCategoryName(categoryKey) {
     'kids-balloons': 'בלונים לילדים',
     'gender-reveal': 'גילוי מין',
     'balloon-bouquet': 'זר בלונים',
-    'centerpiece': 'שולחן מרכזי',
+    'centerpiece': 'מרכזי שולחן',
     'birth-celebration': 'הולדת בן / בת'
   };
   

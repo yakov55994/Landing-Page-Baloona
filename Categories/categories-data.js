@@ -3,13 +3,15 @@
 const categoriesData = {
     // רשימת הקטגוריות והכותרות שלהן
     categories: [
+{id: '', name: 'בחר קטגורייה'},
+
   { id: 'balloon-bouquet', name: 'זר בלונים' },
   { id: 'arches', name: 'קשתות' },
   { id: 'photo-reviews', name: 'קירות צילום' },
   { id: 'flowers-balloons', name: 'פרחים מבלונים' },
   { id: 'kids-balloons', name: 'בלונים לילדים' },
   { id: 'gender-reveal', name: 'גילוי מין' },
-  { id: 'centerpiece', name: 'שולחן מרכזי' },
+  { id: 'centerpiece', name: 'מרכזי שולחן' },
   { id: 'birth-celebration', name: 'הולדת בן / בת' }
 ],
 
