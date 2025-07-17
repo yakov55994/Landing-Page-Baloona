@@ -2699,17 +2699,17 @@ body {
 /* התאמות רספונסיביות לגלריה */
 @media (max-width: 768px) {
     .modern-gallery {
-        grid-template-columns: repeat(3, 1fr) !important;
+        grid-template-columns: repeat(3, 1fr) ;
         gap: 15px !important;
-        padding: 0 15px !important;
+        padding: 0 20px ;
     }
 }
 
 @media (max-width: 480px) {
     .modern-gallery {
-        grid-template-columns: 4fr ;
-        gap: 12px !important;
-        padding: 0 10px !important;
+        grid-template-columns: repeat(3, 1fr) !important; /* 3 במובייל רגיל */
+        gap: 10px !important;
+        padding: 0 8px !important;
     }
 }
 
