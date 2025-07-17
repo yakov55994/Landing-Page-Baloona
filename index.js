@@ -18,16 +18,17 @@ let cloudinaryConfig =  {
 const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
 
 // קטגוריות עם fallback
-let categories = JSON.parse(localStorage.getItem('categories')) || {
+let categories =  {
     '': 'בחר קטגורייה',
+    "arches": "קשתות",
   "room-arrangements": "סידורי חדרים",
+  "balloon": "כדור פורח",
   "balloon-numbers": "מספרים מבלונים", 
-  "arches": "קשתות",
   "photo-reviews": "קירות צילום",
   "flowers-balloons": "פרחים מבלונים",
   "kids-balloons": "בלונים לילדים",
   "gender-reveal": "גילוי מין",
-  "balloon-bouquet": "זר בלונים",
+  "balloon-bouquet": "בלונים ליום הולדת",
   "centerpiece": "מרכזי שולחן",
   "birth-celebration": "הולדת בן / בת"
 };
@@ -263,31 +264,46 @@ function buildGalleryUI(gallerySection, selectedCategory) {
     const selectedCategoryName = categories[selectedCategory] || categories[categoryKeys[0]];
     const selectedIcon = getCategoryIcon(selectedCategory);
 
-    // יצירת פריטי גלריה עם lazy loading ומספור + אירוע לחיצה
-    const galleryItems = filteredImages.map((item, index) => `
-        <div class="gallery-item" 
-             data-category="${item.category}"
-             data-index="${index}"
-             onclick="openLightbox(${index})" 
-             style="cursor: pointer;">
-            <div class="image-number">${item.imageNumber || index + 1}</div>
-            <img src="${item.thumbnail || item.url}" 
-                 alt="${item.title }" 
-                 loading="lazy"
-                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkNGO16DXlDwvdGV4dD48L3N2Zz4K';">
-            <div class="gallery-overlay">
-                <div class="gallery-info">
+    // יצירת תוכן הגלריה
+    let galleryContent = '';
+    
+    if (filteredImages.length > 0) {
+        // יצירת פריטי גלריה עם lazy loading ומספור + אירוע לחיצה
+        const galleryItems = filteredImages.map((item, index) => `
+            <div class="gallery-item" 
+                 data-category="${item.category}"
+                 data-index="${index}"
+                 onclick="openLightbox(${index})" 
+                 style="cursor: pointer;">
+                <div class="image-number">${item.imageNumber || index + 1}</div>
+                <img src="${item.thumbnail || item.url}" 
+                     alt="${item.title }" 
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkNGO16DXlDwvdGV4dD48L3N2Zz4K';">
+                <div class="gallery-overlay">
+                    <div class="gallery-info">
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+        
+        galleryContent = `<div class="modern-gallery">${galleryItems}</div>`;
+    } else {
+        // אם אין תמונות - הצגת הודעה מעוצבת
+        galleryContent = `
+            <div class="empty-category-message">
+                <div class="empty-icon">📷</div>
+                <h3>אין תמונות בקטגוריה זו כרגע</h3>
+            </div>
+        `;
+    }
 
     // מונה תמונות
     const imageCounter = `
         <div class="gallery-counter">
             ${filteredImages.length > 0 
                 ? `נמצאו <strong>${filteredImages.length}</strong> תמונות ב${categories[selectedCategory]}`
-                : `<span class="no-results">לא נמצאו תמונות בקטגוריה זו</span>`
+                : `<span class="no-results">לא נמצאו תמונות בקטגוריה ${categories[selectedCategory]}</span>`
             }
         </div>
     `;
@@ -317,17 +333,68 @@ function buildGalleryUI(gallerySection, selectedCategory) {
             ${imageCounter}
         </div>
         <div class="gallery-container" id="galleryContainer">
-            ${galleryItems || '<p class="no-images">אין תמונות להצגה</p>'}
+            ${galleryContent}
         </div>
     `);
 
     // יצירת לייטבוקס מותאם למובייל עם תמיכה במספור
-    createLightboxModal(filteredImages.length);
+    if (filteredImages.length > 0) {
+        createLightboxModal(filteredImages.length);
+    }
 
     // אתחול הדרופדאון
     initDropdownEvents();
 
     console.log('UI built successfully');
+}
+
+// פונקציה לבדיקת קטגוריות ריקות ועדכון הדרופדאון
+function updateDropdownWithEmptyCategories() {
+    const categoryKeys = Object.keys(categories).filter(key => key !== "");
+    
+    categoryKeys.forEach(category => {
+        const categoryImages = galleryData.filter(item => item.category === category);
+        const dropdownItem = document.querySelector(`[data-filter="${category}"]`);
+        
+        if (dropdownItem) {
+            const categoryName = categories[category];
+            const categoryIcon = getCategoryIcon(category);
+            
+            if (categoryImages.length === 0) {
+                // סימון קטגוריה ריקה
+                dropdownItem.classList.add('empty-category');
+                dropdownItem.innerHTML = `
+                    ${categoryIcon} ${categoryName} 
+                    <span class="empty-indicator">(ריק)</span>
+                `;
+            } else {
+                // הסרת סימון ריק
+                dropdownItem.classList.remove('empty-category');
+                dropdownItem.innerHTML = `${categoryIcon} ${categoryName}`;
+            }
+        }
+    });
+}
+
+// פונקציה לבחירת קטגוריה עם טיפול בקטגוריות ריקות
+function selectCategory(category) {
+    console.log('Selecting category:', category);
+    
+    // עדכון הדרופדאון
+    updateDropdownWithEmptyCategories();
+    
+    // בניית הUI
+    const gallerySection = document.getElementById('gallery');
+    if (gallerySection) {
+        buildGalleryUI(gallerySection, category);
+    }
+    
+    // סגירת הדרופדאון
+    const dropdownMenu = document.getElementById('filterMenu');
+    const dropdownOverlay = document.getElementById('dropdownOverlay');
+    
+    if (dropdownMenu) dropdownMenu.classList.remove('show');
+    if (dropdownOverlay) dropdownOverlay.style.display = 'none';
 }
 // פונקציה נפרדת ליצירת הלייטבוקס
 function createLightboxModal(totalImages) {
@@ -972,3 +1039,4 @@ if (typeof module !== 'undefined' && module.exports) {
 
 console.log('🎈 Mobile-optimized Gallery System with Dropdown and Image Numbers loaded!');
 console.log('Available APIs:', Object.keys(window.mobileGalleryAPI || {}));
+

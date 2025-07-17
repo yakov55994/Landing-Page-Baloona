@@ -227,7 +227,7 @@ function getCategoryName(categoryKey) {
     'flowers-balloons': 'פרחים מבלונים',
     'kids-balloons': 'בלונים לילדים',
     'gender-reveal': 'גילוי מין',
-    'balloon-bouquet': 'זר בלונים',
+    'balloon-bouquet': 'בלונים ליום הולדת',
     'centerpiece': ' מרכזי שולחן',
     'birth-celebration': 'הולדת בן / בת'
   };
@@ -293,7 +293,7 @@ app.get('/api/categories', (req, res) => {
     'flowers-balloons': 'פרחים מבלונים',
     'kids-balloons': 'בלונים לילדים',
     'gender-reveal': 'גילוי מין',
-    'balloon-bouquet': 'זר בלונים',
+    'balloon-bouquet': 'בלונים ליום הולדת',
     'centerpiece': 'מרכזי שולחן',
     'birth-celebration': 'הולדת בן / בת'
   };

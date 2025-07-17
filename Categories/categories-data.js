@@ -5,7 +5,7 @@ const categoriesData = {
     categories: [
 {id: '', name: 'בחר קטגורייה'},
 
-  { id: 'balloon-bouquet', name: 'זר בלונים' },
+  { id: 'balloon-bouquet', name: 'בלונים ליום הולדת' },
   { id: 'arches', name: 'קשתות' },
   { id: 'photo-reviews', name: 'קירות צילום' },
   { id: 'flowers-balloons', name: 'פרחים מבלונים' },
