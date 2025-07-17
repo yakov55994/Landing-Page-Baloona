@@ -780,116 +780,212 @@ body {
 }
 
 /* גלריה מודרנית */
-.modern-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
-    margin-top: 30px;
+
+
+/* החלף את כל הקוד של .modern-gallery בזה */
+/* החלף את כל הCSS הזה במקום הקיים */
+
+/* גלריה בסיסית */
+div.modern-gallery,
+.gallery-container .modern-gallery,
+#galleryContainer .modern-gallery {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 15px !important;
+    margin-top: 30px !important;
+    padding: 0 20px !important;
+    width: 100% !important;
 }
 
-.gallery-item {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    position: relative;
-    aspect-ratio: 1/1;
-    transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+/* פריטי הגלריה - כלל יחיד וחזק */
+.modern-gallery .gallery-item {
+    width: 100% !important;
+    aspect-ratio: 1/1 !important;
+    position: relative !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
 }
 
-.gallery-item-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+/* הובר לפריטי גלריה - כלל יחיד */
+.modern-gallery .gallery-item:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 25px rgba(201, 160, 92, 0.3) !important;
+}
+
+/* תמונות */
+.modern-gallery .gallery-item img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.5s ease !important;
+}
+
+.modern-gallery .gallery-item:hover img {
+    transform: scale(1.05) !important;
+}
+
+/* מספור תמונות */
+.modern-gallery .gallery-item .image-number {
+    position: absolute !important;
+    top: 6px !important;
+    right: 6px !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    padding: 3px 7px !important;
+    border-radius: 10px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    z-index: 10 !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(5px) !important;
+    transition: all 0.3s ease !important;
+}
+
+.modern-gallery .gallery-item:hover .image-number {
+    background: rgba(201, 160, 92, 0.9) !important;
+    transform: scale(1.1) !important;
+    color: #000 !important;
+}
+
+/* אוברליי */
+.modern-gallery .gallery-item .gallery-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 50%) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+    padding: 15px !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+}
+
+.modern-gallery .gallery-item:hover .gallery-overlay {
+    opacity: 1 !important;
+}
+
+/* מידע על התמונה */
+.modern-gallery .gallery-item .gallery-info {
+    color: white !important;
+    transform: translateY(10px) !important;
+    transition: transform 0.3s ease !important;
+}
+
+.modern-gallery .gallery-item:hover .gallery-info {
+    transform: translateY(0) !important;
+}
+
+.modern-gallery .gallery-item .gallery-info h3 {
+    color: var(--gold-bronze) !important;
+    font-size: 1rem !important;
+    margin-bottom: 5px !important;
+    font-weight: 500 !important;
+}
+
+.modern-gallery .gallery-item .gallery-info p {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 0.85rem !important;
+    line-height: 1.3 !important;
+}
+
+/* התאמות רספונסיביות - תוקנו */
+@media (max-width: 1200px) {
+    div.modern-gallery,
+    .gallery-container .modern-gallery,
+    #galleryContainer .modern-gallery {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 18px !important;
+        padding: 0 18px !important;
+    }
+}
+
+/* טאבלט - 3 עמודות */
+@media (max-width: 768px) {
+    div.modern-gallery,
+    .gallery-container .modern-gallery,
+    #galleryContainer .modern-gallery {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 15px !important;
+        padding: 0 15px !important;
+    }
+    
+    .modern-gallery .gallery-item .image-number {
+        font-size: 10px !important;
+        padding: 2px 6px !important;
+        top: 4px !important;
+        right: 4px !important;
+    }
+}
+
+/* מובייל - 3 עמודות (יותר גדולות) */
+@media (max-width: 600px) {
+    div.modern-gallery,
+    .gallery-container .modern-gallery,
+    #galleryContainer .modern-gallery {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 12px !important;
+        padding: 0 12px !important;
+    }
+    
+    .modern-gallery .gallery-item .image-number {
+        font-size: 9px !important;
+        padding: 2px 5px !important;
+        top: 3px !important;
+        right: 3px !important;
+    }
+}
+
+/* מובייל קטן - 2 עמודות */
+@media (max-width: 375px) {
+    div.modern-gallery,
+    .gallery-container .modern-gallery,
+    #galleryContainer .modern-gallery {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        padding: 0 10px !important;
+    }
+}
+
+/* מיכל הגלריה */
+.gallery-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+}
+
+/* ביטול כללים ישנים שיכולים להפריע */
+.gallery-item:hover {
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .gallery-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transform: none !important;
 }
 
-.gallery-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0) 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 20px;
-    opacity: 0;
-    transition: all 0.4s ease;
+.gallery-item .gallery-overlay {
+    opacity: 0 !important;
 }
 
-.gallery-info {
-    transform: translateY(20px);
-    transition: transform 0.4s ease;
+.gallery-item .gallery-info {
+    transform: none !important;
 }
 
-.gallery-info h3 {
-    color: var(--gold-bronze);
-    font-size: 1.2rem;
-    font-weight: 500;
-    margin-bottom: 5px;
+.gallery-item .gallery-icon {
+    opacity: 0 !important;
 }
 
-.gallery-info p {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.85rem;
+/* וידוא שהכל עובד */
+.modern-gallery * {
+    box-sizing: border-box !important;
 }
-
-.gallery-icon {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 35px;
-    height: 35px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid var(--gold-bronze);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 0.4s ease;
-}
-
-.gallery-icon svg {
-    width: 16px;
-    height: 16px;
-    stroke: var(--gold-bronze);
-    stroke-width: 1.5;
-    fill: none;
-}
-
-/* אפקט מעבר - הובר */
-.gallery-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(201, 160, 92, 0.2);
-}
-
-.gallery-item:hover img {
-    transform: scale(1.1);
-}
-
-.gallery-item:hover .gallery-overlay {
-    opacity: 1;
-}
-
-.gallery-item:hover .gallery-info {
-    transform: translateY(0);
-}
-
-.gallery-item:hover .gallery-icon {
-    opacity: 1;
-    transform: translateY(0);
-}
-
 /* לייטבוקס מודאל */
 .lightbox-modal {
     display: none;
@@ -1584,10 +1680,7 @@ body {
 
 /* התאמות נוספות לגלריה מודרנית */
 @media (max-width: 768px) {
-    .modern-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 15px;
-    }
+   
     
     .lightbox-prev, .lightbox-next {
         width: 35px;
@@ -1738,18 +1831,6 @@ body {
     font-weight: 600;
 }
 
-/* עדכון גלריה מודרנית עם מספור */
-.modern-gallery .gallery-item {
-    position: relative;
-}
-
-.modern-gallery .image-number {
-    background: linear-gradient(135deg, rgba(201, 160, 92, 0.9), rgba(255, 215, 0, 0.8));
-    color: #000;
-    font-weight: 700;
-    text-shadow: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
 
 /* התאמות למובייל */
 @media (max-width: 480px) {
@@ -2525,13 +2606,13 @@ body {
 
 @keyframes fadeInEmpty {
     from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
+    opacity: 0;
+    transform: translateY(20px);
+}
     to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    opacity: 1;
+    transform: translateY(0);
+}
 }
 
 /* עיצוב מיוחד לגלריה ריקה */
@@ -2573,7 +2654,7 @@ body {
     }
     
     .empty-category-message h3 {
-        font-size: 1.2rem;
+    font-size: 1.2rem;
         margin-bottom: 10px;
     }
     
@@ -2617,8 +2698,8 @@ body {
 
 @keyframes fadeInEmpty {
     from {
-        opacity: 0;
-        transform: translateY(20px);
+    opacity: 0;
+    transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -2688,31 +2769,9 @@ body {
 }
 
 /* הגדרת גלריה - רק כלל אחד! */
-.modern-gallery {
-    display: grid !important;
-    grid-template-columns: repeat(5, 1fr) !important; /* 3 עמודות */
-    gap: 20px !important;
-    margin-top: 30px !important;
-    padding: 0 20px !important;
-}
+
 
 /* התאמות רספונסיביות לגלריה */
-@media (max-width: 768px) {
-    .modern-gallery {
-        grid-template-columns: repeat(3, 1fr) ;
-        gap: 15px !important;
-        padding: 0 20px ;
-    }
-}
-
-@media (max-width: 480px) {
-    .modern-gallery {
-        grid-template-columns: repeat(3, 1fr) !important; /* 3 במובייל רגיל */
-        gap: 10px !important;
-        padding: 0 8px !important;
-    }
-}
-
 /* לא להגדיר display:grid על gallery-container לבד */
 .gallery-container {
     display: block;
