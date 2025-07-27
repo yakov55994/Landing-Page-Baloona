@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניהול גלריה - דף מנהל</title>
+    <title>ניהול גלריה - דף מנהל מתוקן</title>
     <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
     <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
     
@@ -359,6 +359,16 @@
         .status-indicator.checking {
             background: #ed8936;
         }
+
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 
@@ -370,14 +380,17 @@
 
     <div class="admin-container">
         <div class="admin-header">
-            <h1>🎈 ניהול גלריה מתקדם</h1>
-            <p>העלה, נהל ואגן את התמונות שלך בקלות</p>
+            <h1>🎈 ניהול גלריה מתוקן</h1>
+            <p>העלה, נהל ואגן את התמונות שלך בקלות - גרסה מתוקנת</p>
         </div>
 
         <div class="admin-content">
             <!-- הודעות -->
             <div id="successMessage" class="success-message"></div>
             <div id="errorMessage" class="error-message"></div>
+            
+            <!-- Debug Info -->
+            <div id="debugInfo" class="debug-info"></div>
             
             <!-- Loading -->
             <div id="loading" class="loading">
@@ -390,7 +403,7 @@
                 <button class="tab active" onclick="switchTab('config')">⚙️ הגדרות</button>
                 <button class="tab" onclick="switchTab('upload')">📤 העלאה</button>
                 <button class="tab" onclick="switchTab('gallery')">🖼️ גלריה</button>
-                <button class="tab" onclick="switchTab('stats')">📊 סטטיסטיקות</button>
+                <button class="tab" onclick="switchTab('debug')">🔧 דיבוג</button>
             </div>
 
             <!-- תוכן כרטיסיות -->
@@ -402,19 +415,20 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="cloudName">Cloud Name</label>
-                            <input type="text" id="cloudName" placeholder="your-cloud-name">
+                            <input type="text" id="cloudName" placeholder="dbbivwbbt" value="dbbivwbbt">
                         </div>
                         <div class="form-group">
                             <label for="uploadPreset">Upload Preset</label>
-                            <input type="text" id="uploadPreset" placeholder="your-upload-preset">
+                            <input type="text" id="uploadPreset" placeholder="balloon_gallery" value="balloon_gallery">
                         </div>
                         <div class="form-group">
-                            <label for="apiKey">API Key (אופציונלי)</label>
-                            <input type="text" id="apiKey" placeholder="your-api-key">
+                            <label for="folderName">תיקיית יסוד</label>
+                            <input type="text" id="folderName" placeholder="balloon-gallery" value="balloon-gallery">
                         </div>
                     </div>
                     <button class="btn btn-primary" onclick="saveConfig()">💾 שמור הגדרות</button>
                     <button class="btn btn-secondary" onclick="testCloudinaryConnection()">🔗 בדיקת חיבור</button>
+                    <button class="btn btn-success" onclick="loadDirectFromCloudinary()">☁️ טען ישירות מ-Cloudinary</button>
                 </div>
 
                 <div class="config-section">
@@ -452,6 +466,10 @@
                     <button class="btn btn-primary btn-large" onclick="openUploadWidget()">
                         📤 פתח חלון העלאה
                     </button>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="refreshAfterUpload()">🔄 רענן לאחר העלאה</button>
+                    </div>
                 </div>
             </div>
 
@@ -463,34 +481,32 @@
                         <select id="filterCategory" onchange="filterGallery()">
                             <option value="all">הכל</option>
                         </select>
-                        <button class="btn btn-secondary" onclick="refreshGallery()">🔄 רענן</button>
+                        <button class="btn btn-secondary" onclick="refreshGallery()">🔄 רענן תצוגה</button>
+                        <button class="btn btn-success" onclick="loadDirectFromCloudinary()">☁️ טען מ-Cloudinary</button>
                         <button class="btn btn-primary" onclick="generateGalleryCode()">💻 צור קוד לאתר</button>
-                        <button class="btn btn-secondary" onclick="manualRefresh()">🔄 רענן מהשרת</button>
                     </div>
                     <div id="galleryGrid" class="gallery-grid"></div>
                 </div>
             </div>
 
-            <!-- סטטיסטיקות -->
-            <div id="statsTab" class="tab-content">
-                <div class="stats-grid" id="statsGrid"></div>
-                
+            <!-- דיבוג -->
+            <div id="debugTab" class="tab-content">
                 <div class="config-section">
-                    <h2>📈 פעולות מתקדמות</h2>
-                    <button class="btn btn-primary" onclick="exportGalleryData()">💾 ייצא נתוני גלריה</button>
-                    <button class="btn btn-secondary" onclick="importGalleryData()">📥 ייבא נתוני גלריה</button>
-                    <button class="btn btn-success" onclick="generateBackup()">🔒 צור גיבוי</button>
-                    <button class="btn btn-secondary" onclick="clearCache()">🗑️ ניקוי מטמון</button>
+                    <h2>🔧 מידע דיבוג</h2>
+                    <button class="btn btn-primary" onclick="runDiagnostics()">🔍 הרץ אבחון</button>
+                    <button class="btn btn-secondary" onclick="clearAllData()">🗑️ נקה הכל</button>
+                    <button class="btn btn-success" onclick="testAllConnections()">🌐 בדיקת כל החיבורים</button>
+                    
+                    <div id="diagnosticsResults" style="margin-top: 20px;"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // נתונים גלובליים
+        // נתונים גלובליים - מתוקנים
         let galleryData = [];
         let categories = {
-            '': 'בחר קטגורייה',
             'room-arrangements': 'סידורי חדרים',
             'balloon-numbers': 'מספרים מבלונים',
             'arches': 'קשתות',
@@ -503,139 +519,245 @@
             'birth-celebration': 'הולדת בן / בת'
         };
         
-let cloudinaryConfig = {
-    cloudName: 'dbbivwbbt',
-    apiKey: '549784497364423',
-   uploadPreset: 'balloon_gallery',
-    folder: 'balloon-gallery'
-};
+        let cloudinaryConfig = {
+            cloudName: 'dbbivwbbt',
+            uploadPreset: 'balloon_gallery',
+            folder: 'balloon-gallery'
+        };
 
-        // פונקציה מתוקנת לטעינת הגלריה מהשרת
-        async function loadGalleryFromServer() {
+        // פונקציה מתוקנת לטעינה ישירה מ-Cloudinary
+        async function loadDirectFromCloudinary() {
+            showMessage('טוען תמונות ישירות מ-Cloudinary...', 'success');
+            updateConnectionStatus('checking');
+            
             try {
-                updateConnectionStatus('checking');
+                // ננסה כמה דרכים שונות לטעון מ-Cloudinary
+                console.log('🔍 Trying to load from Cloudinary...');
                 
-                const response = await fetch('https://baloona-server.onrender.com/api/gallery');
+                // דרך 1: Search API
+                let images = await trySearchAPI();
                 
-                if (response.ok) {
-                    const images = await response.json();
-                    console.log('✅ Server response:', images);
-                    
-                    // המרת הנתונים לפורמט הנדרש
+                if (!images || images.length === 0) {
+                    // דרך 2: Admin API (אם יש API Key)
+                    images = await tryAdminAPI();
+                }
+                
+                if (!images || images.length === 0) {
+                    // דרך 3: Resource list
+                    images = await tryResourceList();
+                }
+                
+                if (images && images.length > 0) {
                     galleryData = images.map((img, index) => ({
-                        id: img.public_id || `image_${index}_${Date.now()}`,
+                        id: img.public_id || `img_${index}_${Date.now()}`,
                         publicId: img.public_id,
                         url: img.secure_url || img.url,
-                        thumbnail: generateOptimizedUrl(img.secure_url || img.url, 'thumbnail'),
-                        fullsize: generateOptimizedUrl(img.secure_url || img.url, 'fullsize'),
+                        thumbnail: generateThumbnailUrl(img.secure_url || img.url),
+                        fullsize: img.secure_url || img.url,
                         title: `תמונה מספר ${index + 1}`,
-                        category: extractCategoryFromPath(img.public_id),
+                        category: extractCategoryFromPath(img.public_id) || 'balloon-bouquet',
                         uploadDate: img.created_at || new Date().toISOString(),
                         imageNumber: index + 1
                     }));
                     
+                    // שמירה ל-localStorage
+                    localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                    localStorage.setItem('galleryTimestamp', Date.now().toString());
+                    
                     updateConnectionStatus('connected');
-                    console.log('✅ Gallery loaded from server:', galleryData.length, 'images');
+                    refreshGallery();
+                    updateStats();
+                    
+                    showMessage(`נטענו ${galleryData.length} תמונות מ-Cloudinary!`, 'success');
+                    console.log('✅ Loaded from Cloudinary:', galleryData.length, 'images');
                     
                 } else {
-                    throw new Error(`Server responded with ${response.status}`);
+                    throw new Error('לא נמצאו תמונות');
                 }
                 
-            } catch (error) {
-                console.error('❌ Error loading from server:', error);
-                updateConnectionStatus('offline');
-                
-                // נסיון לטעינה מ-Cloudinary ישירות
-                try {
-                    await loadFromCloudinaryDirect();
-                    updateConnectionStatus('cloudinary');
-                } catch (cloudinaryError) {
-                    console.error('❌ Cloudinary direct load failed:', cloudinaryError);
-                    
-                    // טעינה מה-localStorage כגיבוי
-                    const savedData = localStorage.getItem('galleryData');
-                    if (savedData) {
-                        galleryData = JSON.parse(savedData);
-                        updateConnectionStatus('offline');
-                        console.log('📦 Loaded from localStorage:', galleryData.length, 'images');
-                    } else {
-                        // אם אין נתונים שמורים, נטען נתוני דמו
-                        loadDemoDataForAdmin();
-                        updateConnectionStatus('demo');
-                    }
-                }
-            }
-        }
-
-        // טעינה ישירה מ-Cloudinary
-        async function loadFromCloudinaryDirect() {
-            if (!cloudinaryConfig.cloudName || cloudinaryConfig.cloudName === 'your-cloud-name') {
-                throw new Error('Cloudinary not configured');
-            }
-
-            // נשתמש ב-API הציבורי של Cloudinary
-            const searchUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/${cloudinaryConfig.folder}.json`;
-            
-            try {
-                const response = await fetch(searchUrl);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.resources && data.resources.length > 0) {
-                        galleryData = data.resources.map((resource, index) => ({
-                            id: resource.public_id || `image_${index}_${Date.now()}`,
-                            publicId: resource.public_id,
-                            url: resource.secure_url || resource.url,
-                            thumbnail: generateOptimizedUrl(resource.secure_url || resource.url, 'thumbnail'),
-                            fullsize: generateOptimizedUrl(resource.secure_url || resource.url, 'fullsize'),
-                            title: `תמונה מספר ${index + 1}`,
-                            category: extractCategoryFromPath(resource.public_id),
-                            uploadDate: resource.created_at || new Date().toISOString(),
-                            imageNumber: index + 1
-                        }));
-                        
-                        // שמירה ל-localStorage
-                        localStorage.setItem('galleryData', JSON.stringify(galleryData));
-                        localStorage.setItem('galleryDataTimestamp', Date.now().toString());
-                        
-                        console.log('✅ Gallery loaded from Cloudinary:', galleryData.length, 'images');
-                        return;
-                    }
-                }
             } catch (error) {
                 console.error('❌ Error loading from Cloudinary:', error);
+                updateConnectionStatus('disconnected');
+                showMessage('שגיאה בטעינה מ-Cloudinary: ' + error.message, 'error');
+                
+                // נסיון לטעון מ-localStorage
+                const savedData = localStorage.getItem('galleryData');
+                if (savedData) {
+                    galleryData = JSON.parse(savedData);
+                    refreshGallery();
+                    updateStats();
+                    showMessage(`נטענו ${galleryData.length} תמונות מהזיכרון המקומי`, 'success');
+                }
             }
-            
-            throw new Error('Could not load from Cloudinary');
         }
 
-        // נתוני דמו לאדמין
-        function loadDemoDataForAdmin() {
-            galleryData = [
-                {
-                    id: 'demo_1',
-                    publicId: 'demo/balloon-1',
-                    url: 'https://via.placeholder.com/400x300/FF6B6B/FFFFFF?text=תמונת+דמו+1',
-                    thumbnail: 'https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=תמונת+דמו+1',
-                    fullsize: 'https://via.placeholder.com/800x600/FF6B6B/FFFFFF?text=תמונת+דמו+1',
-                    title: 'תמונת דמו מספר 1',
-                    category: 'balloon-bouquet',
-                    uploadDate: new Date().toISOString(),
-                    imageNumber: 1
-                },
-                {
-                    id: 'demo_2',
-                    publicId: 'demo/balloon-2',
-                    url: 'https://via.placeholder.com/400x300/4ECDC4/FFFFFF?text=תמונת+דמו+2',
-                    thumbnail: 'https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=תמונת+דמו+2',
-                    fullsize: 'https://via.placeholder.com/800x600/4ECDC4/FFFFFF?text=תמונת+דמו+2',
-                    title: 'תמונת דמו מספר 2',
-                    category: 'arches',
-                    uploadDate: new Date().toISOString(),
-                    imageNumber: 2
+        // דרכים שונות לטעינה מ-Cloudinary
+        async function trySearchAPI() {
+            try {
+                const url = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list/balloon-gallery.json`;
+                console.log('🔍 Trying Search API:', url);
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Search API response:', data);
+                    return data.resources || [];
                 }
-            ];
+            } catch (error) {
+                console.log('❌ Search API failed:', error);
+            }
+            return null;
+        }
+
+        async function tryResourceList() {
+            try {
+                // נסיון לטעון באמצעות URL אחר
+                const url = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/list.json`;
+                console.log('🔍 Trying Resource List:', url);
+                
+                const response = await fetch(url);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Resource List response:', data);
+                    return data.resources || [];
+                }
+            } catch (error) {
+                console.log('❌ Resource List failed:', error);
+            }
+            return null;
+        }
+
+        async function tryAdminAPI() {
+            // לא נממש כרגע בגלל הצורך במפתח API
+            return null;
+        }
+
+        // יצירת URL לתמונה ממוזערת
+        function generateThumbnailUrl(originalUrl) {
+            if (!originalUrl) return '';
             
-            console.log('📝 Demo data loaded for admin');
+            if (originalUrl.includes('cloudinary.com')) {
+                return originalUrl.replace('/upload/', '/upload/w_300,h_200,c_fill,q_auto,f_auto/');
+            }
+            
+            return originalUrl;
+        }
+
+        // פונקציה מתוקנת לחילוץ קטגוריה
+        function extractCategoryFromPath(path) {
+            if (!path) return 'balloon-bouquet';
+            
+            console.log('🔍 Extracting category from path:', path);
+            
+            // אם יש balloon-gallery בנתיב
+            if (path.includes('balloon-gallery/')) {
+                const parts = path.split('balloon-gallery/')[1];
+                const category = parts.split('/')[0];
+                console.log('📁 Found category:', category);
+                return category || 'balloon-bouquet';
+            }
+            
+            // חיפוש קטגוריות ידועות בנתיב
+            const knownCategories = Object.keys(categories);
+            for (const cat of knownCategories) {
+                if (path.includes(cat)) {
+                    console.log('📁 Found known category:', cat);
+                    return cat;
+                }
+            }
+            
+            console.log('📁 No category found, using default');
+            return 'balloon-bouquet';
+        }
+
+        // פונקציה מתוקנת לפתיחת widget העלאה
+        function openUploadWidget() {
+            const category = document.getElementById('uploadCategory').value;
+            
+            if (!category) {
+                showMessage('יש לבחור קטגוריה קודם', 'error');
+                return;
+            }
+            
+            if (!cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
+                showMessage('יש להגדיר קודם את פרטי Cloudinary', 'error');
+                return;
+            }
+            
+            console.log('📤 Opening upload widget for category:', category);
+            showMessage('פותח חלון העלאה...', 'success');
+            
+            const widget = cloudinary.createUploadWidget({
+                cloudName: cloudinaryConfig.cloudName,
+                uploadPreset: cloudinaryConfig.uploadPreset,
+                sources: ['local', 'url', 'camera'],
+                multiple: true,
+                maxFiles: 20,
+                folder: `${cloudinaryConfig.folder}/${category}`,
+                tags: [category, 'gallery', 'balloon-gallery'],
+                publicId: null, // תן ל-Cloudinary לייצר ID אוטומטי
+                resourceType: 'image',
+                allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+                transformation: [
+                    {width: 1200, height: 800, crop: 'limit', quality: 'auto', fetch_format: 'auto'}
+                ],
+                context: {
+                    custom: {
+                        category: category,
+                        gallery: 'balloon-gallery'
+                    }
+                }
+            }, (error, result) => {
+                console.log('📤 Upload callback:', { error, result });
+                
+                if (!error && result && result.event === "success") {
+                    console.log('✅ Upload successful:', result.info);
+                    showMessage(`תמונה הועלתה בהצלחה: ${result.info.public_id}`, 'success');
+                    
+                    // הוספה מיידית לגלריה
+                    const newImage = {
+                        id: result.info.public_id,
+                        publicId: result.info.public_id,
+                        url: result.info.secure_url,
+                        thumbnail: generateThumbnailUrl(result.info.secure_url),
+                        fullsize: result.info.secure_url,
+                        title: `תמונה מספר ${galleryData.length + 1}`,
+                        category: category,
+                        uploadDate: new Date().toISOString(),
+                        imageNumber: galleryData.length + 1
+                    };
+                    
+                    galleryData.push(newImage);
+                    localStorage.setItem('galleryData', JSON.stringify(galleryData));
+                    refreshGallery();
+                    updateStats();
+                }
+                
+                if (result && result.event === "close") {
+                    console.log('📤 Upload widget closed');
+                    // רענון אחרי 2 שניות
+                    setTimeout(() => {
+                        refreshAfterUpload();
+                    }, 2000);
+                }
+                
+                if (error) {
+                    console.error('❌ Upload error:', error);
+                    showMessage('שגיאה בהעלאת התמונה: ' + error.message, 'error');
+                }
+            });
+            
+            widget.open();
+        }
+
+        // רענון לאחר העלאה
+        async function refreshAfterUpload() {
+            showMessage('מרענן גלריה לאחר העלאה...', 'success');
+            
+            // המתנה של 3 שניות לתת ל-Cloudinary זמן לעבד
+            setTimeout(async () => {
+                await loadDirectFromCloudinary();
+            }, 3000);
         }
 
         // עדכון מצב החיבור
@@ -646,20 +768,12 @@ let cloudinaryConfig = {
             if (statusElement && indicatorElement) {
                 switch(status) {
                     case 'connected':
-                        statusElement.textContent = 'מחובר לשרת ✓';
-                        indicatorElement.className = 'status-indicator connected';
-                        break;
-                    case 'cloudinary':
                         statusElement.textContent = 'מחובר ל-Cloudinary ✓';
-                        indicatorElement.className = 'status-indicator connected';
+                        indicatorElement.className = 'status-indicator';
                         break;
-                    case 'offline':
-                        statusElement.textContent = 'לא מקוון (נתונים שמורים)';
+                    case 'disconnected':
+                        statusElement.textContent = 'לא מחובר ❌';
                         indicatorElement.className = 'status-indicator disconnected';
-                        break;
-                    case 'demo':
-                        statusElement.textContent = 'מצב דמו';
-                        indicatorElement.className = 'status-indicator checking';
                         break;
                     case 'checking':
                         statusElement.textContent = 'בודק חיבור...';
@@ -669,59 +783,7 @@ let cloudinaryConfig = {
             }
         }
 
-        // יצירת URLs מאופטמים
-        function generateOptimizedUrl(originalUrl, size) {
-            if (!originalUrl) return '';
-            
-            const transformations = {
-                thumbnail: 'w_300,h_200,c_fill,q_auto,f_auto',
-                medium: 'w_800,h_600,c_limit,q_auto,f_auto',
-                fullsize: 'w_1200,h_900,c_limit,q_auto,f_auto'
-            };
-            
-            if (originalUrl.includes('cloudinary.com')) {
-                return originalUrl.replace('/upload/', `/upload/${transformations[size]}/`);
-            }
-            
-            return originalUrl;
-        }
-
-        // פונקציה לחילוץ קטגוריה מהנתיב
-        function extractCategoryFromPath(path) {
-            if (!path) return 'balloon-bouquet';
-            
-            if (path.includes('balloon-gallery/')) {
-                const parts = path.split('balloon-gallery/')[1].split('/');
-                return parts[0] || 'balloon-bouquet';
-            }
-            
-            const knownCategories = Object.keys(categories);
-            const foundCategory = knownCategories.find(cat => path.includes(cat));
-            
-            return foundCategory || 'balloon-bouquet';
-        }
-
-        // אתחול העמוד - מתוקן
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🎈 Admin Panel Loading...');
-            
-            // טעינת הגדרות
-            loadConfig();
-            updateCategoriesList();
-            updateCategorySelects();
-            
-            // טעינת נתוני הגלריה
-            await loadGalleryFromServer();
-            
-            // עדכון התצוגה
-            refreshGallery();
-            updateStats();
-            
-            console.log('✅ Admin Panel Ready with', galleryData.length, 'images');
-            showMessage(`טעינה הושלמה - ${galleryData.length} תמונות`, 'success');
-        });
-
-        // רענון הגלריה - מתוקן עם בדיקות
+        // רענון הגלריה
         function refreshGallery() {
             console.log('🔄 Refreshing gallery display...');
             
@@ -748,8 +810,8 @@ let cloudinaryConfig = {
                     <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
                         <h3>אין תמונות להצגה</h3>
                         <p>בחר קטגוריה אחרת או העלה תמונות חדשות</p>
-                        <button class="btn btn-primary" onclick="manualRefresh()" style="margin-top: 15px;">
-                            🔄 נסה לטעון שוב
+                        <button class="btn btn-primary" onclick="loadDirectFromCloudinary()" style="margin-top: 15px;">
+                            ☁️ טען מ-Cloudinary
                         </button>
                     </div>
                 `;
@@ -762,39 +824,34 @@ let cloudinaryConfig = {
                 imageDiv.innerHTML = `
                     <div class="image-number">${image.imageNumber || index + 1}</div>
                     <img src="${image.thumbnail}" alt="${image.title}" loading="lazy" 
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkdGO16DXlDwvdGV4dD48L3N2Zz4K';">
+                         onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkdGO16DXlDwvdGV4dD48L3N2Zz4K';">
                     <button class="delete-btn" onclick="deleteImage('${image.id}')">&times;</button>
                     <div class="gallery-item-info">
                         <h4>${image.title}</h4>
                         <p>${categories[image.category] || image.category}</p>
+                        <small style="color: #999;">${image.publicId}</small>
                     </div>
                 `;
                 container.appendChild(imageDiv);
             });
             
             console.log('✅ Gallery refreshed with', filteredData.length, 'images');
+            updateDebugInfo();
         }
 
-        // הוספת תמונה לגלריה - רענון מהשרת
-        async function addImageToGallery(imageInfo, category) {
-            await loadGalleryFromServer();
-            refreshGallery();
-            updateStats();
-            showMessage('התמונה נוספה בהצלחה!', 'success');
-        }
-
-        // פונקציה לרענון ידני של הנתונים
-        async function manualRefresh() {
-            showMessage('מרענן נתונים...', 'success');
-            
-            try {
-                await loadGalleryFromServer();
-                refreshGallery();
-                updateStats();
-                showMessage(`רענון הושלם - ${galleryData.length} תמונות`, 'success');
-            } catch (error) {
-                showMessage('שגיאה ברענון הנתונים', 'error');
-                console.error('Manual refresh error:', error);
+        // עדכון מידע דיבוג
+        function updateDebugInfo() {
+            const debugElement = document.getElementById('debugInfo');
+            if (debugElement) {
+                debugElement.innerHTML = `
+                    <strong>מידע דיבוג:</strong><br>
+                    📊 סך תמונות: ${galleryData.length}<br>
+                    📁 קטגוריות: ${Object.keys(categories).length}<br>
+                    ☁️ Cloud Name: ${cloudinaryConfig.cloudName}<br>
+                    📤 Upload Preset: ${cloudinaryConfig.uploadPreset}<br>
+                    📂 תיקייה: ${cloudinaryConfig.folder}<br>
+                    ⏰ עדכון אחרון: ${new Date(parseInt(localStorage.getItem('galleryTimestamp')) || Date.now()).toLocaleString('he-IL')}
+                `;
             }
         }
 
@@ -810,14 +867,15 @@ let cloudinaryConfig = {
         // שמירת הגדרות
         function saveConfig() {
             const config = {
-                cloudName: document.getElementById('cloudName').value,
-                uploadPreset: document.getElementById('uploadPreset').value,
-                apiKey: document.getElementById('apiKey').value
+                cloudName: document.getElementById('cloudName').value.trim(),
+                uploadPreset: document.getElementById('uploadPreset').value.trim(),
+                folder: document.getElementById('folderName').value.trim() || 'balloon-gallery'
             };
             
             localStorage.setItem('cloudinaryConfig', JSON.stringify(config));
             cloudinaryConfig = { ...cloudinaryConfig, ...config };
             showMessage('ההגדרות נשמרו בהצלחה!', 'success');
+            updateDebugInfo();
         }
 
         // טעינת הגדרות
@@ -828,9 +886,9 @@ let cloudinaryConfig = {
                 cloudinaryConfig = { ...cloudinaryConfig, ...config };
             }
             
-            document.getElementById('cloudName').value = cloudinaryConfig.cloudName || '';
-            document.getElementById('uploadPreset').value = cloudinaryConfig.uploadPreset || '';
-            document.getElementById('apiKey').value = cloudinaryConfig.apiKey || '';
+            document.getElementById('cloudName').value = cloudinaryConfig.cloudName || 'dbbivwbbt';
+            document.getElementById('uploadPreset').value = cloudinaryConfig.uploadPreset || 'balloon_gallery';
+            document.getElementById('folderName').value = cloudinaryConfig.folder || 'balloon-gallery';
         }
 
         // הוספת קטגוריה
@@ -858,6 +916,8 @@ let cloudinaryConfig = {
         // עדכון רשימת הקטגוריות
         function updateCategoriesList() {
             const container = document.getElementById('categoriesList');
+            if (!container) return;
+            
             container.innerHTML = '';
             
             Object.entries(categories).forEach(([key, name]) => {
@@ -917,61 +977,6 @@ let cloudinaryConfig = {
             });
         }
 
-        // פתיחת חלון העלאה
-        function openUploadWidget() {
-            const category = document.getElementById('uploadCategory').value;
-            
-            if (!category) {
-                showMessage('יש לבחור קטגוריה קודם', 'error');
-                return;
-            }
-            
-            if (!cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
-                showMessage('יש להגדיר קודם את פרטי Cloudinary', 'error');
-                return;
-            }
-            
-            console.log('📤 Opening upload widget for category:', category);
-            
-            const widget = cloudinary.createUploadWidget({
-                cloudName: cloudinaryConfig.cloudName,
-                uploadPreset: cloudinaryConfig.uploadPreset,
-                sources: ['local', 'url', 'camera'],
-                multiple: true,
-                maxFiles: 20,
-                folder: `${cloudinaryConfig.folder}/${category}`,
-                tags: [category, 'gallery', 'balloon-gallery'],
-                transformation: [
-                    {width: 1200, height: 800, crop: 'limit', quality: 'auto', fetch_format: 'auto'}
-                ],
-                context: {
-                    custom: {
-                        category: category,
-                        gallery: 'balloon-gallery'
-                    }
-                }
-            }, (error, result) => {
-                if (!error && result && result.event === "success") {
-                    console.log('✅ Upload successful:', result.info.public_id);
-                    addImageToGallery(result.info, category);
-                }
-                
-                if (result && result.event === "close") {
-                    console.log('📤 Upload widget closed');
-                    setTimeout(() => {
-                        manualRefresh();
-                    }, 1000);
-                }
-                
-                if (error) {
-                    console.error('❌ Upload error:', error);
-                    showMessage('שגיאה בהעלאת התמונה', 'error');
-                }
-            });
-            
-            widget.open();
-        }
-
         // מחיקת תמונה
         function deleteImage(imageId) {
             if (confirm('אתה בטוח שברצונך למחוק את התמונה הזו?')) {
@@ -986,10 +991,10 @@ let cloudinaryConfig = {
                 });
                 
                 localStorage.setItem('galleryData', JSON.stringify(galleryData));
-                localStorage.setItem('galleryDataTimestamp', Date.now().toString());
+                localStorage.setItem('galleryTimestamp', Date.now().toString());
                 refreshGallery();
                 updateStats();
-                showMessage('התמונה נמחקה בהצלחה!', 'success');
+                showMessage('התמונה נמחקה מהתצוגה המקומית!', 'success');
             }
         }
 
@@ -1031,6 +1036,116 @@ let cloudinaryConfig = {
             `;
         }
 
+        // בדיקת חיבור Cloudinary
+        async function testCloudinaryConnection() {
+            if (!cloudinaryConfig.cloudName) {
+                showMessage('יש להזין Cloud Name קודם', 'error');
+                return;
+            }
+            
+            showMessage('בודק חיבור ל-Cloudinary...', 'success');
+            updateConnectionStatus('checking');
+            
+            try {
+                // בדיקה באמצעות תמונת לדוגמה
+                const testUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/sample.jpg`;
+                console.log('🔗 Testing connection to:', testUrl);
+                
+                const response = await fetch(testUrl, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    showMessage('החיבור ל-Cloudinary תקין! ✓', 'success');
+                    updateConnectionStatus('connected');
+                    
+                    // ננסה גם לטעון את הגלריה
+                    setTimeout(() => {
+                        loadDirectFromCloudinary();
+                    }, 1000);
+                    
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Connection test failed:', error);
+                showMessage('שגיאה בחיבור ל-Cloudinary: ' + error.message, 'error');
+                updateConnectionStatus('disconnected');
+            }
+        }
+
+        // הרצת אבחון מלא
+        async function runDiagnostics() {
+            const resultsContainer = document.getElementById('diagnosticsResults');
+            if (!resultsContainer) return;
+            
+            resultsContainer.innerHTML = '<p>מריץ אבחון...</p>';
+            
+            const results = [];
+            
+            // בדיקת הגדרות
+            results.push(`<h3>🔧 הגדרות:</h3>`);
+            results.push(`Cloud Name: ${cloudinaryConfig.cloudName || '❌ לא מוגדר'}`);
+            results.push(`Upload Preset: ${cloudinaryConfig.uploadPreset || '❌ לא מוגדר'}`);
+            results.push(`Folder: ${cloudinaryConfig.folder || '❌ לא מוגדר'}`);
+            
+            // בדיקת נתונים מקומיים
+            results.push(`<h3>💾 נתונים מקומיים:</h3>`);
+            results.push(`תמונות שמורות: ${galleryData.length}`);
+            results.push(`קטגוריות: ${Object.keys(categories).length}`);
+            
+            const savedData = localStorage.getItem('galleryData');
+            results.push(`LocalStorage: ${savedData ? '✓ יש נתונים' : '❌ ריק'}`);
+            
+            // בדיקת חיבור
+            results.push(`<h3>🌐 בדיקת חיבור:</h3>`);
+            
+            try {
+                const testUrl = `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/sample.jpg`;
+                const response = await fetch(testUrl, { method: 'HEAD' });
+                results.push(`Cloudinary: ${response.ok ? '✓ מחובר' : '❌ לא מחובר'}`);
+            } catch (error) {
+                results.push(`Cloudinary: ❌ שגיאה - ${error.message}`);
+            }
+            
+            // בדיקת שרת
+            try {
+                const serverResponse = await fetch('https://baloona-server.onrender.com/api/gallery');
+                results.push(`Server: ${serverResponse.ok ? '✓ פעיל' : '❌ לא פעיל'}`);
+            } catch (error) {
+                results.push(`Server: ❌ לא זמין`);
+            }
+            
+            // הצגת התוצאות
+            resultsContainer.innerHTML = results.join('<br>');
+        }
+
+        // בדיקת כל החיבורים
+        async function testAllConnections() {
+            showMessage('בודק את כל החיבורים...', 'success');
+            
+            await runDiagnostics();
+            await testCloudinaryConnection();
+            
+            showMessage('בדיקת החיבורים הושלמה - ראה תוצאות בלשונית דיבוג', 'success');
+        }
+
+        // ניקוי כל הנתונים
+        function clearAllData() {
+            if (confirm('זה ימחק את כל הנתונים השמורים. האם אתה בטוח?')) {
+                localStorage.clear();
+                galleryData = [];
+                
+                loadConfig();
+                updateCategoriesList();
+                updateCategorySelects();
+                refreshGallery();
+                updateStats();
+                updateDebugInfo();
+                
+                showMessage('כל הנתונים נמחקו!', 'success');
+            }
+        }
+
         // יצירת קוד גלריה
         function generateGalleryCode() {
             if (galleryData.length === 0) {
@@ -1039,15 +1154,18 @@ let cloudinaryConfig = {
             }
             
             const code = `
-// קוד שנוצר אוטומטית מדף הניהול עם מספור תמונות
-const galleryData = ${JSON.stringify(galleryData, null, 4)};
+// קוד גלריה שנוצר אוטומטית - ${new Date().toLocaleString('he-IL')}
+const galleryData = ${JSON.stringify(galleryData, null, 2)};
 
-const categories = ${JSON.stringify(categories, null, 4)};
+const categories = ${JSON.stringify(categories, null, 2)};
 
-// הוסף את הקוד הזה לקובץ index.js שלך
+// פונקציה ליצירת הגלריה
 function createGallery() {
     const gallerySection = document.getElementById('gallery');
-    if (!gallerySection) return;
+    if (!gallerySection) {
+        console.error('Gallery section not found');
+        return;
+    }
 
     const categoryNames = {
         'all': 'הכל',
@@ -1057,7 +1175,9 @@ function createGallery() {
     const categoryKeys = ['all', ...Object.keys(categories)];
     
     const filterButtons = categoryKeys.map(category => \`
-        <button class="filter-btn \${category === 'all' ? 'active' : ''}" data-filter="\${category}">
+        <button class="filter-btn \${category === 'all' ? 'active' : ''}" 
+                data-filter="\${category}" 
+                onclick="filterGalleryByCategory('\${category}')">
             \${categoryNames[category] || category}
         </button>
     \`).join('');
@@ -1065,128 +1185,69 @@ function createGallery() {
     const galleryItems = galleryData.map(item => \`
         <div class="gallery-item" data-category="\${item.category}">
             <div class="image-number">\${item.imageNumber || 1}</div>
-            <img src="\${item.thumbnail}" 
-                 data-fullsize="\${item.fullsize}"
+            <img src="\${item.thumbnail || item.url}" 
+                 data-fullsize="\${item.fullsize || item.url}"
                  alt="\${item.title}" 
-                 loading="lazy">
+                 loading="lazy"
+                 onclick="openLightbox('\${item.fullsize || item.url}', '\${item.title}')">
             <div class="gallery-info">
                 <h3>\${item.title}</h3>
-                <p>\${item.description}</p>
+                <p>\${categories[item.category] || item.category}</p>
             </div>
         </div>
     \`).join('');
 
     gallerySection.innerHTML = \`
-        <div class="filter-buttons">
-            \${filterButtons}
+        <div class="gallery-header">
+            <h2>הגלריה שלנו</h2>
+            <div class="filter-buttons">
+                \${filterButtons}
+            </div>
         </div>
-        <div class="gallery-container">
+        <div class="gallery-container" id="galleryContainer">
             \${galleryItems}
         </div>
     \`;
 }
 
-// קרא לפונקציה כשהעמוד נטען
+// סינון לפי קטגוריה
+function filterGalleryByCategory(category) {
+    const items = document.querySelectorAll('.gallery-item');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    // עדכון כפתורים
+    buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === category);
+    });
+    
+    // הצגה/הסתרה של פריטים
+    items.forEach(item => {
+        const shouldShow = category === 'all' || item.dataset.category === category;
+        item.style.display = shouldShow ? 'block' : 'none';
+    });
+}
+
+// פתיחת לייטבוקס
+function openLightbox(imageSrc, title) {
+    // הוסף כאן את הקוד ללייטבוקס
+    console.log('Opening lightbox for:', title, imageSrc);
+}
+
+// אתחול כשהעמוד נטען
 document.addEventListener('DOMContentLoaded', createGallery);
+
+console.log('Gallery loaded with', galleryData.length, 'images');
 `;
             
             const blob = new Blob([code], { type: 'text/javascript' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'gallery-code-with-numbers.js';
+            a.download = `gallery-code-${new Date().toISOString().split('T')[0]}.js`;
             a.click();
             URL.revokeObjectURL(url);
             
-            showMessage('קוד הגלריה עם מספור נוצר והורד בהצלחה!', 'success');
-        }
-
-        // יצוא נתוני גלריה
-        function exportGalleryData() {
-            const data = {
-                galleryData,
-                categories,
-                cloudinaryConfig,
-                exportDate: new Date().toISOString(),
-                version: '2.0'
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `gallery-backup-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            showMessage('נתוני הגלריה יוצאו בהצלחה!', 'success');
-        }
-
-        // יבוא נתוני גלריה
-        function importGalleryData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        if (data.galleryData) {
-                            galleryData = data.galleryData.map((img, index) => ({
-                                ...img,
-                                imageNumber: img.imageNumber || index + 1
-                            }));
-                        }
-                        if (data.categories) categories = data.categories;
-                        if (data.cloudinaryConfig) cloudinaryConfig = data.cloudinaryConfig;
-                        
-                        localStorage.setItem('galleryData', JSON.stringify(galleryData));
-                        localStorage.setItem('categories', JSON.stringify(categories));
-                        localStorage.setItem('cloudinaryConfig', JSON.stringify(cloudinaryConfig));
-                        localStorage.setItem('galleryDataTimestamp', Date.now().toString());
-                        
-                        loadConfig();
-                        updateCategoriesList();
-                        updateCategorySelects();
-                        refreshGallery();
-                        updateStats();
-                        
-                        showMessage('הנתונים יובאו בהצלחה!', 'success');
-                    } catch (error) {
-                        showMessage('שגיאה בקריאת הקובץ', 'error');
-                    }
-                };
-                reader.readAsText(file);
-            };
-            input.click();
-        }
-
-        // יצירת גיבוי
-        function generateBackup() {
-            const backup = {
-                galleryData,
-                categories,
-                cloudinaryConfig,
-                backupDate: new Date().toISOString(),
-                version: '2.0'
-            };
-            
-            localStorage.setItem('galleryBackup', JSON.stringify(backup));
-            
-            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `gallery-full-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            showMessage('גיבוי מלא נוצר בהצלחה!', 'success');
+            showMessage(`קוד הגלריה נוצר והורד! (${galleryData.length} תמונות)`, 'success');
         }
 
         // הצגת הודעות
@@ -1202,72 +1263,72 @@ document.addEventListener('DOMContentLoaded', createGallery);
             if (type === 'success') {
                 successEl.textContent = message;
                 successEl.style.display = 'block';
-                setTimeout(() => successEl.style.display = 'none', 5000);
+                setTimeout(() => successEl.style.display = 'none', 7000);
             } else {
                 errorEl.textContent = message;
                 errorEl.style.display = 'block';
-                setTimeout(() => errorEl.style.display = 'none', 5000);
-            }
-        }
-
-        // ניקוי מטמון
-        function clearCache() {
-            if (confirm('זה ימחק את כל הנתונים השמורים. האם אתה בטוח?')) {
-                localStorage.clear();
-                galleryData = [];
-                
-                loadConfig();
-                updateCategoriesList();
-                updateCategorySelects();
-                refreshGallery();
-                updateStats();
-                
-                showMessage('המטמון נוקה בהצלחה!', 'success');
-            }
-        }
-
-        // בדיקת חיבור Cloudinary
-        async function testCloudinaryConnection() {
-            if (!cloudinaryConfig.cloudName) {
-                showMessage('יש להזין Cloud Name קודם', 'error');
-                return;
+                setTimeout(() => errorEl.style.display = 'none', 7000);
             }
             
-            try {
-                const response = await fetch(`https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/sample.jpg`);
-                
-                if (response.ok) {
-                    showMessage('החיבור לCloudinary תקין!', 'success');
-                    updateConnectionStatus('cloudinary');
-                } else {
-                    showMessage('שגיאה בחיבור לCloudinary', 'error');
-                    updateConnectionStatus('offline');
-                }
-            } catch (error) {
-                showMessage('שגיאה בחיבור לCloudinary', 'error');
-                updateConnectionStatus('offline');
-            }
+            console.log(`${type === 'success' ? '✅' : '❌'} ${message}`);
         }
 
-        // שמירה אוטומטית כל 30 שניות
+        // אתחול העמוד
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🎈 Fixed Admin Panel Loading...');
+            
+            // טעינת הגדרות וקטגוריות
+            loadConfig();
+            
+            // טעינת קטגוריות מהזיכרון
+            const savedCategories = localStorage.getItem('categories');
+            if (savedCategories) {
+                categories = { ...categories, ...JSON.parse(savedCategories) };
+            }
+            
+            updateCategoriesList();
+            updateCategorySelects();
+            
+            // ניסיון לטעון מהזיכרון המקומי קודם
+            const savedData = localStorage.getItem('galleryData');
+            if (savedData) {
+                try {
+                    galleryData = JSON.parse(savedData);
+                    console.log('📦 Loaded from localStorage:', galleryData.length, 'images');
+                    refreshGallery();
+                    updateStats();
+                    updateDebugInfo();
+                    showMessage(`נטענו ${galleryData.length} תמונות מהזיכרון המקומי`, 'success');
+                } catch (error) {
+                    console.error('❌ Error parsing saved data:', error);
+                }
+            }
+            
+            // ניסיון לטעון מ-Cloudinary
+            if (cloudinaryConfig.cloudName && cloudinaryConfig.cloudName !== 'your-cloud-name') {
+                setTimeout(() => {
+                    loadDirectFromCloudinary();
+                }, 2000);
+            } else {
+                showMessage('יש להגדיר את פרטי Cloudinary בלשונית הגדרות', 'error');
+                updateConnectionStatus('disconnected');
+            }
+            
+            console.log('✅ Fixed Admin Panel Ready');
+        });
+
+        // שמירה אוטומטית כל דקה
         setInterval(() => {
             if (galleryData.length > 0) {
                 localStorage.setItem('galleryData', JSON.stringify(galleryData));
                 localStorage.setItem('categories', JSON.stringify(categories));
                 localStorage.setItem('cloudinaryConfig', JSON.stringify(cloudinaryConfig));
-                localStorage.setItem('galleryDataTimestamp', Date.now().toString());
+                localStorage.setItem('galleryTimestamp', Date.now().toString());
+                console.log('💾 Auto-saved data');
             }
-        }, 30000);
+        }, 60000);
 
-        // התראה לפני יציאה מהעמוד
-        window.addEventListener('beforeunload', function(e) {
-            if (galleryData.length > 0) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
-
-        console.log('🎈 Advanced Gallery Admin v2.1 Fixed loaded!');
+        console.log('🎈 Fixed Gallery Admin v3.0 loaded successfully!');
     </script>
 </body>
 </html>
