@@ -1,8 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const cloudinary = require('cloudinary').v2;
-const path = require('path');
-// const { fileURLToPath } = 'url';
 
 cloudinary.config({
   cloud_name: 'dbbivwbbt', // שנה לפי הצורך
@@ -15,11 +13,6 @@ const PORT = 3001;
 
 app.use(cors());
 app.use(express.json()); // הוספה לטיפול בJSON
-
-app.use(express.static('public')); // או build
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html')); // או build
-});
 
 // בריאות השרת
 app.get('/api/health', (req, res) => {
