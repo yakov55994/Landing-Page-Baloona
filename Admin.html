@@ -524,72 +524,70 @@
             uploadPreset: 'balloon_gallery',
             folder: 'balloon-gallery'
         };
+        async function tryServerGallery(category) {
+        const url = `https://baloona-server.onrender.com/api/gallery/${category}`;
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+            const data = await response.json();
+            return data;
+            }
+        } catch (err) {
+            console.log('❌ Failed to load from server:', err);
+        }
+        return [];
+}
 
         // פונקציה מתוקנת לטעינה ישירה מ-Cloudinary
-        async function loadDirectFromCloudinary() {
-            showMessage('טוען תמונות ישירות מ-Cloudinary...', 'success');
-            updateConnectionStatus('checking');
-            
-            try {
-                // ננסה כמה דרכים שונות לטעון מ-Cloudinary
-                console.log('🔍 Trying to load from Cloudinary...');
-                
-                // דרך 1: Search API
-                let images = await trySearchAPI();
-                
-                if (!images || images.length === 0) {
-                    // דרך 2: Admin API (אם יש API Key)
-                    images = await tryAdminAPI();
-                }
-                
-                if (!images || images.length === 0) {
-                    // דרך 3: Resource list
-                    images = await tryResourceList();
-                }
-                
-                if (images && images.length > 0) {
-                    galleryData = images.map((img, index) => ({
-                        id: img.public_id || `img_${index}_${Date.now()}`,
-                        publicId: img.public_id,
-                        url: img.secure_url || img.url,
-                        thumbnail: generateThumbnailUrl(img.secure_url || img.url),
-                        fullsize: img.secure_url || img.url,
-                        title: `תמונה מספר ${index + 1}`,
-                        category: extractCategoryFromPath(img.public_id) || 'balloon-bouquet',
-                        uploadDate: img.created_at || new Date().toISOString(),
-                        imageNumber: index + 1
-                    }));
-                    
-                    // שמירה ל-localStorage
-                    localStorage.setItem('galleryData', JSON.stringify(galleryData));
-                    localStorage.setItem('galleryTimestamp', Date.now().toString());
-                    
-                    updateConnectionStatus('connected');
-                    refreshGallery();
-                    updateStats();
-                    
-                    showMessage(`נטענו ${galleryData.length} תמונות מ-Cloudinary!`, 'success');
-                    console.log('✅ Loaded from Cloudinary:', galleryData.length, 'images');
-                    
-                } else {
-                    throw new Error('לא נמצאו תמונות');
-                }
-                
-            } catch (error) {
-                console.error('❌ Error loading from Cloudinary:', error);
-                updateConnectionStatus('disconnected');
-                showMessage('שגיאה בטעינה מ-Cloudinary: ' + error.message, 'error');
-                
-                // נסיון לטעון מ-localStorage
-                const savedData = localStorage.getItem('galleryData');
-                if (savedData) {
-                    galleryData = JSON.parse(savedData);
-                    refreshGallery();
-                    updateStats();
-                    showMessage(`נטענו ${galleryData.length} תמונות מהזיכרון המקומי`, 'success');
-                }
-            }
+      async function loadDirectFromCloudinary(category = 'balloon-bouquet') {
+    showMessage(`טוען תמונות לקטגוריה: ${categories[category]}`, 'success');
+    updateConnectionStatus('checking');
+
+    try {
+        console.log('🔄 מנסה לטעון מהשרת לפי קטגוריה:', category);
+
+        let images = await tryServerGallery(category);
+
+        if (images && images.length > 0) {
+            galleryData = images.map((img, index) => ({
+                id: img.publicId || `img_${index}_${Date.now()}`,
+                publicId: img.publicId,
+                url: img.url,
+                thumbnail: generateThumbnailUrl(img.url),
+                fullsize: img.url,
+                title: img.title || `תמונה מספר ${index + 1}`,
+                category: img.category || category,
+                uploadDate: img.uploadDate || new Date().toISOString(),
+                imageNumber: index + 1
+            }));
+
+            localStorage.setItem('galleryData', JSON.stringify(galleryData));
+            localStorage.setItem('galleryTimestamp', Date.now().toString());
+
+            updateConnectionStatus('connected');
+            refreshGallery();
+            updateStats();
+            showMessage(`✅ נטענו ${galleryData.length} תמונות מהשרת`, 'success');
+        } else {
+            throw new Error('לא נמצאו תמונות מהשרת');
         }
+
+    } catch (error) {
+        console.error('❌ שגיאה בטעינה מהשרת:', error);
+        updateConnectionStatus('disconnected');
+        showMessage('שגיאה בטעינה מהשרת: ' + error.message, 'error');
+
+        // ניסיון לטעון מה-localStorage
+        const savedData = localStorage.getItem('galleryData');
+        if (savedData) {
+            galleryData = JSON.parse(savedData);
+            refreshGallery();
+            updateStats();
+            showMessage(`נטענו ${galleryData.length} תמונות מהזיכרון המקומי`, 'success');
+        }
+    }
+}
+
 
         // דרכים שונות לטעינה מ-Cloudinary
         async function trySearchAPI() {
@@ -1059,7 +1057,7 @@
                     
                     // ננסה גם לטעון את הגלריה
                     setTimeout(() => {
-                        loadDirectFromCloudinary();
+                        loadDirectFromCloudinary('balloon-bouquet');
                     }, 1000);
                     
                 } else {

@@ -268,6 +268,7 @@ function buildGalleryUI(gallerySection, selectedCategory) {
     let galleryContent = '';
     
     if (filteredImages.length > 0) {
+        console.log("filterGallery ", filteredImages)
         // יצירת פריטי גלריה עם lazy loading ומספור + אירוע לחיצה
         const galleryItems = filteredImages.map((item, index) => `
             <div class="gallery-item" 

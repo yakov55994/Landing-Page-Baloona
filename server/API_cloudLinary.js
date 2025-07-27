@@ -1,4 +1,4 @@
-const cloudinary = require('cloudinary').v2;
+import { v2 as cloudinary } from 'cloudinary';
 
 // הגדרת הקונפיגורציה
 cloudinary.config({
@@ -397,8 +397,8 @@ async function getImagesByNumberRange(startNumber, endNumber, category = null) {
 }
 
 // ייצוא הפונקציות
-module.exports = { 
-  getImagesByCategory, 
+export {
+  getImagesByCategory,
   getAllImageUrlsPaginated,
   updateImageMetadata,
   searchImages,
@@ -412,5 +412,3 @@ module.exports = {
   calculateSearchRelevance
 };
 
-console.log('🎈 Cloudinary API v2.0 with Image Numbering loaded!');
-console.log('Available functions:', Object.keys(module.exports).join(', '));

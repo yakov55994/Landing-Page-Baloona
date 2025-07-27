@@ -53,12 +53,12 @@ async function loadGalleryFromCloudinary() {
         }
         
         // אם הכל נכשל, נטען נתונים מהזיכרון המקומי
-        const savedData = localStorage.getItem('galleryData');
-        if (savedData) {
-            const images = JSON.parse(savedData);
-            console.log('📦 Loaded from localStorage:', images.length, 'images');
-            return processImages(images);
-        }
+        // const savedData = localStorage.getItem('galleryData');
+        // if (savedData) {
+        //     const images = JSON.parse(savedData);
+        //     console.log('📦 Loaded from localStorage:', images.length, 'images');
+        //     return processImages(images);
+        // }
         
         // אם אין כלום, נחזיר מערך ריק
         console.log('❌ No images found');

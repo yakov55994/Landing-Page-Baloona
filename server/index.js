@@ -1,6 +1,8 @@
-const express = require('express');
-const cors = require('cors');
-const cloudinary = require('cloudinary').v2;
+import express from 'express'
+import cors from 'cors';
+import cloudinary from 'cloudinary';
+import { getImagesByCategory } from './API_cloudLinary.js';
+
 
 cloudinary.config({
   cloud_name: 'dbbivwbbt', // שנה לפי הצורך
