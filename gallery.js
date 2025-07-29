@@ -14,18 +14,19 @@ const closeLightboxBtn = document.getElementById('closeLightbox');
 
 // רשימת קטגוריות
 const categories = {
-  "arches": { label: "🌈 קשתות", tag: "קשתות" },
-  "room-arrangements": { label: "🏠 סידורי חדרים", tag: "סידורי חדרים" },
-  "balloon-numbers": { label: "🔢 מספרים מבלונים", tag: "מספרים מבלונים" },
-  "photo-reviews": { label: "📸 קירות צילום", tag: "קירות צילום" },
-  "flowers-balloons": { label: "🌸 פרחים מבלונים", tag: "פרחים מבלונים" },
-  "kids-balloons": { label: "👶 בלונים לילדים", tag: "בלונים לילדים" },
-  "gender-reveal": { label: "👶 גילוי מין", tag: "גילוי מין" },
-  "balloon-bouquet": { label: "🎁 בלונים ליום הולדת", tag: "בלונים ליום הולדת" },
-  "centerpiece": { label: "🎯 מרכזי שולחן", tag: "מרכזי שולחן" },
-  "birth-celebration": { label: "🎂 הולדת בן/בת", tag: "הולדת בן/בת" },
-  "balloon": { label: "🎈 כדור פורח", tag: "כדור פורח" }
+  "arches":        { label: "🌈 קשתות", tag: "arches" },
+  "room-arrangements": { label: "🏠 סידורי חדרים", tag: "room-arrangements" },
+  "balloon-numbers": { label: "🔢 מספרים מבלונים", tag: "balloon-numbers" },
+  "photo-reviews": { label: "📸 קירות צילום", tag: "photo-reviews" },
+  "flowers-balloons": { label: "🌸 פרחים מבלונים", tag: "flowers-balloons" },
+  "kids-balloons": { label: "👶 בלונים לילדים", tag: "kids-balloons" },
+  "gender-reveal": { label: "👶 גילוי מין", tag: "gender-reveal" },
+  "balloon-bouquet": { label: "🎁 בלונים ליום הולדת", tag: "balloon-bouquet" },
+  "centerpiece":   { label: "🎯 מרכזי שולחן", tag: "centerpiece" },
+  "birth-celebration": { label: "🎂 הולדת בן/בת", tag: "birth-celebration" },
+  "balloon":       { label: "🎈 כדור פורח", tag: "balloon" }
 };
+
 
 
 
@@ -37,18 +38,19 @@ let currentIndex = 0;
 // יצירת תפריט נפתח
 function buildDropdown() {
   dropdownMenu.innerHTML = '';
- Object.entries(categories).forEach(([key, labelObj]) => {
+Object.entries(categories).forEach(([key, info]) => {
   const btn = document.createElement('button');
   btn.className = 'dropdown-item';
-  btn.textContent = labelObj.label;
-  btn.dataset.tag = labelObj.tag;
+  btn.textContent = info.label;
+  btn.dataset.tag = info.tag;
   btn.onclick = () => {
-    categoryDropdown.innerHTML = `${labelObj.label} <span class="dropdown-arrow">▼</span>`;
+    categoryDropdown.innerHTML = `${info.label} <span class="dropdown-arrow">▼</span>`;
     dropdownMenu.classList.remove('active');
-    loadGallery(labelObj.tag);
+    loadGallery(info.tag); // 📌 משתמש בתגית באנגלית
   };
   dropdownMenu.appendChild(btn);
 });
+
 
 }
 
@@ -163,4 +165,4 @@ categoryDropdown.addEventListener('click', () => {
 
 // אתחול
 buildDropdown();
-loadGallery('arches'); // קטגוריה ברירת מחדל
+loadGallery(categories["arches"].tag); // arches
