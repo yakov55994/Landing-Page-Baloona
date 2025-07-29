@@ -433,6 +433,7 @@ body {
 
 .gallery-item:hover .gallery-img {
     transform: scale(1.1);
+    
 }
 
 .gallery-overlay {
@@ -813,6 +814,8 @@ div.modern-gallery,
 .modern-gallery .gallery-item:hover {
     transform: translateY(-5px) !important;
     box-shadow: 0 8px 25px rgba(201, 160, 92, 0.3) !important;
+    background: rgba(201, 160, 92, 0.9);
+
 }
 
 /* תמונות */
@@ -2203,6 +2206,7 @@ div.modern-gallery,
 
 .image-number.updating {
     animation: numberFlip 0.6s ease-in-out;
+    z-index: 2;
 }
 
 /* עיצוב למספרים גדולים */
@@ -2799,7 +2803,7 @@ div.modern-gallery,
   position: relative;
   max-width: 300px;
   margin: 0 auto;
-  z-index: 10;
+  z-index: 100;
 }
 
 /* כפתור התפריט הראשי */
@@ -2868,6 +2872,7 @@ div.modern-gallery,
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    z-index: 1000;
 }
 
 /* פריטי התפריט */

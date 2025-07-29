@@ -13,16 +13,20 @@ const lightboxNext = document.getElementById('lightboxNext');
 const closeLightboxBtn = document.getElementById('closeLightbox');
 
 // רשימת קטגוריות
-const categories = {
-  "בלונים ליום הולדת": "🎂 בלונים ליום הולדת",
-  "בלונים לילדים": "👶 בלונים לילדים",
-  "כדור פורח": "🎈 כדור פורח",
-  "פרחים מבלונים": "🌸 פרחים מבלונים",
-  "סידור חדר": "🛏️ סידור חדר",
-  "מרכזי שולחן": "🍽️ מרכזי שולחן",
-  "קירית צילום": "📸 קירות צילום",
-  "קשתות": "🌈 קשתות"
-};
+ const categories = {
+            "arches": "🌈 קשתות",
+            "room-arrangements": "🏠 סידורי חדרים",
+            "balloon-numbers": "🔢 מספרים מבלונים", 
+            "photo-reviews": "📸 קירות צילום",
+            "flowers-balloons": "🌸 פרחים מבלונים",
+            "kids-balloons": "👶 בלונים לילדים",
+            "gender-reveal": "👶 גילוי מין",
+            "balloon-bouquet": "🎁 בלונים ליום הולדת",
+            "centerpiece": "🎯 מרכזי שולחן",
+            "birth-celebration": "🎂 הולדת בן/בת",
+            "balloon": "🎈 כדור פורח"
+        };
+
 
 
 // נתונים דינמיים
@@ -52,7 +56,9 @@ async function loadGallery(tag) {
   galleryCounter.textContent = 'טוען תמונות...';
   try {
     const res = await fetch(`${API_BASE}/api/images/${tag}`);
+    // console.log("res", res);
     const data = await res.json();
+    console.log("data.resources = ", data.resources);
     if (!data.resources || data.resources.length === 0) {
       showEmptyMessage();
       return;
