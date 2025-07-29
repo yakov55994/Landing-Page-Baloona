@@ -19,20 +19,20 @@
     
         <!-- Favicon -->
         <link rel="icon" href="./images/Logo.png" type="image/png">
-
+        
         
     </head>
     
-<body>
-    <div class="page-wrapper">
-        <div class="bg-pattern"></div>
-        
-        <!-- Hero Section -->
-        <section class="hero" id="top">
-            <img src="/images/Logo.png" alt="Baloona לוגו" class="cover-image">
-        </section>
-        
-        <!-- About Section -->
+    <body>
+        <div class="page-wrapper">
+            <div class="bg-pattern"></div>
+            
+            <!-- Hero Section -->
+            <section class="hero" id="top">
+                <img src="/images/Logo.png" alt="Baloona לוגו" class="cover-image">
+            </section>
+            
+            <!-- About Section -->
         <section class="section" id="about">
             <h2 class="section-title"><span>אודות</span></h2>
             <div class="about-text">
@@ -66,7 +66,7 @@
                     </div>
                     <span class="social-name">טלפון</span>
                 </a>
-
+                
                 <a href="https://www.instagram.com/baloona_ashkelon/" class="social-link">
                     <div class="social-icon-wrapper">
                         <div class="social-icon-inner">
@@ -78,7 +78,7 @@
                     </div>
                     <span class="social-name">אינסטגרם</span>
                 </a>
-
+                
                 <a href="https://www.facebook.com/baloona.ashkelon?locale=he_IL" class="social-link">
                     <div class="social-icon-wrapper">
                         <div class="social-icon-inner">
@@ -90,7 +90,7 @@
                     </div>
                     <span class="social-name">פייסבוק</span>
                 </a>
-
+                
                 <a href="https://wa.me/972533993445" class="social-link">
                     <div class="social-icon-wrapper">
                         <div class="social-icon-inner">
@@ -104,26 +104,78 @@
                 </a>    
             </div>
         </div>
-            
+        
         <!-- Events & Performances Section --> 
         <section class="section" id="gallery">
             <h2 class="section-title"><span>מהאירועים שלנו</span></h2>
-            
-            <!-- התפריט הנפתח והגלריה יווצרו דינמית על ידי JavaScript -->
-            <div class="loader" id="loader">
-                <div class="loading-spinner"></div>
-                <div>טוען תמונות...</div>
+            <!-- אזור סינון -->
+            <section class="filter-section">
+    <div class="filter-dropdown">
+      <button class="dropdown-toggle" id="categoryDropdown">
+          בחר קטגוריה
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        <div class="dropdown-menu" id="dropdownMenu">
+            <!-- הקטגוריות יתווספו כאן ב-JS -->
+      </div>
+    </div>
+    <div class="gallery-counter" id="galleryCounter">
+        <!-- יוצג מונה תמונות כאן -->
+    </div>
+</section>
+
+<!-- אזור גלריה -->
+<section class="gallery-container">
+    <div class="modern-gallery" id="galleryContainer">
+        <!-- התמונות ייטענו כאן דינמית -->
+        <!-- דוגמה לפריט אחד:
+        <div class="gallery-item" data-category="arches">
+            <img src="images/example.jpg" alt="קשת בלונים">
+            <div class="image-number">1</div>
+            <div class="gallery-overlay">
+                <div class="gallery-info">
+                    <h3>שם תמונה</h3>
+                    <p>תיאור קצר</p>
+                </div>
             </div>
-        </section>
-        
-        <!-- המלצות -->
-        <section class="section" id="recommendations">
+        </div>
+        -->
+    </div>
+    
+    <!-- הודעה אם אין תמונות -->
+    <div class="empty-category-message" style="display: none;">
+        <div class="empty-icon">🪄</div>
+        <h3>אין תמונות בקטגוריה זו</h3>
+        <p>נסה לבחור קטגוריה אחרת או לבדוק מאוחר יותר</p>
+    </div>
+</section>
+
+<!-- מודאל לייטבוקס -->
+<div class="lightbox-modal" id="lightboxModal">
+    <div class="lightbox-content">
+        <span class="close-lightbox" id="closeLightbox">×</span>
+        <img class="lightbox-image" id="lightboxImage" src="" alt="" />
+        <div class="lightbox-caption">
+            <div class="lightbox-title" id="lightboxTitle"></div>
+            <div class="lightbox-desc" id="lightboxDesc"></div>
+            <div class="lightbox-image-number" id="lightboxNumber"></div>
+        </div>
+        <div class="lightbox-prev" id="lightboxPrev">❮</div>
+      <div class="lightbox-next" id="lightboxNext">❯</div>
+    </div>
+</div>
+
+
+</section>
+
+<!-- המלצות -->
+<section class="section" id="recommendations">
             <h2 class="section-title"><span>לקוחות ממליצים</span></h2>
             <div class="modern-gallery">
                 <!-- ההמלצות יווצרו דינמית -->
             </div>
         </section>
-
+        
         <!-- Contact Form Section -->
         <section class="section" id="contact">
             <h2 class="section-title"><span>צור קשר</span></h2>
@@ -139,17 +191,17 @@
                         <label for="from_email">אימייל:</label>
                         <input type="email" id="from_email" name="from_email" class="form-input" placeholder="israel123@gmail.com" required>
                     </div>
-
+                    
                     <div class="form-group">
                         <label for="phone">טלפון:</label>
                         <input type="tel" id="phone" name="phone" class="form-input" placeholder="052-1234567">
                     </div>
-
+                    
                     <div class="form-group">
                         <label for="message">ההודעה שלך:</label>
                         <textarea id="message" name="message" class="form-input form-textarea" placeholder="שלום שילה, אני מתעניין בקשר לבלונים 😊" required></textarea>
                     </div>
-
+                    
                     <button id="button-send" aria-label="שליחת מסמך" value="button-send" type="submit" class="form-submit">שליחה</button>
                 </form>
             </div>
@@ -173,40 +225,40 @@
                 <div class="map-section">
                     <div class="embedded-map">
                         <iframe 
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3411.234567890123!2d34.571234567890123!3d31.671234567890123!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502b7d4d4d4d4d4%3A0x1234567890123456!2z15DXnNeZINeR15TXnSAxOSwg15DXqdeV15zXldefLCDXmdeW16jXkNeZ15w!5e0!3m2!1siw!2sil!4v1234567890123!5m2!1siw!2sil&q=אלי+כהן+19+אשקלון"
-                            width="100%" 
-                            height="250" 
-                            style="border:0;" 
-                            allowfullscreen="" 
-                            loading="lazy" 
-                            referrerpolicy="no-referrer-when-downgrade"
-                            title="מפה - אלי כהן 19, אשקלון">
-                        </iframe>
-                    </div>
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3411.234567890123!2d34.571234567890123!3d31.671234567890123!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1502b7d4d4d4d4d4%3A0x1234567890123456!2z15DXnNeZINeR15TXnSAxOSwg15DXqdeV15zXldefLCDXmdeW16jXkNeZ15w!5e0!3m2!1siw!2sil!4v1234567890123!5m2!1siw!2sil&q=אלי+כהן+19+אשקלון"
+                        width="100%" 
+                        height="250" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="מפה - אלי כהן 19, אשקלון">
+                    </iframe>
                 </div>
-                
-                <div class="navigation-buttons">
-                    <a href="https://www.google.com/maps/place/אלי+כהן+19+אשקלון"
-                        target="_blank" 
-                        class="nav-btn google-maps-btn">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" 
+            </div>
+            
+            <div class="navigation-buttons">
+                <a href="https://www.google.com/maps/place/אלי+כהן+19+אשקלון"
+                target="_blank" 
+                class="nav-btn google-maps-btn">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" 
                         alt="Google Maps" 
                         class="btn-icon">
                         <span>ניווט ב-Google Maps</span>
                     </a>
                     
                     <a href="https://www.waze.com/ul?q=אלי%20כהן%2019%20אשקלון&navigate=yes" 
-                       target="_blank" 
-                       class="nav-btn waze-btn">
-                        <img src="https://cdn-icons-png.flaticon.com/128/732/732257.png" 
-                             alt="Waze" 
-                             class="btn-icon waze-icon">
-                        <span>ניווט ב-Waze</span>
-                    </a>
-                </div>
+                    target="_blank" 
+                    class="nav-btn waze-btn">
+                    <img src="https://cdn-icons-png.flaticon.com/128/732/732257.png" 
+                    alt="Waze" 
+                    class="btn-icon waze-icon">
+                    <span>ניווט ב-Waze</span>
+                </a>
             </div>
         </div>
-
+        </div>
+        
         <!-- מודאל התראת הצלחה -->
         <div id="successModal" class="modal success-modal">
             <div class="success-modal-content">
@@ -241,356 +293,12 @@
             </svg>
         </button>
         
-        <!-- Video Modal -->
-        <div id="videoModal" class="modal">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <div id="videoContainer" class="video-container"></div>
-            </div>
-        </div>
+      
     </div>
-
+    
     <!-- טען את ספריית EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="gallery.js"></script>
     
-    <script>
-   // קטגוריות (tags)
-        const categories = {
-            "arches": "🌈 קשתות",
-            "room-arrangements": "🏠 סידורי חדרים",
-            "balloon-numbers": "🔢 מספרים מבלונים", 
-            "photo-reviews": "📸 קירות צילום",
-            "flowers-balloons": "🌸 פרחים מבלונים",
-            "kids-balloons": "👶 בלונים לילדים",
-            "gender-reveal": "👶 גילוי מין",
-            "balloon-bouquet": "🎁 בלונים ליום הולדת",
-            "centerpiece": "🎯 מרכזי שולחן",
-            "birth-celebration": "🎂 הולדת בן/בת",
-            "balloon": "🎈 כדור פורח"
-        };
-
-        let currentCategory = 'arches';
-        let filteredImages = [];
-        let allGalleryData = [];
-
-        // טעינה לפי tag מהשרת (כמו בקוד המקורי שלך)
-        async function loadImagesByTag(tag) {
-            try {
-                console.log(`Loading images for tag: ${tag}`);
-                
-                // השתמש ב-API שלך לטעינת תמונות לפי tag
-                const baseURL = 'https://baloona-server.onrender.com'; // או localhost:3001 אם זה מקומי
-                const response = await fetch(`${baseURL}/api/images/${tag}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log(`Server response for tag ${tag}:`, data);
-                    
-                    if (!data || !data.resources) {
-                        console.warn(`No resources found for tag: ${tag}`);
-                        return [];
-                    }
-
-                    // עיבוד התמונות מ-Cloudinary
-                    const images = data.resources.map((img, index) => ({
-                        id: img.public_id || `image_${index}_${Date.now()}`,
-                        publicId: img.public_id,
-                        url: img.secure_url || img.url,
-                        thumbnail: generateOptimizedUrl(img.secure_url || img.url, 'thumbnail'),
-                        image: generateOptimizedUrl(img.secure_url || img.url, 'medium'),
-                        fullsize: generateOptimizedUrl(img.secure_url || img.url, 'large'),
-                        category: tag, // ה-tag הוא הקטגוריה
-                        uploadDate: img.created_at || new Date().toISOString(),
-                        title: img.display_name || `תמונה ${index + 1}`,
-                        imageNumber: index + 1 // מספור לפי סדר בתוך הקטגוריה
-                    }));
-                    
-                    console.log(`Processed ${images.length} images for tag ${tag}`);
-                    return images;
-                } else {
-                    console.error(`Server response not ok for tag ${tag}:`, response.status);
-                    return [];
-                }
-            } catch (error) {
-                console.error(`Error loading images for tag ${tag}:`, error);
-                return [];
-            }
-        }
-
-        // יצירת URLs מאופטמים לתמונות Cloudinary
-        function generateOptimizedUrl(originalUrl, size) {
-            if (!originalUrl) return '';
-            
-            const transformations = {
-                thumbnail: 'w_300,h_200,c_fill,q_auto,f_auto',
-                medium: 'w_800,h_600,c_limit,q_auto,f_auto',
-                large: 'w_1200,h_900,c_limit,q_auto,f_auto'
-            };
-            
-            if (originalUrl.includes('cloudinary.com')) {
-                return originalUrl.replace('/upload/', `/upload/${transformations[size]}/`);
-            }
-            
-            return originalUrl;
-        }
-
-        // פונקציה עיקרית ליצירת הגלריה לפי tag
-        async function createGallery(selectedTag = 'arches') {
-            const gallerySection = document.getElementById('gallery');
-            if (!gallerySection) return;
-
-            currentCategory = selectedTag;
-            console.log('Creating gallery for tag:', selectedTag);
-            
-            showLoadingState(true);
-            
-            try {
-                // טעינת תמונות לפי tag
-                filteredImages = await loadImagesByTag(selectedTag);
-                
-                if (filteredImages.length === 0) {
-                    console.warn(`No images found for tag: ${selectedTag}`);
-                }
-
-                console.log(`Loaded ${filteredImages.length} images for tag ${selectedTag}`);
-                
-                buildGalleryUI(gallerySection, selectedTag);
-                
-            } catch (error) {
-                console.error('Error creating gallery:', error);
-                showErrorState(`שגיאה בטעינת תמונות עבור ${categories[selectedTag] || selectedTag}`);
-            } finally {
-                showLoadingState(false);
-            }
-        }
-
-        function buildGalleryUI(gallerySection, selectedTag) {
-            console.log('Building UI for', filteredImages.length, 'images');
-            
-            const categoryKeys = Object.keys(categories);
-            const dropdownItems = categoryKeys.map(tag => {
-                const isActive = tag === selectedTag ? 'active' : '';
-                return `<button class="dropdown-item ${isActive}" onclick="selectCategory('${tag}')">${categories[tag]}</button>`;
-            }).join('');
-
-            let galleryContent = '';
-            if (filteredImages.length > 0) {
-                galleryContent = filteredImages.map((item, index) => `
-                    <div class="gallery-item" onclick="openLightbox(${index})" style="cursor: pointer;">
-                        <div class="image-number">${item.imageNumber}</div>
-                        <img src="${item.thumbnail || item.url}" 
-                             alt="${item.title}" 
-                             loading="lazy"
-                             onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPtGQ15XXkNGO16DXlDwvdGV4dD48L3N2Zz4K';">
-                        <div class="gallery-overlay">
-                            <h4>${item.title}</h4>
-                            <p>תמונה ${item.imageNumber} מתוך ${filteredImages.length}</p>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                galleryContent = `
-                    <div class="empty-category-message">
-                        <div class="empty-icon">📷</div>
-                        <h3>❌ לא נמצאו תמונות</h3>
-                        <p>אין תמונות עם התג "${categories[selectedTag] || selectedTag}" כרגע</p>
-                        <p style="font-size: 0.9em; color: #999; margin-top: 10px;">נסה לבחור קטגוריה אחרת או בדוק שהשרת עובד</p>
-                    </div>
-                `;
-            }
-
-            // מונה תמונות
-            const imageCounter = `
-                <div class="gallery-counter">
-                    ${filteredImages.length > 0 
-                        ? `נמצאו <strong>${filteredImages.length}</strong> תמונות בתג ${categories[selectedTag]}`
-                        : `<span class="no-results">לא נמצאו תמונות בתג ${categories[selectedTag]}</span>`
-                    }
-                </div>
-            `;
-
-            const existingTitle = gallerySection.querySelector('.section-title');
-            gallerySection.innerHTML = '';
-            if (existingTitle) gallerySection.appendChild(existingTitle);
-
-            gallerySection.insertAdjacentHTML('beforeend', `
-                <div class="filter-section">
-                    <div class="filter-dropdown">
-                        <button class="dropdown-toggle" id="filterToggle">
-                            <span>${categories[selectedTag]}</span>
-                            <span class="dropdown-arrow">▼</span>
-                        </button>
-                        <div class="dropdown-menu" id="filterMenu">${dropdownItems}</div>
-                        <div class="dropdown-overlay" id="dropdownOverlay"></div>
-                    </div>
-                    ${imageCounter}
-                </div>
-                <div id="gallery" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">${galleryContent}</div>
-            `);
-
-            initDropdownEvents();
-        }
-
-        function selectCategory(tag) {
-            console.log('Selecting tag:', tag);
-            createGallery(tag);
-        }
-
-        function initDropdownEvents() {
-            const filterToggle = document.getElementById('filterToggle');
-            const filterMenu = document.getElementById('filterMenu');
-            const dropdownOverlay = document.getElementById('dropdownOverlay');
-
-            if (!filterToggle || !filterMenu || !dropdownOverlay) return;
-
-            filterToggle.addEventListener('click', () => {
-                const isActive = filterMenu.classList.contains('active');
-                if (isActive) {
-                    filterToggle.classList.remove('active');
-                    filterMenu.classList.remove('active');
-                    dropdownOverlay.classList.remove('active');
-                } else {
-                    filterToggle.classList.add('active');
-                    filterMenu.classList.add('active');
-                    dropdownOverlay.classList.add('active');
-                }
-            });
-
-            dropdownOverlay.addEventListener('click', () => {
-                filterToggle.classList.remove('active');
-                filterMenu.classList.remove('active');
-                dropdownOverlay.classList.remove('active');
-            });
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && filterMenu.classList.contains('active')) {
-                    filterToggle.classList.remove('active');
-                    filterMenu.classList.remove('active');
-                    dropdownOverlay.classList.remove('active');
-                }
-            });
-        }
-
-        function showLoadingState(show) {
-            const loader = document.getElementById('loader');
-            if (loader) {
-                if (show) {
-                    loader.classList.add('active');
-                } else {
-                    loader.classList.remove('active');
-                }
-            }
-        }
-
-        function showErrorState(message) {
-            const gallerySection = document.getElementById('gallery');
-            if (gallerySection) {
-                const existingTitle = gallerySection.querySelector('.section-title');
-                gallerySection.innerHTML = '';
-                if (existingTitle) gallerySection.appendChild(existingTitle);
-                
-                gallerySection.insertAdjacentHTML('beforeend', `
-                    <div style="text-align: center; padding: 40px; color: #ffd700;">
-                        <div style="font-size: 4rem; margin-bottom: 20px;">⚠️</div>
-                        <h3>שגיאה בטעינה</h3>
-                        <p>${message}</p>
-                        <p style="font-size: 0.9em; color: #999; margin: 15px 0;">
-                            בדוק שהשרת פעיל וש-tags קיימים ב-Cloudinary
-                        </p>
-                        <button onclick="createGallery('${currentCategory}')" type="button" style="padding: 10px 20px; background: #b38a49; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px;">נסה שוב</button>
-                    </div>
-                `);
-            }
-        }
-
-        // לייטבוקס עם מידע על התג
-        function openLightbox(index) {
-            if (!filteredImages[index]) return;
-            const image = filteredImages[index];
-            
-            const lightboxHTML = `
-                <div id="simpleLightbox" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center;" onclick="closeLightbox()">
-                    <div style="position: relative; max-width: 90%; max-height: 90%; text-align: center;" onclick="event.stopPropagation()">
-                        <button onclick="closeLightbox()" style="position: absolute; top: -40px; right: -40px; background: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer;">×</button>
-                        <img src="${image.fullsize || image.image || image.url}" alt="${image.title}" style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 8px;">
-                        <div style="color: white; padding: 20px; background: rgba(0,0,0,0.8); border-radius: 8px; margin-top: 20px;">
-                            <h3 style="color: #ffd700; margin-bottom: 10px;">${image.title}</h3>
-                            <p>תמונה מספר ${image.imageNumber} מתוך ${filteredImages.length}</p>
-                            <p style="color: #ccc; font-size: 0.9em;">תג: ${categories[image.category]} (${image.category})</p>
-                            <div style="background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 20px; font-size: 0.8em; display: inline-block; margin-top: 10px; border: 1px solid rgba(255, 255, 255, 0.2);">
-                                ID: ${image.publicId || 'לא זמין'}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', lightboxHTML);
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeLightbox() {
-            const lightbox = document.getElementById('simpleLightbox');
-            if (lightbox) {
-                lightbox.remove();
-                document.body.style.overflow = '';
-            }
-        }
-
-        // הפיכת פונקציות לגלובליות
-        window.createGallery = createGallery;
-        window.selectCategory = selectCategory;
-        window.openLightbox = openLightbox;
-        window.closeLightbox = closeLightbox;
-
-        // אתחול עם tags
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎈 Loading Baloona Gallery with tags...');
-            console.log('Available tags:', Object.keys(categories));
-            
-            createGallery('arches').then(() => {
-                console.log('✅ Gallery loaded successfully with tags');
-            }).catch(error => {
-                console.error('❌ Failed to load gallery with tags:', error);
-            });
-        });
-
-        // EmailJS
-        document.addEventListener("DOMContentLoaded", function () {
-            emailjs.init("sElKKnkYOmdU2Ywz6");
-            const form = document.getElementById("contact-form");
-            if (form) {
-                form.addEventListener("submit", function (e) {
-                    e.preventDefault();
-                    const submitButton = form.querySelector("button[type='submit']");
-                    const originalText = submitButton.textContent;
-                    submitButton.disabled = true;
-                    submitButton.textContent = "שולח...";
-                    
-                    emailjs.sendForm("service_n41588x", "template_ord4e0h", this)
-                    .then(() => {
-                        form.reset();
-                        submitButton.disabled = false;
-                        submitButton.textContent = originalText;
-                        window.location.href = "thankyou.html";
-                    })
-                    .catch((error) => {
-                        console.error("שגיאה בשליחה:", error);
-                        submitButton.disabled = false;
-                        submitButton.textContent = originalText;
-                        alert("אירעה שגיאה בשליחת הטופס. נסה שוב.");
-                    });
-                });
-            }
-        });
-    </script>
-
-
 </body>
 </html>

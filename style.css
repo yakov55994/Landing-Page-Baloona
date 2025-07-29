@@ -2567,6 +2567,7 @@ div.modern-gallery,
     opacity: 0.6;
     border-left: 3px solid #666;
     position: relative;
+    
 }
 
 .dropdown-item.empty-category:hover {
@@ -2754,6 +2755,8 @@ div.modern-gallery,
 .dropdown-toggle.empty-selected {
     opacity: 0.8;
     border-color: #666;
+    text-align: center;
+
 }
 
 /* הגדרת גלריה - רק כלל אחד! */
@@ -2793,31 +2796,28 @@ div.modern-gallery,
 }
 
 .filter-dropdown {
-    width: 100%;
-    position: relative;
+  position: relative;
+  max-width: 300px;
+  margin: 0 auto;
+  z-index: 10;
 }
 
 /* כפתור התפריט הראשי */
 .dropdown-toggle {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 20px;
-    border: 2px solid var(--gold-bronze-dark);
-    background: linear-gradient(135deg, #121212 0%, #181818 100%);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: 'Rubik', sans-serif;
-    font-size: 14px;
-    color: var(--gold-bronze);
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+  background-color: var(--gold-bronze);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
+
 
 .dropdown-toggle:hover {
     background: linear-gradient(135deg, var(--gold-bronze-dark) 0%, var(--gold-bronze) 100%);
@@ -2861,6 +2861,7 @@ div.modern-gallery,
     transition: all 0.2s ease;
     max-height: 300px;
     overflow-y: auto;
+    align-items: center;
 }
 
 .dropdown-menu.active {
@@ -3063,11 +3064,13 @@ div.modern-gallery,
     .dropdown-toggle {
         font-size: 13px;
         padding: 8px 16px;
+        text-align: center;
     }
 
     .dropdown-item {
         padding: 6px 12px;
         font-size: 12px;
+        text-align: center;
     }
 
     .gallery-container #gallery {
@@ -3108,6 +3111,10 @@ div.modern-gallery,
 }
 
 @media (max-width: 480px) {
+
+    .dropdown-toggle {
+    text-align: center;
+    }
     .filter-section {
         max-width: 200px;
     }
