@@ -31,19 +31,20 @@ router.get('/:tag', async (req, res) => {
   }
 });
 
-// ✅ בדיקה לתיקיית גלריה
-router.get('/test', async (req, res) => {
+
+router.get('/testimonials', async (req, res) => {
   try {
     const result = await cloudinary.v2.search
-      .expression('folder:gallery')
+      .expression('tags=testimonials')
       .sort_by('public_id', 'desc')
-      .max_results(10)
+      .max_results(30)
       .execute();
-    
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("שגיאה בטעינת המלצות:", err);
+    res.status(500).json({ error: 'שגיאה בטעינת המלצות' });
   }
 });
+
 
 export default router;

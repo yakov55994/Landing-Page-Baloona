@@ -166,3 +166,42 @@ categoryDropdown.addEventListener('click', () => {
 // אתחול
 buildDropdown();
 loadGallery(categories["arches"].tag); // arches
+
+
+
+const RECOMMENDATIONS_API = 'https://baloona-server.onrender.com/api/images/testimonials';
+const recommendationsGallery = document.getElementById('recommendationsGallery');
+
+async function loadRecommendations() {
+  try {
+    recommendationsGallery.innerHTML = '<p>טוען המלצות...</p>';
+
+    const res = await fetch(RECOMMENDATIONS_API);
+    const data = await res.json();
+
+    if (!data.resources || data.resources.length === 0) {
+      recommendationsGallery.innerHTML = '<p>אין עדיין המלצות</p>';
+      return;
+    }
+
+    recommendationsGallery.innerHTML = '';
+    data.resources.forEach((img) => {
+      const item = document.createElement('div');
+      item.className = 'recommendation-item';
+
+      const image = document.createElement('img');
+      image.src = img.secure_url;
+      image.alt = 'המלצה מלקוח';
+      image.loading = 'lazy';
+
+      item.appendChild(image);
+      recommendationsGallery.appendChild(item);
+    });
+  } catch (err) {
+    console.error('שגיאה בטעינת המלצות:', err);
+    recommendationsGallery.innerHTML = '<p>שגיאה בטעינת המלצות</p>';
+  }
+}
+
+// טען את ההמלצות כשהדף נטען
+loadRecommendations();
