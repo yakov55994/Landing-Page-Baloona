@@ -6,7 +6,25 @@ import imagesRoute from './route.js'
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+const allowedOrigins = [
+  'https://baloona.pages.dev',
+  'https://baloona-store.com',
+  'http://localhost:5173'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  }
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.static('public')); // שם נמצא gallery.html
 
 app.use('/api/images', imagesRoute);
