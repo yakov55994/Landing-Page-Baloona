@@ -11,7 +11,10 @@ function getMaxVisibleImages() {
 
 // פונקציה לקביעת מספר המלצות מקסימליות - תמיד 3
 function getMaxRecommendations() {
-  return 3; // תמיד 3 המלצות
+  if (window.innerWidth < 768) {
+    return 2; // מובייל וטאבלט קטן - 2 המלצות
+  }
+  return 3; // מחשב - 3 המלצות
 }
 
 let MAX_VISIBLE_IMAGES = getMaxVisibleImages();
@@ -105,7 +108,7 @@ function createGalleryButtons(tag) {
   // כפתור הצג עוד
   const showMoreBtn = document.createElement('button');
   showMoreBtn.className = 'show-more-btn';
-  showMoreBtn.innerHTML = 'הצג עוד תמונות';
+  showMoreBtn.innerHTML = 'הצג עוד תמונות ';
   showMoreBtn.onclick = () => showMoreImages(showMoreBtn, tag);
   
   buttonsContainer.appendChild(showMoreBtn);
@@ -149,7 +152,7 @@ function showMoreImages(showBtn, tag) {
 function replaceShowButtonWithHide(showBtn) {
   const hideBtn = document.createElement('button');
   hideBtn.className = 'hide-more-btn';
-  hideBtn.innerHTML = 'הסתר תמונות נוספות';
+  hideBtn.innerHTML = 'הסתר תמונות נוספות ';
   hideBtn.onclick = () => hideExtraImages(hideBtn);
   
   // אפקט מעבר חלק
@@ -441,7 +444,7 @@ const RECOMMENDATIONS_API = `${API_BASE}/api/images/testimonials`;
 let recommendationsImages = []; // מערך נפרד להמלצות
 
 async function loadRecommendations() {
-  const maxRecommendations = getMaxRecommendations(); // תמיד 3
+  const maxRecommendations = getMaxRecommendations(); // רספונסיבי
   
   try {
     recommendationsGallery.innerHTML = '<p style="color:#ccc">טוען המלצות...</p>';
@@ -461,21 +464,7 @@ async function loadRecommendations() {
     first.forEach((item, index) => createRecommendationItem(item, index));
 
     if (items.length > maxRecommendations) {
-      const btn = document.createElement('button');
-      btn.className = 'show-more-btn recommendations premium-button';
-      btn.textContent = 'הצג עוד המלצות';
-      btn.onclick = () => {
-        btn.classList.add('loading');
-        btn.textContent = 'טוען...';
-        
-        setTimeout(() => {
-          btn.remove();
-          items.slice(maxRecommendations).forEach((item, index) => 
-            createRecommendationItem(item, maxRecommendations + index)
-          );
-        }, 800);
-      };
-      recommendationsGallery.parentElement.appendChild(btn);
+      createRecommendationsShowMoreButton(items, maxRecommendations);
     }
   } catch (err) {
     console.error('שגיאה בטעינת המלצות:', err);
@@ -483,6 +472,159 @@ async function loadRecommendations() {
   }
 }
 
+// הוסף event listener לשינוי גודל מסך - גם להמלצות
+window.addEventListener('resize', () => {
+  const newMaxVisible = getMaxVisibleImages();
+  const newMaxRecommendations = getMaxRecommendations();
+  
+  // טיפול בגלריה הרגילה (הקוד הקיים שלך)
+  if (newMaxVisible !== MAX_VISIBLE_IMAGES) {
+    MAX_VISIBLE_IMAGES = newMaxVisible;
+    
+    if (galleryContainer.children.length > 0) {
+      const currentTag = getCurrentTag();
+      
+      if (currentImages.length > MAX_VISIBLE_IMAGES) {
+        if (!document.getElementById('galleryButtons') && galleryContainer.children.length <= MAX_VISIBLE_IMAGES) {
+          createGalleryButtons(currentTag);
+        }
+        else if (galleryContainer.children.length > MAX_VISIBLE_IMAGES) {
+          const extraImages = Array.from(galleryContainer.children).slice(MAX_VISIBLE_IMAGES);
+          extraImages.forEach(item => item.remove());
+          
+          if (!document.querySelector('.show-more-btn')) {
+            removeGalleryButtons();
+            createGalleryButtons(currentTag);
+          }
+        }
+      } else {
+        removeGalleryButtons();
+      }
+    }
+  }
+  
+  // טיפול בהמלצות - רענון רספונסיבי
+  if (recommendationsImages.length > 0) {
+    const currentRecommendationsCount = recommendationsGallery.children.length;
+    
+    // אם המסך השתנה ויש המלצות מוצגות
+    if (currentRecommendationsCount > 0) {
+      // נקה והצג מחדש עם הכמות הנכונה
+      recommendationsGallery.innerHTML = '';
+      
+      // הסר כפתורים קיימים של המלצות
+      const existingRecommendationsBtn = document.getElementById('recommendationsShowMoreBtn') || 
+                                         document.getElementById('recommendationsHideBtn');
+      if (existingRecommendationsBtn) {
+        existingRecommendationsBtn.remove();
+      }
+      
+      // הצג את המספר הנכון של המלצות
+      const first = recommendationsImages.slice(0, newMaxRecommendations);
+      first.forEach((item, index) => createRecommendationItem(item, index));
+
+      // הוסף כפתור אם יש יותר המלצות
+      if (recommendationsImages.length > newMaxRecommendations) {
+        createRecommendationsShowMoreButton(recommendationsImages, newMaxRecommendations);
+      }
+    }
+  }
+});
+
+// פונקציה להצגת המלצות נוספות
+function showMoreRecommendations(showBtn, items, maxRecommendations) {
+  showBtn.classList.add('loading');
+  showBtn.textContent = 'טוען...';
+  
+  setTimeout(() => {
+    // הצגת ההמלצות הנוספות
+    items.slice(maxRecommendations).forEach((item, index) => 
+      createRecommendationItem(item, maxRecommendations + index)
+    );
+    
+    // החלפת הכפתור בכפתור "הסתר"
+    const hideBtn = document.createElement('button');
+    hideBtn.className = 'hide-more-btn recommendations premium-button';
+    hideBtn.id = 'recommendationsHideBtn';
+    hideBtn.textContent = 'הסתר המלצות נוספות ';
+    hideBtn.onclick = () => hideExtraRecommendations(hideBtn, maxRecommendations);
+    
+    // החלפה חלקה
+    showBtn.style.transition = 'all 0.4s ease';
+    showBtn.style.opacity = '0';
+    showBtn.style.transform = 'translateY(-20px)';
+    
+    setTimeout(() => {
+      showBtn.replaceWith(hideBtn);
+      hideBtn.style.opacity = '0';
+      hideBtn.style.transform = 'translateY(20px)';
+      
+      setTimeout(() => {
+        hideBtn.style.transition = 'all 0.4s ease';
+        hideBtn.style.opacity = '1';
+        hideBtn.style.transform = 'translateY(0)';
+      }, 50);
+    }, 400);
+    
+  }, 800);
+}
+
+// פונקציה להסתרת המלצות נוספות
+function hideExtraRecommendations(hideBtn, maxRecommendations) {
+  hideBtn.classList.add('loading');
+  hideBtn.textContent = 'מסתיר...';
+  
+  setTimeout(() => {
+    // הסרת ההמלצות הנוספות עם אנימציה
+    const allRecommendations = Array.from(recommendationsGallery.children);
+    const extraRecommendations = allRecommendations.slice(maxRecommendations);
+    
+    extraRecommendations.forEach((item, index) => {
+      setTimeout(() => {
+        item.style.transition = 'all 0.3s ease';
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(-20px) scale(0.9)';
+        
+        setTimeout(() => item.remove(), 300);
+      }, index * 50);
+    });
+    
+    // החלפה חזרה בכפתור "הצג עוד"
+    setTimeout(() => {
+      const showBtn = document.createElement('button');
+      showBtn.className = 'show-more-btn recommendations premium-button';
+      showBtn.id = 'recommendationsShowMoreBtn';
+      showBtn.textContent = 'הצג עוד המלצות ';
+      showBtn.onclick = () => showMoreRecommendations(showBtn, recommendationsImages, maxRecommendations);
+      
+      hideBtn.style.transition = 'all 0.4s ease';
+      hideBtn.style.opacity = '0';
+      hideBtn.style.transform = 'translateY(-20px)';
+      
+      setTimeout(() => {
+        hideBtn.replaceWith(showBtn);
+        showBtn.style.opacity = '0';
+        showBtn.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+          showBtn.style.transition = 'all 0.4s ease';
+          showBtn.style.opacity = '1';
+          showBtn.style.transform = 'translateY(0)';
+        }, 50);
+      }, 400);
+    }, extraRecommendations.length * 50 + 300);
+    
+  }, 600);
+}
+// פונקציה ליצירת כפתור "הצג עוד" להמלצות - הוסף את זה לקוד
+function createRecommendationsShowMoreButton(items, maxRecommendations) {
+  const btn = document.createElement('button');
+  btn.className = 'show-more-btn recommendations premium-button';
+  btn.id = 'recommendationsShowMoreBtn';
+  btn.textContent = 'הצג עוד המלצות ';
+  btn.onclick = () => showMoreRecommendations(btn, items, maxRecommendations);
+  recommendationsGallery.parentElement.appendChild(btn);
+}
 function createRecommendationItem(img, index) {
   const item = document.createElement('div');
   item.className = 'recommendation-item';
@@ -545,3 +687,45 @@ buildDropdown();
 loadGallery(categories["arches"].tag);
 loadRecommendations();
 
+function initBackToTopButton() {
+    const backToTopBtn = document.getElementById('backToTop');
+    
+    if (!backToTopBtn) return;
+    
+    // הצגת/הסתרת הכפתור בהתאם למיקום הגלילה
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    });
+    
+    // מעבר חלק לראש העמוד בלחיצה על הכפתור
+    backToTopBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+// Back to Top Button
+const backToTopBtn = document.getElementById('backToTop');
+
+// הצגת הכפתור כשגוללים למטה
+window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 300) {
+        backToTopBtn.classList.add('show');
+    } else {
+        backToTopBtn.classList.remove('show');
+    }
+});
+
+// פונקציונליות הכפתור
+backToTopBtn.addEventListener('click', () => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});

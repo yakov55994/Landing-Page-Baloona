@@ -32,23 +32,11 @@ body {
     min-height: 100vh;
 }
 
-/* Background Elements */
-.bg-pattern {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: radial-gradient(circle at 15% 50%, rgba(255, 215, 0, 0.08) 0%, transparent 25%),
-                    radial-gradient(circle at 85% 30%, rgba(255, 215, 0, 0.08) 0%, transparent 25%),
-                    radial-gradient(circle at 50% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 30%);
-    z-index: -1;
-    opacity: 0.7;
-}
+
 
 /* Hero Section */
 .hero {
-    height: 100vh;
+    height: 60vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -68,7 +56,7 @@ body {
     position: relative;
     max-height: 350px;
     overflow: visible;
-    display: flex;
+    display: fle    x;
     align-items: center;
     justify-content: center;
     margin-bottom: 10px;
@@ -83,7 +71,7 @@ body {
     object-position: center;
     box-shadow: 0 10px 30px var(--gold-bronze);
     background-color: #0a0a0a;
-    margin: 0 auto; /* מרכז את התמונה */
+    margin: 20px auto 0; /* מרכז את התמונה */
 }
 
 
@@ -114,7 +102,7 @@ body {
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid var(--gold-bronze-light);
     border-radius: 20px;
-    color: #f5f5f5;
+    color: black;
     cursor: pointer;
     transition: 0.3s;
     margin-top: 10px;
@@ -656,36 +644,44 @@ body {
 /* Back to Top Button */
 .back-to-top {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    /* שינוי מגרדיאנט כתום לשחור עם מסגרת זהב */
-    background: #121212;
-    border: 2px solid var(--gold-bronze-light);
-    width: 50px;
-    height: 50px;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background: #1a1a1a; /* רקע שחור */
+    color: #d4af37; /* חץ זהוב */
+    border: 2px solid #d4af37; /* מסגרת זהובה */
     border-radius: 50%;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffd700;
-    text-decoration: none;
-    opacity: 0;
-    transform: translateY(20px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-    z-index: 100;
-    cursor: pointer;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
 }
 
-.back-to-top.visible {
+.back-to-top.show {
     opacity: 1;
+    visibility: visible;
     transform: translateY(0);
 }
 
 .back-to-top:hover {
-    transform: translateY(-5px);
-    /* שינוי מכתום לזהב */
-    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+    background: #2a2a2a; /* שחור בהיר יותר */
+    border-color: #f4d03f; /* זהב בהיר יותר */
+    color: #f4d03f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+}
+
+.back-to-top svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2.5;
 }
 
 /* Video Modal */
@@ -2816,10 +2812,11 @@ div.modern-gallery,
   padding: 12px 16px;
   font-size: 1rem;
   background-color: var(--gold-bronze);
-  color: white;
+  color: black;
   border: none;
-  border-radius: 8px;
+  border-radius: 20px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 
@@ -2840,7 +2837,7 @@ div.modern-gallery,
 .dropdown-arrow {
     font-size: 10px;
     transition: transform 0.2s ease;
-    margin-left: auto;
+    margin-left: 12px;
 }
 
 .dropdown-toggle.active .dropdown-arrow {
@@ -2882,7 +2879,7 @@ div.modern-gallery,
     padding: 8px 16px;
     border: none;
     background: transparent;
-    text-align: right;
+    text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: 'Rubik', sans-serif;
@@ -3555,7 +3552,7 @@ div.modern-gallery,
   }
   
   .recommendations-gallery {
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
   }
   
@@ -3579,3 +3576,40 @@ div.modern-gallery,
 .recommendation-item:nth-child(4) { animation-delay: 0.7s; }
 .recommendation-item:nth-child(5) { animation-delay: 0.9s; }
 .recommendation-item:nth-child(6) { animation-delay: 1.1s; }
+.contact-phones {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 20px auto 0; /* מרכז את הקונטיינר */
+    padding: 15px;
+    background: rgba(var(--gold-bronze-rgb), 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(var(--gold-bronze-rgb), 0.3);
+    text-align: center; /* מרכז את התוכן */
+    max-width: 250px; /* רוחב מקסימלי */
+}
+
+.phone-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center; /* מרכז את הפריטים */
+}
+
+.phone-icon {
+    color: var(--gold-bronze);
+    flex-shrink: 0;
+}
+
+.phone-link {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    direction: ltr;
+    transition: color 0.3s ease;
+}
+
+.phone-link:hover {
+    color: var(--gold-bronze);
+}
