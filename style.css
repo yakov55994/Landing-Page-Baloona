@@ -3293,6 +3293,9 @@ div.modern-gallery,
 
     /* * פריט המלצה */ 
 .recommendation-item {
+    height: 100%;
+    width: 100%;
+     aspect-ratio: 9 / 16;
   position: relative;
   background: linear-gradient(145deg, 
     #1a1a1a 0%, 
@@ -3300,6 +3303,7 @@ div.modern-gallery,
     #2a2a2a 70%,
     #1a1a1a 100%
   );
+
   border-radius: 25px;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3310,7 +3314,12 @@ div.modern-gallery,
   animation: gentle-entrance 0.8s ease-out;
   cursor: pointer;
 }
-
+.recommendation-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 .recommendation-item::before {
   content: '';
@@ -3329,6 +3338,8 @@ div.modern-gallery,
   transition: opacity 0.4s ease;
   z-index: 1;
   pointer-events: none;
+    object-fit: cover;
+
 }
 
 

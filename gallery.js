@@ -3,10 +3,10 @@ const API_BASE = 'https://baloona-server.onrender.com';
 
 // פונקציה לקביעת מספר תמונות מקסימליות לפי גודל מסך - לגלריה רגילה
 function getMaxVisibleImages() {
-  if (window.innerWidth <= 768) {
-    return 2; // טלפון - 3 תמונות
+  if (window.innerWidth < 768) {
+    return 3; // מובייל וטאבלט קטן
   }
-  return 5; // מחשב - 5 תמונות
+  return 5; // מחשב
 }
 
 // פונקציה לקביעת מספר המלצות מקסימליות - תמיד 3
