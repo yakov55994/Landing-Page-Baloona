@@ -1,4 +1,22 @@
-const API_BASE = 'https://baloona-server.onrender.com'; // שנה ל-localhost אם צריך
+// ✅ הגדרת קבועים רספונסיביים
+const API_BASE = 'https://baloona-server.onrender.com';
+
+// פונקציה לקביעת מספר תמונות מקסימליות לפי גודל מסך - לגלריה רגילה
+function getMaxVisibleImages() {
+  if (window.innerWidth <= 768) {
+    return 2; // טלפון - 3 תמונות
+  }
+  return 5; // מחשב - 5 תמונות
+}
+
+// פונקציה לקביעת מספר המלצות מקסימליות - תמיד 3
+function getMaxRecommendations() {
+  return 4; // תמיד 3 המלצות
+}
+
+let MAX_VISIBLE_IMAGES = getMaxVisibleImages();
+
+// ✅ DOM Elements
 const galleryContainer = document.getElementById('galleryContainer');
 const categoryDropdown = document.getElementById('categoryDropdown');
 const dropdownMenu = document.getElementById('dropdownMenu');
@@ -11,10 +29,11 @@ const lightboxNumber = document.getElementById('lightboxNumber');
 const lightboxPrev = document.getElementById('lightboxPrev');
 const lightboxNext = document.getElementById('lightboxNext');
 const closeLightboxBtn = document.getElementById('closeLightbox');
+const recommendationsGallery = document.getElementById('recommendationsGallery');
 
-// רשימת קטגוריות
+// ✅ קטגוריות
 const categories = {
-  "arches":        { label: "🌈 קשתות", tag: "arches" },
+  "arches": { label: "🌈 קשתות", tag: "arches" },
   "room-arrangements": { label: "🏠 סידורי חדרים", tag: "room-arrangements" },
   "balloon-numbers": { label: "🔢 מספרים מבלונים", tag: "balloon-numbers" },
   "photo-reviews": { label: "📸 קירות צילום", tag: "photo-reviews" },
@@ -22,90 +41,54 @@ const categories = {
   "kids-balloons": { label: "👶 בלונים לילדים", tag: "kids-balloons" },
   "gender-reveal": { label: "👶 גילוי מין", tag: "gender-reveal" },
   "balloon-bouquet": { label: "🎁 בלונים ליום הולדת", tag: "balloon-bouquet" },
-  "centerpiece":   { label: "🎯 מרכזי שולחן", tag: "centerpiece" },
+  "centerpiece": { label: "🎯 מרכזי שולחן", tag: "centerpiece" },
   "birth-celebration": { label: "🎂 הולדת בן/בת", tag: "birth-celebration" },
-  "balloon":       { label: "🎈 כדור פורח", tag: "balloon" }
+  "balloon": { label: "🎈 כדור פורח", tag: "balloon" }
 };
 
-
-
-
-
-// נתונים דינמיים
 let currentImages = [];
 let currentIndex = 0;
 
-// יצירת תפריט נפתח
 function buildDropdown() {
   dropdownMenu.innerHTML = '';
-Object.entries(categories).forEach(([key, info]) => {
-  const btn = document.createElement('button');
-  btn.className = 'dropdown-item';
-  btn.textContent = info.label;
-  btn.dataset.tag = info.tag;
-  btn.onclick = () => {
-    categoryDropdown.innerHTML = `${info.label} <span class="dropdown-arrow">▼</span>`;
-    dropdownMenu.classList.remove('active');
-    loadGallery(info.tag); // 📌 משתמש בתגית באנגלית
-  };
-  dropdownMenu.appendChild(btn);
-});
-
-
+  Object.entries(categories).forEach(([key, info]) => {
+    const btn = document.createElement('button');
+    btn.className = 'dropdown-item';
+    btn.textContent = info.label;
+    btn.dataset.tag = info.tag;
+    btn.onclick = () => {
+      categoryDropdown.innerHTML = `${info.label} <span class="dropdown-arrow">▼</span>`;
+      dropdownMenu.classList.remove('active');
+      loadGallery(info.tag);
+    };
+    dropdownMenu.appendChild(btn);
+  });
 }
 
-// טעינת תמונות לפי תגית
+// פונקציה משופרת לטעינת גלריה עם כפתורי הצג/הסתר
 async function loadGallery(tag) {
+  // עדכון MAX_VISIBLE_IMAGES בכל טעינה
+  MAX_VISIBLE_IMAGES = getMaxVisibleImages();
+  
   galleryContainer.innerHTML = '';
   galleryCounter.textContent = 'טוען תמונות...';
+  
+  // הסרת כפתורים קיימים
+  removeGalleryButtons();
+  
   try {
     const res = await fetch(`${API_BASE}/api/images/${tag}`);
-    // console.log("res", res);
     const data = await res.json();
-    console.log("data.resources = ", data.resources);
-    if (!data.resources || data.resources.length === 0) {
-      showEmptyMessage();
-      return;
-    }
+    currentImages = data.resources || [];
 
-    currentImages = data.resources;
-    galleryContainer.innerHTML = '';
+    if (currentImages.length === 0) return showEmptyMessage();
+
     galleryCounter.innerHTML = `מספר תמונות: <strong>${currentImages.length}</strong>`;
+    displayGalleryItems(currentImages.slice(0, MAX_VISIBLE_IMAGES), tag);
 
-    currentImages.forEach((img, i) => {
-      const item = document.createElement('div');
-      item.className = 'gallery-item';
-      item.dataset.category = tag;
-      item.onclick = () => openLightbox(i);
-
-      const image = document.createElement('img');
-      image.src = img.secure_url;
-      image.alt = img.public_id;
-
-      const number = document.createElement('div');
-      number.className = 'image-number';
-      number.textContent = i + 1;
-
-      const overlay = document.createElement('div');
-      overlay.className = 'gallery-overlay';
-
-      const info = document.createElement('div');
-      info.className = 'gallery-info';
-      const title = document.createElement('h3');
-    //   title.textContent  = tag;
-      const desc = document.createElement('p');
-    //   desc.textContent = img.public_id.split('/').pop();
-
-      info.appendChild(title);
-      info.appendChild(desc);
-      overlay.appendChild(info);
-
-      item.appendChild(image);
-      item.appendChild(number);
-      item.appendChild(overlay);
-      galleryContainer.appendChild(item);
-    });
-
+    if (currentImages.length > MAX_VISIBLE_IMAGES) {
+      createGalleryButtons(tag);
+    }
   } catch (err) {
     console.error('שגיאה בטעינת תמונות:', err);
     galleryCounter.textContent = 'שגיאה בטעינת תמונות';
@@ -113,7 +96,198 @@ async function loadGallery(tag) {
   }
 }
 
-// הודעה אם אין תמונות
+// יצירת כפתורי הצג עוד והסתר
+function createGalleryButtons(tag) {
+  const buttonsContainer = document.createElement('div');
+  buttonsContainer.className = 'gallery-buttons';
+  buttonsContainer.id = 'galleryButtons';
+  
+  // כפתור הצג עוד
+  const showMoreBtn = document.createElement('button');
+  showMoreBtn.className = 'show-more-btn';
+  showMoreBtn.innerHTML = 'הצג עוד תמונות';
+  showMoreBtn.onclick = () => showMoreImages(showMoreBtn, tag);
+  
+  buttonsContainer.appendChild(showMoreBtn);
+  galleryContainer.parentElement.appendChild(buttonsContainer);
+}
+
+// הצגת תמונות נוספות
+function showMoreImages(showBtn, tag) {
+  // אפקט טעינה
+  showBtn.classList.add('loading');
+  showBtn.textContent = 'טוען...';
+  
+  setTimeout(() => {
+    // הצגת התמונות הנוספות
+    const remainingImages = currentImages.slice(MAX_VISIBLE_IMAGES);
+    const currentCount = galleryContainer.children.length;
+    
+    remainingImages.forEach((img, i) => {
+      const item = createGalleryItem(img, currentCount + i, tag);
+      galleryContainer.appendChild(item);
+    });
+    
+    // החלפת הכפתור
+    replaceShowButtonWithHide(showBtn);
+    
+    // גלילה חלקה לתמונות החדשות
+    setTimeout(() => {
+      const firstNewImage = galleryContainer.children[MAX_VISIBLE_IMAGES];
+      if (firstNewImage) {
+        firstNewImage.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 100);
+    
+  }, 800); // השהיה לאפקט הטעינה
+}
+
+// החלפת כפתור הצג עוד בכפתור הסתר
+function replaceShowButtonWithHide(showBtn) {
+  const hideBtn = document.createElement('button');
+  hideBtn.className = 'hide-more-btn';
+  hideBtn.innerHTML = 'הסתר תמונות נוספות';
+  hideBtn.onclick = () => hideExtraImages(hideBtn);
+  
+  // אפקט מעבר חלק
+  showBtn.classList.add('fade-out');
+  
+  setTimeout(() => {
+    showBtn.replaceWith(hideBtn);
+    // אנימציית כניסה לכפתור החדש
+    hideBtn.style.opacity = '0';
+    hideBtn.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+      hideBtn.style.transition = 'all 0.4s ease';
+      hideBtn.style.opacity = '1';
+      hideBtn.style.transform = 'translateY(0)';
+    }, 50);
+  }, 400);
+}
+
+// הסתרת תמונות נוספות
+function hideExtraImages(hideBtn) {
+  // עדכון MAX_VISIBLE_IMAGES למקרה של שינוי גודל מסך
+  const currentMaxVisible = getMaxVisibleImages();
+  
+  // אפקט טעינה
+  hideBtn.classList.add('loading');
+  hideBtn.textContent = 'מסתיר...';
+  
+  setTimeout(() => {
+    // הסרת התמונות הנוספות עם אנימציה
+    const extraImages = Array.from(galleryContainer.children).slice(currentMaxVisible);
+    
+    extraImages.forEach((item, index) => {
+      setTimeout(() => {
+        item.style.transition = 'all 0.3s ease';
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(-20px) scale(0.9)';
+        
+        setTimeout(() => item.remove(), 300);
+      }, index * 50); // מעבר מדורג
+    });
+    
+    // החלפה חזרה בכפתור הצג עוד
+    setTimeout(() => {
+      replaceHideButtonWithShow(hideBtn);
+    }, extraImages.length * 50 + 300);
+    
+    // גלילה חזרה למקום המקורי
+    setTimeout(() => {
+      const lastVisibleImage = galleryContainer.children[currentMaxVisible - 1];
+      if (lastVisibleImage) {
+        lastVisibleImage.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'end' 
+        });
+      }
+    }, 100);
+    
+  }, 600);
+}
+
+// החלפת כפתור הסתר בכפתור הצג עוד
+function replaceHideButtonWithShow(hideBtn) {
+  const showBtn = document.createElement('button');
+  showBtn.className = 'show-more-btn';
+  showBtn.innerHTML = 'הצג עוד תמונות';
+  showBtn.onclick = () => showMoreImages(showBtn, getCurrentTag());
+  
+  // אפקט מעבר חלק
+  hideBtn.classList.add('fade-out');
+  
+  setTimeout(() => {
+    hideBtn.replaceWith(showBtn);
+    // אנימציית כניסה לכפתור החדש
+    showBtn.style.opacity = '0';
+    showBtn.style.transform = 'translateY(-20px)';
+    
+    setTimeout(() => {
+      showBtn.style.transition = 'all 0.4s ease';
+      showBtn.style.opacity = '1';
+      showBtn.style.transform = 'translateY(0)';
+    }, 50);
+  }, 400);
+}
+
+// יצירת פריט גלריה בודד
+function createGalleryItem(img, index, tag) {
+  const item = document.createElement('div');
+  item.className = 'gallery-item';
+  item.dataset.category = tag;
+  item.onclick = () => openLightbox(index);
+  
+  // אנימציית כניסה
+  item.style.opacity = '0';
+  item.style.transform = 'translateY(30px) scale(0.9)';
+  
+  const image = document.createElement('img');
+  image.src = img.secure_url;
+  image.alt = img.public_id;
+  image.loading = 'lazy';
+
+  const number = document.createElement('div');
+  number.className = 'image-number';
+  number.textContent = index + 1;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'gallery-overlay';
+  const info = document.createElement('div');
+  info.className = 'gallery-info';
+  const title = document.createElement('h3');
+  const desc = document.createElement('p');
+
+  info.appendChild(title);
+  info.appendChild(desc);
+  overlay.appendChild(info);
+
+  item.appendChild(image);
+  item.appendChild(number);
+  item.appendChild(overlay);
+  
+  // אנימציית כניסה מושהית
+  setTimeout(() => {
+    item.style.transition = 'all 0.4s ease';
+    item.style.opacity = '1';
+    item.style.transform = 'translateY(0) scale(1)';
+  }, 100);
+  
+  return item;
+}
+
+// עדכון הפונקציה הקיימת displayGalleryItems
+function displayGalleryItems(images, tag) {
+  images.forEach((img, i) => {
+    const item = createGalleryItem(img, i, tag);
+    galleryContainer.appendChild(item);
+  });
+}
+
 function showEmptyMessage() {
   galleryContainer.innerHTML = `<div class="empty-category-message">
     <div class="empty-icon">😕</div>
@@ -123,34 +297,134 @@ function showEmptyMessage() {
   galleryCounter.textContent = '';
 }
 
-// פתיחת לייטבוקס
 function openLightbox(index) {
   currentIndex = index;
   const image = currentImages[index];
   lightboxImage.src = image.secure_url;
-//   lightboxTitle.textContent = categories[image.tag] || 'תמונה';
-//   lightboxDesc.textContent = image.public_id.split('/').pop();
   lightboxNumber.textContent = `${index + 1} מתוך ${currentImages.length}`;
   lightboxModal.classList.add('active');
+  
+  // הצגת חצי הניווט רק אם יש יותר מתמונה אחת
+  const showNav = currentImages.length > 1;
+  lightboxPrev.style.display = showNav ? 'block' : 'none';
+  lightboxNext.style.display = showNav ? 'block' : 'none';
+  
+  // ניקוי סימון המלצות
+  delete lightboxModal.dataset.type;
 }
 
-// ניווט בלייטבוקס
 function navigateLightbox(direction) {
-  currentIndex += direction;
-  if (currentIndex < 0) currentIndex = currentImages.length - 1;
-  if (currentIndex >= currentImages.length) currentIndex = 0;
+  currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
   openLightbox(currentIndex);
 }
 
-// סגירת לייטבוקס
 function closeLightbox() {
   lightboxModal.classList.remove('active');
 }
 
-// אירועים
+// קבלת הקטגוריה הנוכחית
+function getCurrentTag() {
+  const firstItem = galleryContainer.querySelector('.gallery-item');
+  return firstItem ? firstItem.dataset.category : 'arches';
+}
+
+// הסרת כפתורי גלריה קיימים
+function removeGalleryButtons() {
+  const existingButtons = document.getElementById('galleryButtons');
+  if (existingButtons) {
+    existingButtons.remove();
+  }
+}
+
+// עדכן את מספר התמונות המקסימליות בשינוי גודל מסך
+window.addEventListener('resize', () => {
+  const newMaxVisible = getMaxVisibleImages();
+  
+  // אם השתנה מספר התמונות המקסימליות
+  if (newMaxVisible !== MAX_VISIBLE_IMAGES) {
+    MAX_VISIBLE_IMAGES = newMaxVisible;
+    
+    // אם יש תמונות מוצגות כרגע
+    if (galleryContainer.children.length > 0) {
+      const currentTag = getCurrentTag();
+      
+      // בדוק אם צריך להציג או להסתיר כפתורים
+      if (currentImages.length > MAX_VISIBLE_IMAGES) {
+        // אם אין כפתורים ויש יותר תמונות ממה שצריך להציג
+        if (!document.getElementById('galleryButtons') && galleryContainer.children.length <= MAX_VISIBLE_IMAGES) {
+          createGalleryButtons(currentTag);
+        }
+        // אם מוצגות יותר תמונות ממה שצריך (מעבר ממחשב לטלפון)
+        else if (galleryContainer.children.length > MAX_VISIBLE_IMAGES) {
+          const extraImages = Array.from(galleryContainer.children).slice(MAX_VISIBLE_IMAGES);
+          extraImages.forEach(item => item.remove());
+          
+          // וודא שיש כפתור הצג עוד
+          if (!document.querySelector('.show-more-btn')) {
+            removeGalleryButtons();
+            createGalleryButtons(currentTag);
+          }
+        }
+      } else {
+        // אם אין צורך יותר בכפתורים
+        removeGalleryButtons();
+      }
+    }
+  }
+});
+
+// מעקב אחר כיוון המסך במכשירים ניידים
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 100);
+});
+
+// Event Listeners - עם תיקונים ובדיקות
 lightboxPrev.onclick = () => navigateLightbox(-1);
 lightboxNext.onclick = () => navigateLightbox(1);
 closeLightboxBtn.onclick = closeLightbox;
+
+// לחיצה על הרקע לסגירת ה-lightbox
+lightboxModal.addEventListener('click', (e) => {
+  // אם לחצו על המודל עצמו (הרקע) ולא על התמונה או הכפתורים
+  if (e.target === lightboxModal) {
+    closeLightbox();
+  }
+});
+
+// מניעת סגירה בלחיצה על התמונה עצמה
+lightboxImage.addEventListener('click', (e) => {
+  e.stopPropagation();
+});
+
+// מניעת סגירה בלחיצה על הכפתורים - עם בדיקה שהאלמנט קיים
+const lightboxNav = document.querySelector('.lightbox-nav');
+if (lightboxNav) {
+  lightboxNav.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+}
+
+// מניעת סגירה גם בלחיצה על כפתורי הניווט עצמם
+if (lightboxPrev) {
+  lightboxPrev.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+}
+
+if (lightboxNext) {
+  lightboxNext.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+}
+
+if (closeLightboxBtn) {
+  closeLightboxBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+}
+
 window.addEventListener('keydown', (e) => {
   if (!lightboxModal.classList.contains('active')) return;
   if (e.key === 'ArrowRight') navigateLightbox(1);
@@ -158,50 +432,115 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeLightbox();
 });
 
-// תפריט נפתח
 categoryDropdown.addEventListener('click', () => {
   dropdownMenu.classList.toggle('active');
 });
 
-// אתחול
-buildDropdown();
-loadGallery(categories["arches"].tag); // arches
-
-
-
-const RECOMMENDATIONS_API = 'https://baloona-server.onrender.com/api/images/testimonials';
-const recommendationsGallery = document.getElementById('recommendationsGallery');
+// המלצות לקוחות - תמיד 3 המלצות עם lightbox
+const RECOMMENDATIONS_API = `${API_BASE}/api/images/testimonials`;
+let recommendationsImages = []; // מערך נפרד להמלצות
 
 async function loadRecommendations() {
+  const maxRecommendations = getMaxRecommendations(); // תמיד 3
+  
   try {
-    recommendationsGallery.innerHTML = '<p>טוען המלצות...</p>';
-
+    recommendationsGallery.innerHTML = '<p style="color:#ccc">טוען המלצות...</p>';
     const res = await fetch(RECOMMENDATIONS_API);
     const data = await res.json();
+    const items = data.resources || [];
 
-    if (!data.resources || data.resources.length === 0) {
-      recommendationsGallery.innerHTML = '<p>אין עדיין המלצות</p>';
+    if (items.length === 0) {
+      recommendationsGallery.innerHTML = '<p style="color:#ccc">אין עדיין המלצות</p>';
       return;
     }
 
-    recommendationsGallery.innerHTML = '';
-    data.resources.forEach((img) => {
-      const item = document.createElement('div');
-      item.className = 'recommendation-item';
+    recommendationsImages = items; // שמירת כל ההמלצות
+    recommendationsGallery.innerHTML = ''; // נקה את הודעת הטעינה
+    
+    const first = items.slice(0, maxRecommendations);
+    first.forEach((item, index) => createRecommendationItem(item, index));
 
-      const image = document.createElement('img');
-      image.src = img.secure_url;
-      image.alt = 'המלצה מלקוח';
-      image.loading = 'lazy';
-
-      item.appendChild(image);
-      recommendationsGallery.appendChild(item);
-    });
+    if (items.length > maxRecommendations) {
+      const btn = document.createElement('button');
+      btn.className = 'show-more-btn recommendations premium-button';
+      btn.textContent = 'הצג עוד המלצות';
+      btn.onclick = () => {
+        btn.classList.add('loading');
+        btn.textContent = 'טוען...';
+        
+        setTimeout(() => {
+          btn.remove();
+          items.slice(maxRecommendations).forEach((item, index) => 
+            createRecommendationItem(item, maxRecommendations + index)
+          );
+        }, 800);
+      };
+      recommendationsGallery.parentElement.appendChild(btn);
+    }
   } catch (err) {
     console.error('שגיאה בטעינת המלצות:', err);
-    recommendationsGallery.innerHTML = '<p>שגיאה בטעינת המלצות</p>';
+    recommendationsGallery.innerHTML = '<p style="color:#f66">שגיאה בטעינת המלצות</p>';
   }
 }
 
-// טען את ההמלצות כשהדף נטען
+function createRecommendationItem(img, index) {
+  const item = document.createElement('div');
+  item.className = 'recommendation-item';
+  item.onclick = () => openRecommendationLightbox(index); // הוספת אירוע לחיצה
+
+  const image = document.createElement('img');
+  image.src = img.secure_url;
+  image.alt = 'המלצה מלקוח';
+  image.loading = 'lazy';
+
+  item.appendChild(image);
+  recommendationsGallery.appendChild(item);
+}
+
+// פונקציה לפתיחת lightbox להמלצות
+function openRecommendationLightbox(index) {
+  // החלפה להמלצות
+  currentImages = recommendationsImages;
+  currentIndex = index;
+  
+  const image = recommendationsImages[index];
+  lightboxImage.src = image.secure_url;
+  lightboxNumber.textContent = `המלצה ${index + 1} מתוך ${recommendationsImages.length}`;
+  lightboxModal.classList.add('active');
+  
+  // הצגת חצי הניווט רק אם יש יותר מהמלצה אחת
+  const showNav = recommendationsImages.length > 1;
+  lightboxPrev.style.display = showNav ? 'block' : 'none';
+  lightboxNext.style.display = showNav ? 'block' : 'none';
+  
+  // סימון שזה lightbox להמלצות
+  lightboxModal.dataset.type = 'recommendations';
+}
+
+// עדכון פונקציית הניווט ב-lightbox
+function navigateLightbox(direction) {
+  currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
+  
+  if (lightboxModal.dataset.type === 'recommendations') {
+    openRecommendationLightbox(currentIndex);
+  } else {
+    openLightbox(currentIndex);
+  }
+}
+
+// עדכון פונקציית סגירת ה-lightbox
+function closeLightbox() {
+  lightboxModal.classList.remove('active');
+  
+  // ניקוי כל הסימונים
+  delete lightboxModal.dataset.type;
+  
+  // החזרת החצים למצב רגיל
+  lightboxPrev.style.display = 'block';
+  lightboxNext.style.display = 'block';
+}
+
+// אתחול
+buildDropdown();
+loadGallery(categories["arches"].tag);
 loadRecommendations();
