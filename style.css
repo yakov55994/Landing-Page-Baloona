@@ -3283,7 +3283,7 @@ div.modern-gallery,
 /* גריד המלצות */
 .recommendations-gallery {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 35px;
   position: relative;
   z-index: 1;
@@ -3555,7 +3555,7 @@ div.modern-gallery,
   }
   
   .recommendations-gallery {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 15px;
   }
   

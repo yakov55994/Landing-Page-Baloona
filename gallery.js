@@ -11,7 +11,7 @@ function getMaxVisibleImages() {
 
 // פונקציה לקביעת מספר המלצות מקסימליות - תמיד 3
 function getMaxRecommendations() {
-  return 4; // תמיד 3 המלצות
+  return 3; // תמיד 3 המלצות
 }
 
 let MAX_VISIBLE_IMAGES = getMaxVisibleImages();
@@ -544,3 +544,4 @@ function closeLightbox() {
 buildDropdown();
 loadGallery(categories["arches"].tag);
 loadRecommendations();
+
