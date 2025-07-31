@@ -1074,18 +1074,81 @@ div.modern-gallery,
 
 .lightbox-prev {
     left: -60px;
+    text-align: center;
 }
 
 .lightbox-next {
     right: -60px;
+    text-align: center;
+
 }
+
+.lightbox-prev::before {
+    content: '◀';
+    font-size: 24px;
+    display: inline-block;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-next::before {
+    content: '▶';
+    font-size: 24px;
+    display: inline-block;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* אנימציה עדינה */
+@keyframes arrowGlow {
+    0%, 100% { 
+        text-shadow: 0 0 5px rgba(201, 160, 92, 0.5); 
+    }
+    50% { 
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 
+                     0 0 30px rgba(255, 215, 0, 0.4); 
+    }
+}
+
+.lightbox-prev:hover::before,
+.lightbox-next:hover::before {
+    animation: arrowGlow 2s ease-in-out infinite;
+}
+
+/* התאמות למובייל - טאבלט */
+@media (max-width: 1024px) {
+    .lightbox-prev, .lightbox-next {
+        width: 55px;
+        height: 55px;
+        font-size: 22px;
+        border-width: 2px;
+    }
+    
+    .lightbox-prev {
+        left: 15px;
+    }
+    
+    .lightbox-next {
+        right: 15px;
+    }
+    
+    .lightbox-prev::before,
+    .lightbox-next::before {
+        font-size: 20px;
+    }
+}
+
+
 
 .lightbox-prev:hover, .lightbox-next:hover {
-    background-color: rgba(201, 160, 92, 0.3);
-    color: #fff;
-    box-shadow: 0 0 15px rgba(201, 160, 92, 0.5);
+    background: linear-gradient(135deg, var(--gold-bronze), #d4af37);
+    color: #000;
+    border-color: #fff;
+    transform: translateY(-50%) scale(1.15);
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.8),
+        0 0 50px rgba(255, 215, 0, 0.6),
+        0 0 80px rgba(255, 215, 0, 0.3),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
 }
-
 /* עיצוב מודאל ההצלחה */
 .success-modal {
     display: none;
@@ -1681,19 +1744,56 @@ div.modern-gallery,
 @media (max-width: 768px) {
    
     
-    .lightbox-prev, .lightbox-next {
-        width: 35px;
-        height: 35px;
+      .lightbox-prev, .lightbox-next {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        border-width: 2px;
+        box-shadow: 
+            0 6px 20px rgba(0, 0, 0, 0.7),
+            0 0 25px rgba(201, 160, 92, 0.4);
     }
     
     .lightbox-prev {
-        left: -45px;
+        left: 12px;
     }
     
     .lightbox-next {
-        right: -45px;
+        right: 12px;
+    }
+    
+    .lightbox-prev::before,
+    .lightbox-next::before {
+        font-size: 18px;
     }
 }
+
+/* התאמות למסכים קטנים מאוד */
+@media (max-width: 480px) {
+    .lightbox-prev, .lightbox-next {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+        top: 40%;
+    }
+    
+    .lightbox-prev {
+        left: 15px;
+    }
+    
+    .lightbox-next {
+        right: 10px;
+    }
+    
+    .lightbox-prev::before,
+    .lightbox-next::before {
+        font-size: 16px;
+    }
+}
+
+/* במקרה שהמסך קטן מדי - הכפתורים יופיעו על התמונה */
+
+
 
 /* התאמות נוספות למסכים קטנים */
 @media (max-width: 480px) {
@@ -1716,6 +1816,59 @@ div.modern-gallery,
     } */
         
     }
+/* אפקט לחיצה */
+.lightbox-prev:active, .lightbox-next:active {
+    transform: translateY(-50%) scale(0.95);
+    box-shadow: 
+        0 5px 15px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(201, 160, 92, 0.4);
+}
+
+/* הוספת gradient עדין לרקע */
+.lightbox-prev::after, .lightbox-next::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: conic-gradient(
+        from 0deg,
+        var(--gold-bronze),
+        transparent,
+        var(--gold-bronze-light),
+        transparent,
+        var(--gold-bronze)
+    );
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.lightbox-prev:hover::after, .lightbox-next:hover::after {
+    opacity: 0.7;
+    animation: rotation 3s linear infinite;
+}
+
+@keyframes rotation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* הוספת מעבר חלק יותר */
+.lightbox-prev, .lightbox-next {
+    will-change: transform, background, border-color;
+}
+
+/* הבטחה שהכפתורים נראים גם על רקעים בהירים */
+.lightbox-prev, .lightbox-next {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.lightbox-prev:hover, .lightbox-next:hover {
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.7));
+}
 
 
 /* קישורים נוספים ואנימציות */
