@@ -472,65 +472,6 @@ async function loadRecommendations() {
   }
 }
 
-// הוסף event listener לשינוי גודל מסך - גם להמלצות
-window.addEventListener('resize', () => {
-  const newMaxVisible = getMaxVisibleImages();
-  const newMaxRecommendations = getMaxRecommendations();
-  
-  // טיפול בגלריה הרגילה (הקוד הקיים שלך)
-  if (newMaxVisible !== MAX_VISIBLE_IMAGES) {
-    MAX_VISIBLE_IMAGES = newMaxVisible;
-    
-    if (galleryContainer.children.length > 0) {
-      const currentTag = getCurrentTag();
-      
-      if (currentImages.length > MAX_VISIBLE_IMAGES) {
-        if (!document.getElementById('galleryButtons') && galleryContainer.children.length <= MAX_VISIBLE_IMAGES) {
-          createGalleryButtons(currentTag);
-        }
-        else if (galleryContainer.children.length > MAX_VISIBLE_IMAGES) {
-          const extraImages = Array.from(galleryContainer.children).slice(MAX_VISIBLE_IMAGES);
-          extraImages.forEach(item => item.remove());
-          
-          if (!document.querySelector('.show-more-btn')) {
-            removeGalleryButtons();
-            createGalleryButtons(currentTag);
-          }
-        }
-      } else {
-        removeGalleryButtons();
-      }
-    }
-  }
-  
-  // טיפול בהמלצות - רענון רספונסיבי
-  if (recommendationsImages.length > 0) {
-    const currentRecommendationsCount = recommendationsGallery.children.length;
-    
-    // אם המסך השתנה ויש המלצות מוצגות
-    if (currentRecommendationsCount > 0) {
-      // נקה והצג מחדש עם הכמות הנכונה
-      recommendationsGallery.innerHTML = '';
-      
-      // הסר כפתורים קיימים של המלצות
-      const existingRecommendationsBtn = document.getElementById('recommendationsShowMoreBtn') || 
-                                         document.getElementById('recommendationsHideBtn');
-      if (existingRecommendationsBtn) {
-        existingRecommendationsBtn.remove();
-      }
-      
-      // הצג את המספר הנכון של המלצות
-      const first = recommendationsImages.slice(0, newMaxRecommendations);
-      first.forEach((item, index) => createRecommendationItem(item, index));
-
-      // הוסף כפתור אם יש יותר המלצות
-      if (recommendationsImages.length > newMaxRecommendations) {
-        createRecommendationsShowMoreButton(recommendationsImages, newMaxRecommendations);
-      }
-    }
-  }
-});
-
 // פונקציה להצגת המלצות נוספות
 function showMoreRecommendations(showBtn, items, maxRecommendations) {
   showBtn.classList.add('loading');
