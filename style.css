@@ -1084,19 +1084,22 @@ div.modern-gallery,
 }
 
 .lightbox-prev::before {
-    content: '◀';
-    font-size: 24px;
+    content: '‹';
+    font-size: 32px;
     display: inline-block;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    line-height: 1;
 }
 
 .lightbox-next::before {
-    content: '▶';
-    font-size: 24px;
+    content: '›';
+    font-size: 32px;
     display: inline-block;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    line-height: 1;
 }
-
 /* אנימציה עדינה */
 @keyframes arrowGlow {
     0%, 100% { 
@@ -1785,10 +1788,24 @@ div.modern-gallery,
         right: 10px;
     }
     
-    .lightbox-prev::before,
-    .lightbox-next::before {
-        font-size: 16px;
-    }
+  
+    .lightbox-prev::before {
+    content: '‹';
+    font-size: 32px;
+    display: inline-block;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    line-height: 1;
+}
+
+.lightbox-next::before {
+    content: '›';
+    font-size: 32px;
+    display: inline-block;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    line-height: 1;
+}
 }
 
 /* במקרה שהמסך קטן מדי - הכפתורים יופיעו על התמונה */
