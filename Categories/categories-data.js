@@ -299,7 +299,7 @@ const CategoriesManager = {
         return `
             <div class="gallery-item" data-image-id="${image.id}">
                 <div class="gallery-item-inner">
-                    <img src="${image.imageSrc}" alt="${image.alt}">
+                    <img src="${image.imageSrc}" alt="${image.alt}" loading="lazy">
                     <div class="gallery-overlay">
                         <div class="gallery-info">
                         </div>
@@ -319,7 +319,7 @@ const CategoriesManager = {
         return `
             <div class="gallery-item" data-category="${recommendation.category}">
                 <div class="gallery-item-inner">
-                    <img src="${recommendation.imageSrc}" alt="${recommendation.alt}">
+                    <img src="${recommendation.imageSrc}" alt="${recommendation.alt}" loading="lazy">
                     <div class="gallery-overlay">
                         <div class="gallery-info">
                             <h3>${recommendation.title}</h3>
@@ -341,7 +341,7 @@ const CategoriesManager = {
         return `
             <div class="gallery-item" data-hit-id="${hit.id}">
                 <div class="gallery-item-inner">
-                    <img src="${hit.imageSrc}" alt="${hit.alt}">
+                    <img src="${hit.imageSrc}" alt="${hit.alt}" loading="lazy">
                     <div class="gallery-overlay">
                         <div class="gallery-info">
                             <h3>${hit.title}</h3>

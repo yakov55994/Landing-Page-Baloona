@@ -572,7 +572,7 @@ function createRecommendationItem(img, index) {
   item.onclick = () => openRecommendationLightbox(index); // הוספת אירוע לחיצה
 
   const image = document.createElement('img');
-  image.src = img.secure_url;
+  image.src = img.secure_url.replace('/upload/', '/upload/f_auto,q_auto,w_800/');
   image.alt = 'המלצה מלקוח';
   image.loading = 'lazy';
 
