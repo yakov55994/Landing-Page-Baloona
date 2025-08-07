@@ -3,9 +3,7 @@
     text-align: center;
 }
 .form-input,
-body {
-    font-family: Rubik, sans-serif;
-}
+
 .Accessibility-Statement,
 .copyright a,
 .footer-link,
@@ -32,15 +30,15 @@ body {
 }
 
 
-    body {
-    background-image: url("https://i.pinimg.com/736x/f1/bd/3e/f1bd3eb6df0bee987abc782196a94c3d.jpg");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 40%;
-    position: relative;
-    }
+ body {         
+   font-family: Rubik, sans-serif;         
+   background-image: url("https://i.pinimg.com/736x/f1/bd/3e/f1bd3eb6df0bee987abc782196a94c3d.jpg");         
+   background-repeat: no-repeat;         
+   background-position: center;         
+   background-size: 40%;         
+   position: relative;     
+}  
 
-/* רק למחשב - fixed */
 @media screen and (min-width: 769px) {
    body {
       background-attachment: fixed;
@@ -49,23 +47,21 @@ body {
 
 @media screen and (max-width: 768px) {
    body {
-      background-attachment: fixed;
-      background-size: cover; /* שומר על הפרופורציות */
-      background-position: center center; /* ממרכז את התמונה */
+      background-attachment: fixed; /* שינוי כאן */
+      background-size: contain; /* או cover אם אתה מעדיף */
+      background-position: center center;
       min-height: 100vh;
    }
 }
 
-
-
 body::before {
    content: '';
-   position: fixed;
+   position: absolute; /* שינוי כאן */
    top: 0;
    left: 0;
    right: 0;
    bottom: 0;
-   background: rgba(255, 252, 239, 0.8); /* שקיפות - שנה את 0.6 */
+   background: rgba(255, 252, 239, 0.8);
    z-index: -1;
    pointer-events: none;
 }
