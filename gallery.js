@@ -198,7 +198,7 @@ async function loadGallery(tag) {
   galleryContainer.innerHTML = '';
   galleryCounter.textContent = 'טוען תמונות...';
   
-  // הסרת כפתורים קיימים
+  // הסרת כפתורים קיימים לפני יצירת חדשים
   removeGalleryButtons();
   
   try {
@@ -211,8 +211,12 @@ async function loadGallery(tag) {
     galleryCounter.innerHTML = `מספר תמונות: <strong>${currentImages.length}</strong>`;
     displayGalleryItems(currentImages.slice(0, MAX_VISIBLE_IMAGES), tag);
 
+    // יצירת כפתורים רק אם באמת צריך
     if (currentImages.length > MAX_VISIBLE_IMAGES) {
-      createGalleryButtons(tag);
+      // השהיה קצרה למניעת race conditions
+      setTimeout(() => {
+        createGalleryButtons(tag);
+      }, 100);
     }
   } catch (err) {
     console.error('שגיאה בטעינת תמונות:', err);
@@ -220,9 +224,15 @@ async function loadGallery(tag) {
     showEmptyMessage();
   }
 }
-
 // יצירת כפתורי הצג עוד והסתר
 function createGalleryButtons(tag) {
+  // בדיקה אם כבר קיים כפתור - אם כן, לא ליצור חדש
+  const existingButtons = document.getElementById('galleryButtons');
+  if (existingButtons) {
+    console.log('כפתור כבר קיים, לא יוצר חדש');
+    return;
+  }
+  
   const buttonsContainer = document.createElement('div');
   buttonsContainer.className = 'gallery-buttons';
   buttonsContainer.id = 'galleryButtons';
@@ -272,6 +282,12 @@ function showMoreImages(showBtn, tag) {
 
 // החלפת כפתור הצג עוד בכפתור הסתר
 function replaceShowButtonWithHide(showBtn) {
+  // וודא שהכפתור עדיין קיים במסמך
+  if (!document.body.contains(showBtn)) {
+    console.log('הכפתור כבר לא קיים, לא ניתן להחליף');
+    return;
+  }
+  
   const hideBtn = document.createElement('button');
   hideBtn.className = 'hide-more-btn';
   hideBtn.innerHTML = 'הסתר תמונות נוספות ';
@@ -281,16 +297,18 @@ function replaceShowButtonWithHide(showBtn) {
   showBtn.classList.add('fade-out');
   
   setTimeout(() => {
-    showBtn.replaceWith(hideBtn);
-    // אנימציית כניסה לכפתור החדש
-    hideBtn.style.opacity = '0';
-    hideBtn.style.transform = 'translateY(20px)';
-    
-    setTimeout(() => {
-      hideBtn.style.transition = 'all 0.4s ease';
-      hideBtn.style.opacity = '1';
-      hideBtn.style.transform = 'translateY(0)';
-    }, 50);
+    if (document.body.contains(showBtn)) {
+      showBtn.replaceWith(hideBtn);
+      // אנימציית כניסה לכפתור החדש
+      hideBtn.style.opacity = '0';
+      hideBtn.style.transform = 'translateY(20px)';
+      
+      setTimeout(() => {
+        hideBtn.style.transition = 'all 0.4s ease';
+        hideBtn.style.opacity = '1';
+        hideBtn.style.transform = 'translateY(0)';
+      }, 50);
+    }
   }, 400);
 }
 
@@ -338,6 +356,12 @@ function hideExtraImages(hideBtn) {
 
 // החלפת כפתור הסתר בכפתור הצג עוד
 function replaceHideButtonWithShow(hideBtn) {
+  // וודא שהכפתור עדיין קיים במסמך
+  if (!document.body.contains(hideBtn)) {
+    console.log('הכפתור כבר לא קיים, לא ניתן להחליף');
+    return;
+  }
+  
   const showBtn = document.createElement('button');
   showBtn.className = 'show-more-btn';
   showBtn.innerHTML = 'הצג עוד תמונות';
@@ -347,19 +371,20 @@ function replaceHideButtonWithShow(hideBtn) {
   hideBtn.classList.add('fade-out');
   
   setTimeout(() => {
-    hideBtn.replaceWith(showBtn);
-    // אנימציית כניסה לכפתור החדש
-    showBtn.style.opacity = '0';
-    showBtn.style.transform = 'translateY(-20px)';
-    
-    setTimeout(() => {
-      showBtn.style.transition = 'all 0.4s ease';
-      showBtn.style.opacity = '1';
-      showBtn.style.transform = 'translateY(0)';
-    }, 50);
+    if (document.body.contains(hideBtn)) {
+      hideBtn.replaceWith(showBtn);
+      // אנימציית כניסה לכפתור החדש
+      showBtn.style.opacity = '0';
+      showBtn.style.transform = 'translateY(-20px)';
+      
+      setTimeout(() => {
+        showBtn.style.transition = 'all 0.4s ease';
+        showBtn.style.opacity = '1';
+        showBtn.style.transform = 'translateY(0)';
+      }, 50);
+    }
   }, 400);
 }
-
 // יצירת פריט גלריה בודד
 function createGalleryItem(img, index, tag) {
   const item = document.createElement('div');
@@ -455,11 +480,22 @@ function getCurrentTag() {
 
 // הסרת כפתורי גלריה קיימים
 function removeGalleryButtons() {
+  // הסרת כל הכפתורים הקשורים לגלריה
   const existingButtons = document.getElementById('galleryButtons');
+  const existingShowBtn = document.querySelector('.show-more-btn:not(.recommendations)');
+  const existingHideBtn = document.querySelector('.hide-more-btn:not(.recommendations)');
+  
   if (existingButtons) {
     existingButtons.remove();
   }
+  if (existingShowBtn && !existingShowBtn.closest('#galleryButtons')) {
+    existingShowBtn.remove();
+  }
+  if (existingHideBtn && !existingHideBtn.closest('#galleryButtons')) {
+    existingHideBtn.remove();
+  }
 }
+
 
 // עדכן את מספר התמונות המקסימליות בשינוי גודל מסך
 window.addEventListener('resize', () => {
@@ -470,30 +506,29 @@ window.addEventListener('resize', () => {
     MAX_VISIBLE_IMAGES = newMaxVisible;
     
     // אם יש תמונות מוצגות כרגע
-    if (galleryContainer.children.length > 0) {
+    if (galleryContainer.children.length > 0 && currentImages.length > 0) {
       const currentTag = getCurrentTag();
+      const currentlyShowing = galleryContainer.children.length;
       
-      // בדוק אם צריך להציג או להסתיר כפתורים
+      // הסרת כל הכפתורים הישנים
+      removeGalleryButtons();
+      
+      // לוגיקה מעודכנת לניהול כפתורים
       if (currentImages.length > MAX_VISIBLE_IMAGES) {
-        // אם אין כפתורים ויש יותר תמונות ממה שצריך להציג
-        if (!document.getElementById('galleryButtons') && galleryContainer.children.length <= MAX_VISIBLE_IMAGES) {
-          createGalleryButtons(currentTag);
-        }
-        // אם מוצגות יותר תמונות ממה שצריך (מעבר ממחשב לטלפון)
-        else if (galleryContainer.children.length > MAX_VISIBLE_IMAGES) {
+        // אם מוצגות יותר תמונות ממה שצריך במסך החדש
+        if (currentlyShowing > MAX_VISIBLE_IMAGES) {
           const extraImages = Array.from(galleryContainer.children).slice(MAX_VISIBLE_IMAGES);
           extraImages.forEach(item => item.remove());
-          
-          // וודא שיש כפתור הצג עוד
-          if (!document.querySelector('.show-more-btn')) {
-            removeGalleryButtons();
-            createGalleryButtons(currentTag);
-          }
         }
-      } else {
-        // אם אין צורך יותר בכפתורים
-        removeGalleryButtons();
+        
+        // יצירת כפתור הצג עוד אם צריך
+        if (galleryContainer.children.length <= MAX_VISIBLE_IMAGES) {
+          setTimeout(() => {
+            createGalleryButtons(currentTag);
+          }, 150);
+        }
       }
+      // אם כל התמונות נכנסות במסך החדש - אין צורך בכפתורים
     }
   }
 });

@@ -2723,7 +2723,7 @@ div.modern-gallery {
 .show-more-btn:hover {
     transform: translateY(-3px) scale(1.02);
     border-color: rgba(201, 160, 92, 0.6);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 20px rgba(201, 160, 92, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 5px 20px rgba(201, 160, 92, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.3);
 }
 .show-more-btn:hover::before {
     left: 100%;
@@ -2731,17 +2731,17 @@ div.modern-gallery {
 .show-more-btn:active {
     transform: translateY(-1px) scale(0.98);
 }
+
 .hide-more-btn {
-    background: linear-gradient(135deg, #f8f9fa 0, #ffffff 50%, #f8f9fa 100%);
-    color: var(--gold-bronze, #c9a05c);
+    background: #be9e2f;
+    color: black;
     border-color: rgba(201, 160, 92, 0.3);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(201, 160, 92, 0.1);
 }
 .hide-more-btn:hover {
     transform: translateY(-3px) scale(1.02);
     border-color: rgba(201, 160, 92, 0.6);
-    background: linear-gradient(135deg, #ffffff 0, #f8f9fa 50%, #ffffff 100%);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(201, 160, 92, 0.2), inset 0 1px 0 rgba(201, 160, 92, 0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 5px 20px rgba(201, 160, 92, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.3);
 }
 .show-more-btn:not(.loading)::after {
     content: "⬇";
