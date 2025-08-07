@@ -83,7 +83,7 @@ const categories = {
   },
   "birth-celebration": { 
     label: "הולדת בן/בת", 
-    tag: "birth-celebration",
+    tag: "Birth of a son or daughter",
     image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1754554200/gpfd4ng5is2x5dy8hzoi.jpg"
   },
   "balloon": { 
