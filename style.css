@@ -30,28 +30,26 @@ body {
     padding: 0;
     box-sizing: border-box;
 }
+
 body {
-    background: #fffcef;
-    background-image: 
-        /* בלון ורוד עדין - עם מרווח עליון */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Cdefs%3E%3CradialGradient id='pink' cx='0.3' cy='0.2'%3E%3Cstop offset='0%25' stop-color='%23fff' stop-opacity='0.4'/%3E%3Cstop offset='20%25' stop-color='%23FFE4E6' stop-opacity='0.25'/%3E%3Cstop offset='70%25' stop-color='%23FF69B4' stop-opacity='0.15'/%3E%3Cstop offset='100%25' stop-color='%23FF1493' stop-opacity='0.1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='50' cy='45' rx='30' ry='40' fill='url(%23pink)'/%3E%3Cellipse cx='42' cy='38' rx='8' ry='12' fill='%23fff' opacity='0.3'/%3E%3Cpath d='M50 85 Q50 95 48 105 Q47 110 50 115' stroke='%23C0C0C0' stroke-width='1.5' fill='none' opacity='0.3'/%3E%3C/svg%3E"),
-        
-        /* בלון כחול עדין - עם מרווח עליון */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 140'%3E%3Cdefs%3E%3CradialGradient id='blue' cx='0.3' cy='0.2'%3E%3Cstop offset='0%25' stop-color='%23fff' stop-opacity='0.4'/%3E%3Cstop offset='20%25' stop-color='%23E0F6FF' stop-opacity='0.25'/%3E%3Cstop offset='70%25' stop-color='%2387CEEB' stop-opacity='0.15'/%3E%3Cstop offset='100%25' stop-color='%234169E1' stop-opacity='0.1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='45' cy='40' rx='25' ry='35' fill='url(%23blue)'/%3E%3Cellipse cx='38' cy='34' rx='6' ry='10' fill='%23fff' opacity='0.3'/%3E%3Cpath d='M45 75 Q45 85 43 95 Q42 100 45 105' stroke='%23C0C0C0' stroke-width='1.5' fill='none' opacity='0.3'/%3E%3C/svg%3E"),
-        
-        /* בלון צהוב עדין - עם מרווח עליון */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 95 145'%3E%3Cdefs%3E%3CradialGradient id='yellow' cx='0.3' cy='0.2'%3E%3Cstop offset='0%25' stop-color='%23fff' stop-opacity='0.4'/%3E%3Cstop offset='20%25' stop-color='%23FFFACD' stop-opacity='0.3'/%3E%3Cstop offset='70%25' stop-color='%23FFD700' stop-opacity='0.2'/%3E%3Cstop offset='100%25' stop-color='%23FFA500' stop-opacity='0.12'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='47' cy='42' rx='27' ry='37' fill='url(%23yellow)'/%3E%3Cellipse cx='40' cy='36' rx='7' ry='11' fill='%23fff' opacity='0.35'/%3E%3Cpath d='M47 79 Q47 89 45 99 Q44 104 47 109' stroke='%23C0C0C0' stroke-width='1.5' fill='none' opacity='0.3'/%3E%3C/svg%3E"),
-        
-        /* בלון ירוק עדין - עם מרווח עליון */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 85 135'%3E%3Cdefs%3E%3CradialGradient id='green' cx='0.3' cy='0.2'%3E%3Cstop offset='0%25' stop-color='%23fff' stop-opacity='0.4'/%3E%3Cstop offset='20%25' stop-color='%23F0FFF0' stop-opacity='0.25'/%3E%3Cstop offset='70%25' stop-color='%2398FB98' stop-opacity='0.15'/%3E%3Cstop offset='100%25' stop-color='%2332CD32' stop-opacity='0.1'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cellipse cx='42' cy='38' rx='23' ry='33' fill='url(%23green)'/%3E%3Cellipse cx='36' cy='32' rx='5' ry='9' fill='%23fff' opacity='0.3'/%3E%3Cpath d='M42 71 Q42 81 40 91 Q39 96 42 101' stroke='%23C0C0C0' stroke-width='1.5' fill='none' opacity='0.3'/%3E%3C/svg%3E");
-    
-    background-size: 150px 220px, 120px 180px, 130px 190px, 110px 160px;
-    background-position: 8% 10%, 92% 15%, 10% 75%, 90% 70%;
-    background-repeat: no-repeat;
-    color: var(--text-dark);
-    line-height: 1.6;
-    direction: rtl;
-    min-height: 100vh;
+   background-image: url("https://i.pinimg.com/736x/92/a1/2f/92a12fba5bc73911f60e2551acd183df.jpg");
+   background-repeat: no-repeat;
+   background-position: center;
+   background-attachment: fixed;
+   background-size: cover;
+   position: relative;
+}
+
+body::before {
+   content: '';
+   position: fixed;
+   top: 0;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   background: rgba(255, 252, 239, 0.6); /* שקיפות - שנה את 0.6 */
+   z-index: -1;
+   pointer-events: none;
 }
 .page-wrapper {
     max-width: 100%;
@@ -303,6 +301,7 @@ body {
     align-items: center;
     animation: 2.2s ease-in-out infinite pulse-glow;
     border-radius: 50% !important;
+    background-color: black;
 }
 .social-icon-inner {
     display: flex;
@@ -318,10 +317,9 @@ body {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, var(--gold-bronze-light) 0, transparent 70%);
-    opacity: 0;
     transition: opacity 0.3s;
     animation: 6s linear infinite rotate-glow;
+
 }
 .scroll-arrow {
     all: unset;
@@ -1200,7 +1198,7 @@ div.modern-gallery {
     left: -8px;
     right: -8px;
     bottom: -8px;
-    border: 1px solid rgba(201, 160, 92, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.7);
     border-radius: 50% !important;
     z-index: -1;
     animation: 3s ease-in-out infinite subtle-glow;
@@ -1210,7 +1208,7 @@ div.modern-gallery {
     width: 100%;
     height: 100%;
     border-radius: 50% !important;
-    background: white;
+    background: black;
     display: flex;
     align-items: center;
     justify-content: center;
