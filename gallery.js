@@ -21,8 +21,8 @@ let MAX_VISIBLE_IMAGES = getMaxVisibleImages();
 
 // ✅ DOM Elements
 const galleryContainer = document.getElementById('galleryContainer');
-const categoryDropdown = document.getElementById('categoryDropdown');
-const dropdownMenu = document.getElementById('dropdownMenu');
+const categoriesGrid = document.getElementById('categoriesGrid');
+const currentCategoryTitle = document.getElementById('currentCategory');
 const galleryCounter = document.getElementById('galleryCounter');
 const lightboxModal = document.getElementById('lightboxModal');
 const lightboxImage = document.getElementById('lightboxImage');
@@ -36,36 +36,158 @@ const recommendationsGallery = document.getElementById('recommendationsGallery')
 
 // ✅ קטגוריות
 const categories = {
-  "arches": { label: "🌈 קשתות", tag: "arches" },
-  "room-arrangements": { label: "🏠 סידורי חדרים", tag: "room-arrangements" },
-  "balloon-numbers": { label: "🔢 מספרים מבלונים", tag: "balloon-numbers" },
-  "photo-reviews": { label: "📸 קירות צילום", tag: "photo-reviews" },
-  "flowers-balloons": { label: "🌸 פרחים מבלונים", tag: "flowers-balloons" },
-  "kids-balloons": { label: "👶 בלונים לילדים", tag: "kids-balloons" },
-  "gender-reveal": { label: "👶 גילוי מין", tag: "gender-reveal" },
-  "balloon-bouquet": { label: "🎁 בלונים ליום הולדת", tag: "balloon-bouquet" },
-  "centerpiece": { label: "🎯 מרכזי שולחן", tag: "centerpiece" },
-  "birth-celebration": { label: "🎂 הולדת בן/בת", tag: "birth-celebration" },
-  "balloon": { label: "🎈 כדור פורח", tag: "balloon" }
+  "arches": { 
+    label: "קשתות", 
+    tag: "arches",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784380/efevh5pshki77ertk6cj.jpg"
+  },
+  "room-arrangements": { 
+    label: "סידורי חדרים", 
+    tag: "room-arrangements",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784417/r82hheaqxgu2xglvxgam.jpg  "
+  },
+  "balloon-numbers": { 
+    label: "מספרים מבלונים", 
+    tag: "balloon-numbers",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753894634/ml45nxkt5nxdhy6xalgd.jpg"
+  },
+  "photo-reviews": { 
+    label: "קירות צילום", 
+    tag: "photo-reviews",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784351/rsqvr0tuh05hglkhldmm.jpg"
+  },
+  "flowers-balloons": { 
+    label: "פרחים מבלונים", 
+    tag: "flowers-balloons",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784406/cxejlngj4mypsimy1vud.jpg"
+  },
+  "kids-balloons": { 
+    label: "בלונים לילדים", 
+    tag: "kids-balloons",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784682/inacvk9hgvblogil3o7g.jpg"
+  },
+  "gender-reveal": { 
+    label: "גילוי מין", 
+    tag: "gender-reveal",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1754553977/jg6smvseoajxtxjezmjf.jpg"
+  },
+  "balloon-bouquet": { 
+    label: "בלונים ליום הולדת", 
+    tag: "balloon-bouquet",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784705/abpxvmb203s9mhowrimn.jpg"
+  },
+  "centerpiece": { 
+    label: "מרכזי שולחן", 
+    tag: "centerpiece",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784510/ha7jtlienis10mnvt3n3.jpg"
+  },
+  "birth-celebration": { 
+    label: "הולדת בן/בת", 
+    tag: "birth-celebration",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1754554200/gpfd4ng5is2x5dy8hzoi.jpg"
+  },
+  "balloon": { 
+    label: "כדור פורח", 
+    tag: "balloon",
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784503/ows8s0bddwmtimrd8o6u.jpg"
+  },
+  "products": { 
+    label: "מוצרים", 
+    tag: "",
+    image: "https://images.pexels.com/photos/6578455/pexels-photo-6578455.jpeg"
+  }
 };
 
 let currentImages = [];
 let currentIndex = 0;
 
-function buildDropdown() {
-  dropdownMenu.innerHTML = '';
-  Object.entries(categories).forEach(([key, info]) => {
-    const btn = document.createElement('button');
-    btn.className = 'dropdown-item';
-    btn.textContent = info.label;
-    btn.dataset.tag = info.tag;
-    btn.onclick = () => {
-      categoryDropdown.innerHTML = `${info.label} <span class="dropdown-arrow">▼</span>`;
-      dropdownMenu.classList.remove('active');
-      loadGallery(info.tag);
-    };
-    dropdownMenu.appendChild(btn);
+// פונקציה לבניית קוביות הקטגוריות
+async function buildCategoriesGrid() {
+  categoriesGrid.innerHTML = '';
+  
+  for (const [key, info] of Object.entries(categories)) {
+    const box = document.createElement('div');
+    box.className = 'category-box';
+    box.dataset.tag = info.tag;
+    
+    // תמונת רקע
+    const image = document.createElement('img');
+    image.className = 'category-image';
+    image.src = info.image;
+    image.alt = info.label;
+    image.loading = 'lazy';
+    
+    // אוברליי
+    const overlay = document.createElement('div');
+    overlay.className = 'category-overlay';
+    
+    // תוכן
+    const content = document.createElement('div');
+    content.className = 'category-content';
+    
+    const icon = document.createElement('span');
+    icon.className = 'category-icon';
+    icon.textContent = info.icon;
+    
+    const title = document.createElement('div');
+    title.className = 'category-title';
+    title.textContent = info.label;
+    
+    const count = document.createElement('div');
+    count.className = 'category-count';
+    count.textContent = 'טוען...';
+    
+    // הרכבה
+    content.appendChild(icon);
+    content.appendChild(title);
+    content.appendChild(count);
+    
+    box.appendChild(image);
+    box.appendChild(overlay);
+    box.appendChild(content);
+    
+    // אירוע לחיצה
+    box.onclick = () => selectCategory(box, info);
+    
+    categoriesGrid.appendChild(box);
+    
+    // טעינת מספר התמונות
+    loadCategoryCount(info.tag, count);
+  }
+  
+  // סימון הקטגוריה הראשונה כפעילה
+  const firstBox = categoriesGrid.firstElementChild;
+  if (firstBox) {
+    firstBox.classList.add('active');
+  }
+}
+// פונקציה לטעינת מספר התמונות בכל קטגוריה
+async function loadCategoryCount(tag, countElement) {
+  try {
+    const res = await fetch(`${API_BASE}/api/images/${tag}`);
+    const data = await res.json();
+    const count = data.resources ? data.resources.length : 0;
+    countElement.textContent = `${count} תמונות`;
+  } catch (err) {
+    countElement.textContent = '0 תמונות';
+  }
+}
+
+// פונקציה לבחירת קטגוריה
+function selectCategory(selectedBox, categoryInfo) {
+  // הסרת הסימון מכל הקוביות
+  document.querySelectorAll('.category-box').forEach(box => {
+    box.classList.remove('active');
   });
+  
+  // סימון הקובייה שנבחרה
+  selectedBox.classList.add('active');
+  
+  // עדכון כותרת הקטגוריה הנוכחית
+  currentCategoryTitle.textContent = categoryInfo.label;
+  
+  // טעינת הגלריה
+  loadGallery(categoryInfo.tag);
 }
 
 // פונקציה משופרת לטעינת גלריה עם כפתורי הצג/הסתר
@@ -294,8 +416,8 @@ function displayGalleryItems(images, tag) {
 function showEmptyMessage() {
   galleryContainer.innerHTML = `<div class="empty-category-message">
     <div class="empty-icon">😕</div>
-    <h3>לא נמצאו תמונות</h3>
-    <p>אין תמונות בקטגוריה זו. נסה לבחור אחרת.</p>
+    <h3>עדיין אין תמונות </h3>
+    <p>בקרוב </p>
   </div>`;
   galleryCounter.textContent = '';
 }
@@ -435,9 +557,6 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeLightbox();
 });
 
-categoryDropdown.addEventListener('click', () => {
-  dropdownMenu.classList.toggle('active');
-});
 
 // המלצות לקוחות - תמיד 3 המלצות עם lightbox
 const RECOMMENDATIONS_API = `${API_BASE}/api/images/testimonials`;
@@ -624,7 +743,8 @@ function closeLightbox() {
 }
 
 // אתחול
-buildDropdown();
+// אתחול
+buildCategoriesGrid();
 loadGallery(categories["arches"].tag);
 loadRecommendations();
 
@@ -670,3 +790,29 @@ backToTopBtn.addEventListener('click', () => {
         behavior: 'smooth'
     });
 });
+
+
+// גלילה חלקה לגלריה כשבוחרים קטגוריה
+function selectCategory(selectedBox, categoryInfo) {
+  // הסרת הסימון מכל הקוביות
+  document.querySelectorAll('.category-box').forEach(box => {
+    box.classList.remove('active');
+  });
+  
+  // סימון הקובייה שנבחרה
+  selectedBox.classList.add('active');
+  
+  // עדכון כותרת הקטגוריה הנוכחית
+  currentCategoryTitle.textContent = categoryInfo.label;
+  
+  // טעינת הגלריה
+  loadGallery(categoryInfo.tag);
+  
+  // גלילה חלקה לגלריה
+  setTimeout(() => {
+    galleryContainer.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    });
+  }, 300);
+}
