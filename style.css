@@ -1437,11 +1437,7 @@ div.modern-gallery {
     .cover-photo-container {
         max-height: 200px;
     }
-    .cover-image {
-        width: min(250px, 75vw);
-        height: min(250px, 75vw);
-        box-shadow: 0 8px 25px rgba(201, 160, 92, 0.4);
-    }
+   
     .title-hebrew {
         font-size: 1.8rem;
         margin-top: 20px;
@@ -1494,9 +1490,7 @@ div.modern-gallery {
     .cover-photo-container {
         max-height: 120px;
     }
-    .cover-image {
-        box-shadow: 0 4px 15px rgba(201, 160, 92, 0.4);
-    }
+  
     .title-hebrew {
         font-size: 1.3rem;
         margin-top: 10px;
@@ -1525,12 +1519,7 @@ div.modern-gallery {
         width: 100px;
         height: 100px;
     }
-    .cover-image,
-    .cover-photo-container {
-        width: min(150px, 65vw);
-        height: min(150px, 65vw);
-        box-shadow: 0 4px 15px rgba(201, 160, 92, 0.4);
-    }
+   
     .section {
         padding: 30px 10px;
     }
@@ -1697,11 +1686,7 @@ div.modern-gallery {
         width: 16px;
         height: 16px;
     }
-    .cover-image {
-        width: min(200px, 70vw);
-        height: min(200px, 70vw);
-        box-shadow: 0 6px 20px rgba(201, 160, 92, 0.4);
-    }
+  
     .image-number {
         font-size: 10px;
         padding: 2px 6px;
@@ -1712,6 +1697,10 @@ div.modern-gallery {
     .lightbox-image-number {
         font-size: 0.75em;
         padding: 4px 8px;
+    }
+    .section-title{
+        font-size: 1.5rem;
+        margin-top: 60px;
     }
 }
 @media (max-width: 360px) {
