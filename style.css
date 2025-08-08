@@ -54,7 +54,7 @@ body{
     background-repeat: no-repeat;
     background-position: top center;   /* משאיר את הבלונים למעלה */
     background-size: contain;          /* שמירה על פרופורציה */
-    background-attachment: scroll;     /* לא fixed במובייל */
+    background-attachment: fixed;     /* לא fixed במובייל */
     min-height: 100vh;
   }
 }
