@@ -37,7 +37,6 @@
    background-position: center;         
    background-size: 40%;         
    position: relative;     
-    background-attachment: fixed;     /* לא fixed במובייל */
 
 }  
 
@@ -104,14 +103,14 @@ body::before {
     margin-bottom: 10px;
 }
 .cover-image {
-    border-radius: 50%;
-    width: 300px;
+    width: 320px;
     height: 300px;
     object-fit: cover;
     object-position: center;
-    box-shadow: 0 10px 30px rgba(201, 160, 92, 0.4);
-    background-color: var(--bg-light);
+    background-color: transparent;
     margin: 20px auto 0;
+    /* הסרת הרקע השחור */
+    /* mix-blend-mode: screen; */
 }
 /* עיצוב קוביות הקטגוריות */
 .categories-section {
