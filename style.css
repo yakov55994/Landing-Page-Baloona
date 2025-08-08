@@ -37,6 +37,8 @@
    background-position: center;         
    background-size: 40%;         
    position: relative;     
+    background-attachment: fixed;     /* לא fixed במובייל */
+
 }  
 
 /* ברירת מחדל למחשב */
@@ -46,6 +48,7 @@ body{
   background-repeat: no-repeat;
   background-position: top center;   /* הבלונים למעלה */
   background-size: 40%;
+
 }
 
 /* מובייל וטאבלטים קטנים */
