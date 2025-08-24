@@ -174,21 +174,26 @@ async function loadCategoryCount(tag, countElement) {
 }
 
 // פונקציה לבחירת קטגוריה
-function selectCategory(selectedBox, categoryInfo) {
-  // הסרת הסימון מכל הקוביות
-  document.querySelectorAll('.category-box').forEach(box => {
-    box.classList.remove('active');
-  });
-  
-  // סימון הקובייה שנבחרה
-  selectedBox.classList.add('active');
-  
-  // עדכון כותרת הקטגוריה הנוכחית
-  currentCategoryTitle.textContent = categoryInfo.label;
-  
-  // טעינת הגלריה
-  loadGallery(categoryInfo.tag);
+function smartScrollTo(el, offset = 90) {
+  if (!el) return;
+  const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+  window.scrollTo({ top: y, behavior: 'smooth' });
 }
+
+function selectCategory(selectedBox, categoryInfo) {
+  document.querySelectorAll('.category-box').forEach(box => box.classList.remove('active'));
+  selectedBox.classList.add('active');
+
+  currentCategoryTitle.textContent = categoryInfo.label;
+  loadGallery(categoryInfo.tag);
+
+  // גלול לתחילת מקטע הגלריה – בלי “לחתוך” להמלצות
+  const gallerySection = document.getElementById('gallerySection');
+  setTimeout(() => {
+    smartScrollTo(gallerySection, 90); // עדכן 90 לפי גובה ההאדר שלך
+  }, 300);
+}
+
 
 // פונקציה משופרת לטעינת גלריה עם כפתורי הצג/הסתר
 async function loadGallery(tag) {

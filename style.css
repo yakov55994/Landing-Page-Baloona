@@ -401,7 +401,7 @@ body::before {
 .section-title span {
     position: relative;
     display: inline-block;
-    margin-top: 30px;
+    margin-top: 5px;
 }
 .section-title span:after {
     content: "";
@@ -793,6 +793,7 @@ div.modern-gallery {
     margin-top: 30px !important;
     padding: 0 20px !important;
     width: 100% !important;
+    scroll-margin-top: 210px
 }
 .modern-gallery .gallery-item {
     width: 100% !important;
@@ -890,6 +891,8 @@ div.modern-gallery {
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 15px !important;
         padding: 0 15px !important;
+        scroll-margin-top: 210px;
+
     }
     .modern-gallery .gallery-item .image-number {
         font-size: 10px !important;
@@ -905,6 +908,7 @@ div.modern-gallery {
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 12px !important;
         padding: 0 12px !important;
+        scroll-margin-top: 210px;
     }
     .modern-gallery .gallery-item .image-number {
         font-size: 9px !important;
@@ -928,6 +932,8 @@ div.modern-gallery {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 10px !important;
         padding: 0 10px !important;
+        scroll-margin-top: 210px;
+
     }
 }
 .gallery-container {
@@ -1700,7 +1706,7 @@ div.modern-gallery {
     }
     .section-title{
         font-size: 1.5rem;
-        margin-top: 60px;
+        /* margin-top: 60px; */
     }
 }
 @media (max-width: 360px) {
@@ -2480,6 +2486,7 @@ div.modern-gallery {
     gap: 15px;
     margin-top: 15px;
     padding: 0;
+    
 }
 .gallery-container .gallery-item {
     position: relative;
@@ -2531,6 +2538,7 @@ div.modern-gallery {
     transition: opacity 0.4s;
     content: "";
     position: absolute;
+    אםפ
 }
 .gallery-container .gallery-overlay h4 {
     font-size: 12px;
