@@ -204,53 +204,53 @@
 
         
         <!-- Contact Form Section -->
-        <section class="section" id="contact">
-            <h2 class="section-title"><span>צור קשר</span></h2>
-            <p class="p-contact">השאירו פרטים ונחזור אליכם</p>
-            <div class="contact-form-container">
-                <form id="contact-form" class="contact-form" action="https://formsubmit.co/yakov1002444@gmail.com" method="POST">
-                <!-- <input type="hidden" name="apikey" value="b69e30a1-3f8a-45e7-bdbe-6cd35a5d9026"> -->
+<div class="contact-form-container">
+          <!-- חשוב: נשאיר action ל-FormSubmit, אך נטפל ב-submit עם JS -->
+          <form id="contact-form" class="contact-form" action="https://formsubmit.co/Shilobiton234@gmail.com" method="POST" accept-charset="UTF-8">
+            <!-- FormSubmit העדפות -->
+            <input type="hidden" name="_captcha" value="false" />
+            <!-- אפשר להגדיר נושא למייל -->
+            <input type="hidden" name="_subject" value="פנייה חדשה מהאתר - Baloona" />
+            <!-- אם תרצה תבנית יפה במייל -->
+            <input type="hidden" name="_template" value="table" />
 
-                    <div class="form-group">
-                        <label for="from_name">שם:</label>
-                        <input type="text" id="from_name" name="name" placeholder="ישראל ישראלי" class="form-input" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="from_email">אימייל:</label>
-                        <input type="email" id="from_email" name="email" class="form-input" placeholder="israel123@gmail.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="phone">טלפון:</label>
-                        <input type="tel" id="phone" name="phone" class="form-input" placeholder="052-1234567">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="message">ההודעה שלך:</label>
-                        <textarea id="message" name="message" class="form-input form-textarea" placeholder="שלום שילה, אני מתעניין בקשר לבלונים 😊" required></textarea>
-                    </div>
-                    <input type="hidden" name="_captcha" value="false">
-
-                    <button id="button-send" aria-label="שליחת מסמך" value="button-send" type="submit" class="form-submit">שליחה</button>
-                </form>
+            <div class="form-group">
+              <label for="from_name">שם:</label>
+              <input type="text" id="from_name" name="name" placeholder="ישראל ישראלי" class="form-input" required />
             </div>
-        </section>
 
+            <div class="form-group">
+              <label for="from_email">אימייל:</label>
+              <input type="email" id="from_email" name="email" class="form-input" placeholder="israel123@gmail.com" required />
+            </div>
 
+            <div class="form-group">
+              <label for="phone">טלפון:</label>
+              <input type="tel" id="phone" name="phone" class="form-input" placeholder="052-1234567" />
+            </div>
 
+            <div class="form-group">
+              <label for="message">ההודעה שלך:</label>
+              <textarea id="message" name="message" class="form-input form-textarea" placeholder="שלום שילה, אני מתעניין בקשר לבלונים 😊" required></textarea>
+            </div>
 
+            <button id="button-send" aria-label="שליחת מסמך" value="button-send" type="submit" class="form-submit">שליחה</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- מודאל הצלחה -->
       <div id="success-modal" class="modal hidden" role="dialog" aria-modal="true">
-  <div class="modal-card">
-    <svg class="check" viewBox="0 0 52 52" aria-hidden="true">
-      <circle class="check-circle" cx="26" cy="26" r="25" fill="none"/>
-      <path class="check-mark" fill="none" d="M14 27 l8 8 l16 -16"/>
-    </svg>
-    <h3>נשלח בהצלחה</h3>
-    <p>תודה! נחזור אליך בהקדם.</p>
-    <button id="success-close" type="button" class="btn">סגור</button>
-  </div>
-</div>
+        <div class="modal-card">
+          <svg class="check" viewBox="0 0 52 52" aria-hidden="true">
+            <circle class="check-circle" cx="26" cy="26" r="25" fill="none" />
+            <path class="check-mark" fill="none" d="M14 27 l8 8 l16 -16" />
+          </svg>
+          <h3>נשלח בהצלחה</h3>
+          <p>תודה! נחזור אליך בהקדם.</p>
+          <button id="success-close" type="button" class="btn">סגור</button>
+        </div>
+      </div>
 
        
         <!-- Address Section with Embedded Map -->
@@ -350,50 +350,77 @@
     <!-- טען את ספריית EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="gallery.js"></script>
-    <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const form   = document.getElementById('contact-form');     // ה־form שלך
-  const modal  = document.getElementById('success-modal');    // המודאל
-  const close  = document.getElementById('success-close');    // כפתור סגירה
+   <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('contact-form');
+        const sendBtn = document.getElementById('button-send');
 
-  function openModal(){ modal.classList.remove('hidden'); }
-  function closeModal(){ modal.classList.add('hidden'); }
+        const successModal = document.getElementById('success-modal');
+        const successClose = document.getElementById('success-close');
 
-  close.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        function openSuccessModal() {
+          successModal.classList.remove('hidden');
+        }
+        function closeSuccessModal() {
+          successModal.classList.add('hidden');
+        }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault(); // עוצרים שליחה רגילה => לא עובר ל־action
+        // סגירת מודאל בלחיצה על X/כפתור
+        successClose.addEventListener('click', closeSuccessModal);
+        // סגירת מודאל בלחיצה מחוץ לכרטיס
+        successModal.addEventListener('click', (e) => {
+          if (e.target === successModal) closeSuccessModal();
+        });
 
-    // אוספים נתונים
-    const data = Object.fromEntries(new FormData(form).entries());
-    data._captcha = "false";
-    data._template = "table";
-    data._subject  = "פנייה חדשה מהאתר";
+        form.addEventListener('submit', async function (event) {
+          event.preventDefault();
 
-    try {
-      // שולחים ל־FormSubmit ב-AJAX (שים לב ל־/ajax/)
-      const res = await fetch('https://formsubmit.co/ajax/Shilobiton234@gmail.com', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json', 'Accept':'application/json' },
-        body: JSON.stringify(data)
+          // נועל את הכפתור כדי למנוע שליחה כפולה
+          sendBtn.disabled = true;
+          const originalText = sendBtn.textContent;
+          sendBtn.textContent = 'שולח...';
+
+          try {
+            const formData = new FormData(form);
+            // נוודא שגם אם מישהו הוריד את השורה בטופס – נכפה ללא קפטצ׳ה
+            formData.set('_captcha', 'false');
+
+            const response = await fetch(form.action, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json' // מבקש תשובת JSON מ-FormSubmit
+              },
+              body: formData
+            });
+
+            // חלק מהתצורות יחזירו JSON, חלק רידיירקט; ננסה קודם JSON
+            let ok = response.ok;
+            try {
+              const data = await response.json();
+              // FormSubmit מחזיר לעיתים { success: 'true' } או { success: true }
+              if (typeof data?.success !== 'undefined') {
+                ok = (data.success === true || data.success === 'true');
+              }
+            } catch (_) {
+              // אם לא JSON, נסתמך על response.ok
+            }
+
+            if (ok) {
+              form.reset();
+              openSuccessModal();
+            } else {
+              alert('שגיאה בשליחת הטופס. אנא נסה שוב.');
+            }
+          } catch (err) {
+            console.error('Form submit error:', err);
+            alert('אירעה שגיאה. אנא נסה שוב מאוחר יותר.');
+          } finally {
+            sendBtn.disabled = false;
+            sendBtn.textContent = originalText;
+          }
+        });
       });
-
-      if (!res.ok) throw new Error('Request failed');
-
-      form.reset();   // מנקה את השדות
-      openModal();    // <<< כאן הוא "יודע ללכת" למודאל — מסיר hidden
-
-      // אופציונלי: מעבר לדף תודה אחרי 3 שניות
-      // setTimeout(() => location.href = '/thanks.html', 3000);
-
-    } catch (err) {
-      console.error(err);
-      alert('אירעה שגיאה בשליחה. נסו שוב או צרו קשר בטלפון.');
-    }
-  });
-});
-</script>
+    </script>
 
 </body>
 

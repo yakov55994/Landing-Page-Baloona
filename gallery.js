@@ -19,6 +19,17 @@ function getMaxRecommendations() {
 
 let MAX_VISIBLE_IMAGES = getMaxVisibleImages();
 
+function safeTag(tag) {
+  const t = (tag ?? '').toString().trim();
+  return t.length ? t : null;
+}
+function tagUrl(tag) {
+  const t = safeTag(tag);
+  if (!t) return null;
+  return `${API_BASE}/api/images/${encodeURIComponent(t)}`;
+}
+
+
 // ✅ DOM Elements
 const galleryContainer = document.getElementById('galleryContainer');
 const categoriesGrid = document.getElementById('categoriesGrid');
@@ -102,6 +113,7 @@ let currentImages = [];
 let currentIndex = 0;
 
 // פונקציה לבניית קוביות הקטגוריות
+
 async function buildCategoriesGrid() {
   categoriesGrid.innerHTML = '';
   
@@ -147,7 +159,12 @@ async function buildCategoriesGrid() {
     box.appendChild(content);
     
     // אירוע לחיצה
-    box.onclick = () => selectCategory(box, info);
+if (safeTag(info.tag)) {
+  box.onclick = () => selectCategory(box, info);
+} else {
+  box.classList.add('disabled'); // תן סטייל "בקרוב"
+  box.onclick = () => alert('בקרוב...');
+}
     
     categoriesGrid.appendChild(box);
     
@@ -163,15 +180,21 @@ async function buildCategoriesGrid() {
 }
 // פונקציה לטעינת מספר התמונות בכל קטגוריה
 async function loadCategoryCount(tag, countElement) {
+  const url = tagUrl(tag);
+  if (!url) {
+    countElement.textContent = '—';
+    return;
+  }
   try {
-    const res = await fetch(`${API_BASE}/api/images/${tag}`);
+    const res = await fetch(url);
     const data = await res.json();
-    const count = data.resources ? data.resources.length : 0;
-    countElement.textContent = `${count} תמונות`;
-  } catch (err) {
+    const list = data.resources || data.images || [];
+    countElement.textContent = `${list.length} תמונות`;
+  } catch {
     countElement.textContent = '0 תמונות';
   }
 }
+
 
 // פונקציה לבחירת קטגוריה
 function smartScrollTo(el, offset = 90) {
@@ -197,31 +220,32 @@ function selectCategory(selectedBox, categoryInfo) {
 
 // פונקציה משופרת לטעינת גלריה עם כפתורי הצג/הסתר
 async function loadGallery(tag) {
-  // עדכון MAX_VISIBLE_IMAGES בכל טעינה
   MAX_VISIBLE_IMAGES = getMaxVisibleImages();
-  
+
   galleryContainer.innerHTML = '';
   galleryCounter.textContent = 'טוען תמונות...';
-  
-  // הסרת כפתורים קיימים לפני יצירת חדשים
   removeGalleryButtons();
-  
-  try {
-    const res = await fetch(`${API_BASE}/api/images/${tag}`);
-    const data = await res.json();
-    currentImages = data.resources || [];
 
-    if (currentImages.length === 0) return showEmptyMessage();
+  const url = tagUrl(tag);
+  if (!url) {
+    showEmptyMessage();
+    galleryCounter.textContent = '';
+    return;
+  }
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    // תמיכה גם ב-resources וגם ב-images
+    currentImages = data.resources || data.images || [];
+
+    if (!currentImages.length) return showEmptyMessage();
 
     galleryCounter.innerHTML = `מספר תמונות: <strong>${currentImages.length}</strong>`;
     displayGalleryItems(currentImages.slice(0, MAX_VISIBLE_IMAGES), tag);
 
-    // יצירת כפתורים רק אם באמת צריך
     if (currentImages.length > MAX_VISIBLE_IMAGES) {
-      // השהיה קצרה למניעת race conditions
-      setTimeout(() => {
-        createGalleryButtons(tag);
-      }, 100);
+      setTimeout(() => createGalleryButtons(tag), 100);
     }
   } catch (err) {
     console.error('שגיאה בטעינת תמונות:', err);
@@ -229,6 +253,7 @@ async function loadGallery(tag) {
     showEmptyMessage();
   }
 }
+
 // יצירת כפתורי הצג עוד והסתר
 function createGalleryButtons(tag) {
   // בדיקה אם כבר קיים כפתור - אם כן, לא ליצור חדש
@@ -396,41 +421,14 @@ function createGalleryItem(img, index, tag) {
   item.className = 'gallery-item';
   item.dataset.category = tag;
   item.onclick = () => openLightbox(index);
-  
-  // אנימציית כניסה
+
   item.style.opacity = '0';
   item.style.transform = 'translateY(30px) scale(0.9)';
-  
+
   const image = document.createElement('img');
-  image.src = img.secure_url;
-  image.alt = img.public_id;
+  image.src = img.secure_url || img.url;   // ⬅️ חשוב
+  image.alt = img.public_id || 'image';
   image.loading = 'lazy';
-
-  const number = document.createElement('div');
-  number.className = 'image-number';
-  number.textContent = index + 1;
-
-  const overlay = document.createElement('div');
-  overlay.className = 'gallery-overlay';
-  const info = document.createElement('div');
-  info.className = 'gallery-info';
-  const title = document.createElement('h3');
-  const desc = document.createElement('p');
-
-  info.appendChild(title);
-  info.appendChild(desc);
-  overlay.appendChild(info);
-
-  item.appendChild(image);
-  item.appendChild(number);
-  item.appendChild(overlay);
-  
-  // אנימציית כניסה מושהית
-  setTimeout(() => {
-    item.style.transition = 'all 0.4s ease';
-    item.style.opacity = '1';
-    item.style.transform = 'translateY(0) scale(1)';
-  }, 100);
   
   return item;
 }
@@ -599,28 +597,24 @@ window.addEventListener('keydown', (e) => {
 
 
 // המלצות לקוחות - תמיד 3 המלצות עם lightbox
-const RECOMMENDATIONS_API = `${API_BASE}/api/images/testimonials`;
-let recommendationsImages = []; // מערך נפרד להמלצות
-
 async function loadRecommendations() {
-  const maxRecommendations = getMaxRecommendations(); // רספונסיבי
-  
+  const maxRecommendations = getMaxRecommendations();
   try {
     recommendationsGallery.innerHTML = '<p style="color:#ccc">טוען המלצות...</p>';
-    const res = await fetch(RECOMMENDATIONS_API);
-    const data = await res.json();
-    const items = data.resources || [];
 
-    if (items.length === 0) {
+    const url = tagUrl('testimonials');
+    const res = await fetch(url);
+    const data = await res.json();
+    const items = data.resources || data.images || [];
+
+    if (!items.length) {
       recommendationsGallery.innerHTML = '<p style="color:#ccc">אין עדיין המלצות</p>';
       return;
     }
 
-    recommendationsImages = items; // שמירת כל ההמלצות
-    recommendationsGallery.innerHTML = ''; // נקה את הודעת הטעינה
-    
-    const first = items.slice(0, maxRecommendations);
-    first.forEach((item, index) => createRecommendationItem(item, index));
+    recommendationsImages = items;
+    recommendationsGallery.innerHTML = '';
+    items.slice(0, maxRecommendations).forEach((item, index) => createRecommendationItem(item, index));
 
     if (items.length > maxRecommendations) {
       createRecommendationsShowMoreButton(items, maxRecommendations);
@@ -630,6 +624,7 @@ async function loadRecommendations() {
     recommendationsGallery.innerHTML = '<p style="color:#f66">שגיאה בטעינת המלצות</p>';
   }
 }
+
 
 // פונקציה להצגת המלצות נוספות
 function showMoreRecommendations(showBtn, items, maxRecommendations) {

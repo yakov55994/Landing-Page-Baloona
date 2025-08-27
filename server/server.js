@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import imagesRoute from './route.js'
+import imagesRoute from './route.js';
 
 dotenv.config();
 
@@ -17,6 +17,7 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
+    // לאפשר בקשות ללא Origin (כמו curl/health checks) וגם את המותרים
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -26,38 +27,14 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+// אם אתה מקבל JSON ב־/api/*:
+app.use(express.json());
+// קבצים סטטיים (public כולל gallery.html, style.css, gallery.js וכו')
+app.use(express.static('public'));
 
-app.use(express.static('public')); // שם נמצא gallery.html
-
+// API גלריה
 app.use('/api/images', imagesRoute);
 
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('contact-form');
-
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const formData = new FormData(form);
-
-        fetch('https://api.web3forms.com/submit', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Redirect the user to the thank you page after a successful submission
-                window.location.href = "https://baloona-store.com/thanks.html";
-            } else {
-                alert('שגיאה בשליחת הטופס. אנא נסה שוב.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('אירעה שגיאה. אנא נסה שוב מאוחר יותר.');
-        });
-    });
-});
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🎈 Gallery server is running on http://localhost:${PORT}`);
