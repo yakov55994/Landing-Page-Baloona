@@ -10,7 +10,9 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&family=Secular+One&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="style.css">
-    
+        
+
+        
         <!-- Open Graph לשיתוף -->
         <meta property="og:title" content="Baloona | בלונים לכל אירוע">
         <meta property="og:description" content="בלונים איכותיים ומרשימים שגורפים שלל מחמאות">
@@ -73,6 +75,7 @@
                 ב־BALOONA אנחנו מאמינים שבלון הוא הרבה יותר מקישוט – הוא דרך להתרגש, לשמח ולהפוך רגע פשוט לזיכרון מיוחד.
             </div>
         </section>
+        
 
         <!-- סידור נכון של האייקונים החברתיים -->
         <div class="social-nav">
@@ -205,15 +208,17 @@
             <h2 class="section-title"><span>צור קשר</span></h2>
             <p class="p-contact">השאירו פרטים ונחזור אליכם</p>
             <div class="contact-form-container">
-                <form id="contact-form" class="contact-form">
+                <form id="contact-form" class="contact-form" action="https://formsubmit.co/yakov1002444@gmail.com" method="POST">
+                <!-- <input type="hidden" name="apikey" value="b69e30a1-3f8a-45e7-bdbe-6cd35a5d9026"> -->
+
                     <div class="form-group">
                         <label for="from_name">שם:</label>
-                        <input type="text" id="from_name" name="from_name" placeholder="ישראל ישראלי" class="form-input" required>
+                        <input type="text" id="from_name" name="name" placeholder="ישראל ישראלי" class="form-input" required>
                     </div>
 
                     <div class="form-group">
                         <label for="from_email">אימייל:</label>
-                        <input type="email" id="from_email" name="from_email" class="form-input" placeholder="israel123@gmail.com" required>
+                        <input type="email" id="from_email" name="email" class="form-input" placeholder="israel123@gmail.com" required>
                     </div>
                     
                     <div class="form-group">
@@ -225,11 +230,28 @@
                         <label for="message">ההודעה שלך:</label>
                         <textarea id="message" name="message" class="form-input form-textarea" placeholder="שלום שילה, אני מתעניין בקשר לבלונים 😊" required></textarea>
                     </div>
-                    
+                    <input type="hidden" name="_captcha" value="false">
+
                     <button id="button-send" aria-label="שליחת מסמך" value="button-send" type="submit" class="form-submit">שליחה</button>
                 </form>
             </div>
         </section>
+
+
+
+
+      <div id="success-modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <svg class="check" viewBox="0 0 52 52" aria-hidden="true">
+      <circle class="check-circle" cx="26" cy="26" r="25" fill="none"/>
+      <path class="check-mark" fill="none" d="M14 27 l8 8 l16 -16"/>
+    </svg>
+    <h3>נשלח בהצלחה</h3>
+    <p>תודה! נחזור אליך בהקדם.</p>
+    <button id="success-close" type="button" class="btn">סגור</button>
+  </div>
+</div>
+
        
         <!-- Address Section with Embedded Map -->
         <div class="address-container">
@@ -301,20 +323,7 @@
         </div>
         
         
-        <!-- מודאל התראת הצלחה -->
-        <div id="successModal" class="modal success-modal">
-            <div class="success-modal-content">
-                <div class="success-icon-wrapper">
-                    <svg class="success-icon" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
-                        <circle class="success-circle" cx="26" cy="26" r="25" fill="none" />
-                        <path class="success-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-                    </svg>
-                </div>
-                <h3 class="success-title">ההודעה נשלחה בהצלחה!</h3>
-                <p class="success-message">תודה שפנית אلינו. נחזור אליך בהקדם.</p>
-                <button id="closeSuccessModal" class="success-button">סגור</button>
-            </div>
-        </div>
+   
         
         <!-- Footer -->
         <footer class="footer">
@@ -341,6 +350,51 @@
     <!-- טען את ספריית EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="gallery.js"></script>
-    
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form   = document.getElementById('contact-form');     // ה־form שלך
+  const modal  = document.getElementById('success-modal');    // המודאל
+  const close  = document.getElementById('success-close');    // כפתור סגירה
+
+  function openModal(){ modal.classList.remove('hidden'); }
+  function closeModal(){ modal.classList.add('hidden'); }
+
+  close.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault(); // עוצרים שליחה רגילה => לא עובר ל־action
+
+    // אוספים נתונים
+    const data = Object.fromEntries(new FormData(form).entries());
+    data._captcha = "false";
+    data._template = "table";
+    data._subject  = "פנייה חדשה מהאתר";
+
+    try {
+      // שולחים ל־FormSubmit ב-AJAX (שים לב ל־/ajax/)
+      const res = await fetch('https://formsubmit.co/ajax/Shilobiton234@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Accept':'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) throw new Error('Request failed');
+
+      form.reset();   // מנקה את השדות
+      openModal();    // <<< כאן הוא "יודע ללכת" למודאל — מסיר hidden
+
+      // אופציונלי: מעבר לדף תודה אחרי 3 שניות
+      // setTimeout(() => location.href = '/thanks.html', 3000);
+
+    } catch (err) {
+      console.error(err);
+      alert('אירעה שגיאה בשליחה. נסו שוב או צרו קשר בטלפון.');
+    }
+  });
+});
+</script>
+
 </body>
+
 </html>

@@ -119,7 +119,7 @@ body::before {
 
 .categories-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* שתי עמודות תמיד */
+        grid-template-columns: repeat(3, 1fr) !important;
     gap: 20px;
     margin: 30px 0;
     max-width: 600px;
@@ -232,6 +232,13 @@ body::before {
 @media (max-width: 480px) {
     .categories-grid {
         gap: 15px;
+         display: grid;
+        grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px;
+    margin: 30px 0;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
     }
     
     .category-box {
@@ -1035,10 +1042,10 @@ div.modern-gallery {
     right: -60px;
 }
 .lightbox-prev::before {
-    content: "‹";
+    content: "›";
 }
 .lightbox-next::before {
-    content: "›";
+    content: "‹";
 }
 @keyframes arrowGlow {
     0%,
@@ -2961,3 +2968,15 @@ div.modern-gallery {
     direction: ltr;
     transition: color 0.3s;
 }
+
+.modal.hidden { display:none }
+.modal { position:fixed; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.45); z-index:9999; }
+.modal-card { background:#fff; padding:28px 32px; border-radius:16px; text-align:center; animation:pop .45s ease; box-shadow:0 20px 60px -15px rgba(0,0,0,.25); }
+@keyframes pop { from{transform:scale(.92);opacity:0} to{transform:scale(1);opacity:1} }
+.check { width:84px; height:84px; margin:0 auto 12px; }
+.check-circle { stroke:#e6e6e6; stroke-width:2; animation:circle .6s ease forwards; }
+@keyframes circle { from{ stroke-dasharray:0 160 } to{ stroke-dasharray:160 0 } }
+.check-mark { stroke:#16a34a; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:60; stroke-dashoffset:60; animation:draw .5s .25s ease-out forwards; }
+@keyframes draw { to{ stroke-dashoffset:0 } }
+.btn { margin-top:10px; padding:.6rem 1.1rem; border-radius:10px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; }
+.btn:hover { background:#f8fafc }
