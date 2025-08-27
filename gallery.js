@@ -55,7 +55,7 @@ const categories = {
   "room-arrangements": { 
     label: "סידורי חדרים", 
     tag: "room-arrangements",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784417/r82hheaqxgu2xglvxgam.jpg  "
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784417/r82hheaqxgu2xglvxgam.jpg"
   },
   "balloon-numbers": { 
     label: "מספרים מבלונים", 
@@ -422,16 +422,28 @@ function createGalleryItem(img, index, tag) {
   item.dataset.category = tag;
   item.onclick = () => openLightbox(index);
 
+  // אנימציית כניסה קלה (אופציונלי)
   item.style.opacity = '0';
   item.style.transform = 'translateY(30px) scale(0.9)';
 
   const image = document.createElement('img');
-  image.src = img.secure_url || img.url;   // ⬅️ חשוב
+  image.src = img.secure_url || img.url || '';
   image.alt = img.public_id || 'image';
   image.loading = 'lazy';
-  
+
+  // 👈 הוספה ל־DOM — זה החלק שהיה חסר
+  item.appendChild(image);
+
+  // לחשוף אחרי הוספה (אופציונלי)
+  requestAnimationFrame(() => {
+    item.style.transition = 'opacity .4s ease, transform .4s ease';
+    item.style.opacity = '1';
+    item.style.transform = 'none';
+  });
+
   return item;
 }
+
 
 // עדכון הפונקציה הקיימת displayGalleryItems
 function displayGalleryItems(images, tag) {
@@ -453,7 +465,7 @@ function showEmptyMessage() {
 function openLightbox(index) {
   currentIndex = index;
   const image = currentImages[index];
-  lightboxImage.src = image.secure_url;
+  lightboxImage.src = image.secure_url || image.url || '';
   lightboxNumber.textContent = `${index + 1} מתוך ${currentImages.length}`;
   lightboxModal.classList.add('active');
   
@@ -611,6 +623,7 @@ async function loadRecommendations() {
       recommendationsGallery.innerHTML = '<p style="color:#ccc">אין עדיין המלצות</p>';
       return;
     }
+  let recommendationsImages = [];
 
     recommendationsImages = items;
     recommendationsGallery.innerHTML = '';
