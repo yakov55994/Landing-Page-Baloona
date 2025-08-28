@@ -23,12 +23,12 @@ function safeTag(tag) {
   const t = (tag ?? '').toString().trim();
   return t.length ? t : null;
 }
+
 function tagUrl(tag) {
   const t = safeTag(tag);
   if (!t) return null;
   return `${API_BASE}/api/images/${encodeURIComponent(t)}`;
 }
-
 
 // ✅ DOM Elements
 const galleryContainer = document.getElementById('galleryContainer');
@@ -45,75 +45,145 @@ const lightboxNext = document.getElementById('lightboxNext');
 const closeLightboxBtn = document.getElementById('closeLightbox');
 const recommendationsGallery = document.getElementById('recommendationsGallery');
 
-// ✅ קטגוריות
+// ✅ קטגוריות - עם מחשבון תמונות ידני (זמני)
 const categories = {
   "arches": { 
     label: "קשתות", 
     tag: "arches",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784380/efevh5pshki77ertk6cj.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784380/efevh5pshki77ertk6cj.jpg",
+    estimatedCount: 15 // ערך זמני עד שה-API יעבד
   },
   "room-arrangements": { 
     label: "סידורי חדרים", 
     tag: "room-arrangements",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784417/r82hheaqxgu2xglvxgam.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784417/r82hheaqxgu2xglvxgam.jpg",
+    estimatedCount: 12
   },
   "balloon-numbers": { 
     label: "מספרים מבלונים", 
     tag: "balloon-numbers",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753894634/ml45nxkt5nxdhy6xalgd.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753894634/ml45nxkt5nxdhy6xalgd.jpg",
+    estimatedCount: 8
   },
   "photo-reviews": { 
     label: "קירות צילום", 
     tag: "photo-reviews",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784351/rsqvr0tuh05hglkhldmm.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784351/rsqvr0tuh05hglkhldmm.jpg",
+    estimatedCount: 20
   },
   "flowers-balloons": { 
     label: "פרחים מבלונים", 
     tag: "flowers-balloons",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784406/cxejlngj4mypsimy1vud.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784406/cxejlngj4mypsimy1vud.jpg",
+    estimatedCount: 10
   },
   "kids-balloons": { 
     label: "בלונים לילדים", 
     tag: "kids-balloons",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784682/inacvk9hgvblogil3o7g.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784682/inacvk9hgvblogil3o7g.jpg",
+    estimatedCount: 25
   },
   "gender-reveal": { 
     label: "גילוי מין", 
     tag: "gender-reveal",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1754553977/jg6smvseoajxtxjezmjf.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1754553977/jg6smvseoajxtxjezmjf.jpg",
+    estimatedCount: 5
   },
   "balloon-bouquet": { 
     label: "בלונים ליום הולדת", 
     tag: "balloon-bouquet",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784705/abpxvmb203s9mhowrimn.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784705/abpxvmb203s9mhowrimn.jpg",
+    estimatedCount: 18
   },
   "centerpiece": { 
     label: "מרכזי שולחן", 
     tag: "centerpiece",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784510/ha7jtlienis10mnvt3n3.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784510/ha7jtlienis10mnvt3n3.jpg",
+    estimatedCount: 14
   },
   "birth-celebration": { 
     label: "הולדת בן/בת", 
     tag: "Birth of a son or daughter",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1754554200/gpfd4ng5is2x5dy8hzoi.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1754554200/gpfd4ng5is2x5dy8hzoi.jpg",
+    estimatedCount: 7
   },
   "balloon": { 
     label: "כדור פורח", 
     tag: "balloon",
-    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784503/ows8s0bddwmtimrd8o6u.jpg"
+    image: "https://res.cloudinary.com/dbbivwbbt/image/upload/v1753784503/ows8s0bddwmtimrd8o6u.jpg",
+    estimatedCount: 22
   },
   "products": { 
     label: "מוצרים", 
     tag: "",
-    image: "https://images.pexels.com/photos/6578455/pexels-photo-6578455.jpeg"
+    image: "https://images.pexels.com/photos/6578455/pexels-photo-6578455.jpeg",
+    estimatedCount: 0 // בקרוב
   }
 };
 
 let currentImages = [];
 let currentIndex = 0;
+let recommendationsImages = [];
 
-// פונקציה לבניית קוביות הקטגוריות
+// ✅ פונקציה משופרת לטעינת מספר התמונות בכל קטגוריה
+async function loadCategoryCount(tag, countElement) {
+  const url = tagUrl(tag);
+  if (!url) {
+    countElement.textContent = 'בקרוב...';
+    countElement.style.color = '#999';
+    return;
+  }
 
+  try {
+    // הצגת "טוען..." עם אנימציה
+    countElement.textContent = '●●●';
+    countElement.style.color = '#ffc107';
+    
+    // ניסיון ראשון - רגיל
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 שניות timeout
+    
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
+    const data = await res.json();
+    const list = data.resources || data.images || [];
+    
+    // הצגת התוצאה עם אנימציה חלקה
+    countElement.style.transition = 'all 0.3s ease';
+    countElement.style.color = '#28a745'; // ירוק להצלחה
+    countElement.textContent = `${list.length} תמונות`;
+    
+  } catch (error) {
+    console.warn(`שגיאה בטעינת מספר תמונות עבור ${tag}:`, error.message);
+    
+    // נסה להשתמש בערך המשוער מהמטמון
+    const category = Object.values(categories).find(cat => cat.tag === tag);
+    if (category && category.estimatedCount > 0) {
+      countElement.style.color = '#17a2b8'; // כחול למידע משוער
+      countElement.textContent = `~${category.estimatedCount} תמונות`;
+      countElement.title = 'ערך משוער - הטעינה תתעדכן בקרוב';
+    } else {
+      // אם אין ערך משוער - הצג הודעת שגיאה ידידותית
+      countElement.style.color = '#dc3545'; // אדום לשגיאה
+      countElement.textContent = 'לא זמין כרגע';
+      countElement.title = `שגיאה: ${error.message}`;
+    }
+  }
+}
+
+// ✅ פונקציה לבניית קוביות הקטגוריות
 async function buildCategoriesGrid() {
   categoriesGrid.innerHTML = '';
   
@@ -129,6 +199,11 @@ async function buildCategoriesGrid() {
     image.alt = info.label;
     image.loading = 'lazy';
     
+    // טיפול בשגיאות טעינת תמונה
+    image.onerror = function() {
+      this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSIjOTk5Ij7Xqteq157XldegPC90ZXh0Pjwvc3ZnPg==';
+    };
+    
     // אוברליי
     const overlay = document.createElement('div');
     overlay.className = 'category-overlay';
@@ -136,10 +211,6 @@ async function buildCategoriesGrid() {
     // תוכן
     const content = document.createElement('div');
     content.className = 'category-content';
-    
-    const icon = document.createElement('span');
-    icon.className = 'category-icon';
-    icon.textContent = info.icon;
     
     const title = document.createElement('div');
     title.className = 'category-title';
@@ -150,7 +221,6 @@ async function buildCategoriesGrid() {
     count.textContent = 'טוען...';
     
     // הרכבה
-    content.appendChild(icon);
     content.appendChild(title);
     content.appendChild(count);
     
@@ -159,44 +229,49 @@ async function buildCategoriesGrid() {
     box.appendChild(content);
     
     // אירוע לחיצה
-if (safeTag(info.tag)) {
-  box.onclick = () => selectCategory(box, info);
-} else {
-  box.classList.add('disabled'); // תן סטייל "בקרוב"
-  box.onclick = () => alert('בקרוב...');
-}
+    if (safeTag(info.tag)) {
+      box.onclick = () => selectCategory(box, info);
+    } else {
+      box.classList.add('disabled');
+      count.textContent = 'בקרוב...';
+      count.style.color = '#999';
+      box.onclick = () => {
+        // הצגת הודעה ידידותית
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+          position: fixed; top: 20px; right: 20px; z-index: 9999;
+          background: #17a2b8; color: white; padding: 15px 20px;
+          border-radius: 8px; font-size: 14px; font-weight: 500;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          transform: translateX(100%); transition: transform 0.3s ease;
+        `;
+        toast.textContent = `${info.label} - בקרוב! 🎈`;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+        setTimeout(() => {
+          toast.style.transform = 'translateX(100%)';
+          setTimeout(() => toast.remove(), 300);
+        }, 2500);
+      };
+    }
     
     categoriesGrid.appendChild(box);
     
-    // טעינת מספר התמונות
-    loadCategoryCount(info.tag, count);
+    // טעינת מספר התמונות באופן אסינכרוני
+    if (safeTag(info.tag)) {
+      loadCategoryCount(info.tag, count);
+    }
   }
   
   // סימון הקטגוריה הראשונה כפעילה
   const firstBox = categoriesGrid.firstElementChild;
-  if (firstBox) {
+  if (firstBox && !firstBox.classList.contains('disabled')) {
     firstBox.classList.add('active');
   }
 }
-// פונקציה לטעינת מספר התמונות בכל קטגוריה
-async function loadCategoryCount(tag, countElement) {
-  const url = tagUrl(tag);
-  if (!url) {
-    countElement.textContent = '—';
-    return;
-  }
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    const list = data.resources || data.images || [];
-    countElement.textContent = `${list.length} תמונות`;
-  } catch {
-    countElement.textContent = '0 תמונות';
-  }
-}
 
-
-// פונקציה לבחירת קטגוריה
+// ✅ פונקציה לבחירת קטגוריה עם שיפורים
 function smartScrollTo(el, offset = 90) {
   if (!el) return;
   const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
@@ -204,26 +279,30 @@ function smartScrollTo(el, offset = 90) {
 }
 
 function selectCategory(selectedBox, categoryInfo) {
+  // הסרת הסימון מכל הקוביות
   document.querySelectorAll('.category-box').forEach(box => box.classList.remove('active'));
   selectedBox.classList.add('active');
 
-  currentCategoryTitle.textContent = categoryInfo.label;
+  // עדכון כותרת הקטגוריה
+  currentCategoryTitle.innerHTML = `<span style="color: #ffc107;">📸</span> ${categoryInfo.label}`;
+  
+  // טעינת הגלריה
   loadGallery(categoryInfo.tag);
 
-  // גלול לתחילת מקטע הגלריה – בלי “לחתוך” להמלצות
+  // גלילה חלקה לגלריה
   const gallerySection = document.getElementById('gallerySection');
   setTimeout(() => {
-    smartScrollTo(gallerySection, 90); // עדכן 90 לפי גובה ההאדר שלך
+    smartScrollTo(gallerySection, 90);
   }, 300);
 }
 
-
-// פונקציה משופרת לטעינת גלריה עם כפתורי הצג/הסתר
+// ✅ פונקציה משופרת לטעינת גלריה עם שיפורי ביצועים
 async function loadGallery(tag) {
   MAX_VISIBLE_IMAGES = getMaxVisibleImages();
 
+  // ניקוי ראשוני
   galleryContainer.innerHTML = '';
-  galleryCounter.textContent = 'טוען תמונות...';
+  galleryCounter.innerHTML = '<span style="color: #ffc107;">⏳ טוען תמונות...</span>';
   removeGalleryButtons();
 
   const url = tagUrl(tag);
@@ -234,29 +313,100 @@ async function loadGallery(tag) {
   }
 
   try {
-    const res = await fetch(url);
+    // הוספת loading spinner
+    galleryContainer.innerHTML = `
+      <div class="loading-spinner" style="
+        display: flex; justify-content: center; align-items: center;
+        height: 200px; font-size: 18px; color: #ffc107;
+      ">
+        <div style="
+          width: 40px; height: 40px; border: 4px solid #f3f3f3;
+          border-top: 4px solid #ffc107; border-radius: 50%;
+          animation: spin 1s linear infinite; margin-right: 15px;
+        "></div>
+        טוען גלריה...
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    `;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 שניות
+
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      throw new Error(`שגיאת שרת: ${res.status} - ${res.statusText}`);
+    }
+
     const data = await res.json();
-    // תמיכה גם ב-resources וגם ב-images
     currentImages = data.resources || data.images || [];
 
-    if (!currentImages.length) return showEmptyMessage();
+    // ניקוי הספינר
+    galleryContainer.innerHTML = '';
 
-    galleryCounter.innerHTML = `מספר תמונות: <strong>${currentImages.length}</strong>`;
+    if (!currentImages.length) {
+      showEmptyMessage();
+      galleryCounter.innerHTML = '<span style="color: #dc3545;">📭 אין תמונות בקטגוריה זו</span>';
+      removeGalleryButtons();
+      return;
+    }
+
+    // עדכון מונה עם עיצוב משופר
+    galleryCounter.innerHTML = `
+      <span style="color: #28a745; font-weight: 600;">
+        📊 נמצאו <strong style="color: #ffc107;">${currentImages.length}</strong> תמונות
+      </span>
+    `;
+
+    // הצגת התמונות הראשונות
     displayGalleryItems(currentImages.slice(0, MAX_VISIBLE_IMAGES), tag);
 
+    // יצירת כפתורים אם יש תמונות נוספות
     if (currentImages.length > MAX_VISIBLE_IMAGES) {
-      setTimeout(() => createGalleryButtons(tag), 100);
+      setTimeout(() => createGalleryButtons(tag), 150);
     }
+
   } catch (err) {
     console.error('שגיאה בטעינת תמונות:', err);
-    galleryCounter.textContent = 'שגיאה בטעינת תמונות';
-    showEmptyMessage();
+    
+    galleryContainer.innerHTML = `
+      <div class="error-message" style="
+        text-align: center; padding: 40px; color: #dc3545;
+        background: #f8d7da; border: 1px solid #f5c6cb;
+        border-radius: 8px; margin: 20px 0;
+      ">
+        <h3 style="margin: 0 0 10px 0;">⚠️ שגיאה בטעינת התמונות</h3>
+        <p style="margin: 0; font-size: 14px; opacity: 0.8;">
+          ${err.name === 'AbortError' ? 'הטעינה ארכה יותר מהצפוי' : err.message}
+        </p>
+        <button onclick="loadGallery('${tag}')" style="
+          margin-top: 15px; padding: 8px 16px; background: #dc3545;
+          color: white; border: none; border-radius: 4px; cursor: pointer;
+        ">נסה שוב</button>
+      </div>
+    `;
+    
+    galleryCounter.innerHTML = '<span style="color: #dc3545;">❌ שגיאה בטעינת התמונות</span>';
   }
 }
 
+// ✅ המשך הקוד הקיים עם שיפורים קלים...
+
 // יצירת כפתורי הצג עוד והסתר
 function createGalleryButtons(tag) {
-  // בדיקה אם כבר קיים כפתור - אם כן, לא ליצור חדש
   const existingButtons = document.getElementById('galleryButtons');
   if (existingButtons) {
     console.log('כפתור כבר קיים, לא יוצר חדש');
@@ -267,15 +417,15 @@ function createGalleryButtons(tag) {
   buttonsContainer.className = 'gallery-buttons';
   buttonsContainer.id = 'galleryButtons';
   
-  // כפתור הצג עוד
   const showMoreBtn = document.createElement('button');
   showMoreBtn.className = 'show-more-btn';
-  showMoreBtn.innerHTML = 'הצג עוד תמונות ';
+  showMoreBtn.innerHTML = 'הצג עוד תמונות 📸';
   showMoreBtn.onclick = () => showMoreImages(showMoreBtn, tag);
   
   buttonsContainer.appendChild(showMoreBtn);
   galleryContainer.parentElement.appendChild(buttonsContainer);
 }
+
 
 // הצגת תמונות נוספות
 function showMoreImages(showBtn, tag) {
@@ -422,7 +572,7 @@ function createGalleryItem(img, index, tag) {
   item.dataset.category = tag;
   item.onclick = () => openLightbox(index);
 
-  // אנימציית כניסה קלה (אופציונלי)
+  // אנימציית כניסה
   item.style.opacity = '0';
   item.style.transform = 'translateY(30px) scale(0.9)';
 
@@ -431,10 +581,14 @@ function createGalleryItem(img, index, tag) {
   image.alt = img.public_id || 'image';
   image.loading = 'lazy';
 
-  // 👈 הוספה ל־DOM — זה החלק שהיה חסר
-  item.appendChild(image);
+  // ✅ מספר רץ על התמונה
+  const numberBadge = document.createElement('span');
+  numberBadge.className = 'image-number-badge';
+  numberBadge.textContent = String(index + 1);
 
-  // לחשוף אחרי הוספה (אופציונלי)
+  item.appendChild(image);
+  item.appendChild(numberBadge); // <-- הוספה של המספר
+
   requestAnimationFrame(() => {
     item.style.transition = 'opacity .4s ease, transform .4s ease';
     item.style.opacity = '1';
@@ -443,6 +597,8 @@ function createGalleryItem(img, index, tag) {
 
   return item;
 }
+
+
 
 
 // עדכון הפונקציה הקיימת displayGalleryItems
