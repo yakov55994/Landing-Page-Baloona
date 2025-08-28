@@ -313,94 +313,111 @@ async function loadGallery(tag) {
   }
 
   try {
-    // הוספת loading spinner
-    galleryContainer.innerHTML = `
-      <div class="loading-spinner" style="
-        display: flex; justify-content: center; align-items: center;
-        height: 200px; font-size: 18px; color: #ffc107;
-      ">
-        <div style="
-          width: 40px; height: 40px; border: 4px solid #f3f3f3;
-          border-top: 4px solid #ffc107; border-radius: 50%;
-          animation: spin 1s linear infinite; margin-right: 15px;
-        "></div>
-        טוען גלריה...
-      </div>
-      <style>
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      </style>
-    `;
+  // ✅ הצגת ספינר טעינה עדין
+  // ספינר טעינה ממורכז באמת
+galleryContainer.innerHTML = `
+  <div class="centered-status" style="
+    /* אם ההורה הוא CSS Grid – פרוס על כל הרוחב */
+    grid-column: 1 / -1;
+    justify-self: center;
+    align-self: center;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 שניות
+    /* ואם ההורה הוא Flex/Block – עדיין נרכז */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache'
-      }
-    });
-    
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      throw new Error(`שגיאת שרת: ${res.status} - ${res.statusText}`);
+    min-height: 220px;
+    text-align: center;
+  ">
+    <div style="
+      width: 36px; height: 36px; border: 3px solid #e9ecef;
+      border-top: 3px solid #ffc107; border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 12px;
+    "></div>
+    <span style="font-size: 15px; color: #6c757d;">טוען גלריה...</span>
+  </div>
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
+  </style>
+`;
 
-    const data = await res.json();
-    currentImages = data.resources || data.images || [];
 
-    // ניקוי הספינר
-    galleryContainer.innerHTML = '';
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    if (!currentImages.length) {
-      showEmptyMessage();
-      galleryCounter.innerHTML = '<span style="color: #dc3545;">📭 אין תמונות בקטגוריה זו</span>';
-      removeGalleryButtons();
-      return;
+  const res = await fetch(url, {
+    signal: controller.signal,
+    headers: {
+      'Accept': 'application/json',
+      'Cache-Control': 'no-cache'
     }
+  });
 
-    // עדכון מונה עם עיצוב משופר
-    galleryCounter.innerHTML = `
-      <span style="color: #28a745; font-weight: 600;">
-        📊 נמצאו <strong style="color: #ffc107;">${currentImages.length}</strong> תמונות
-      </span>
-    `;
+  clearTimeout(timeoutId);
 
-    // הצגת התמונות הראשונות
-    displayGalleryItems(currentImages.slice(0, MAX_VISIBLE_IMAGES), tag);
-
-    // יצירת כפתורים אם יש תמונות נוספות
-    if (currentImages.length > MAX_VISIBLE_IMAGES) {
-      setTimeout(() => createGalleryButtons(tag), 150);
-    }
-
-  } catch (err) {
-    console.error('שגיאה בטעינת תמונות:', err);
-    
-    galleryContainer.innerHTML = `
-      <div class="error-message" style="
-        text-align: center; padding: 40px; color: #dc3545;
-        background: #f8d7da; border: 1px solid #f5c6cb;
-        border-radius: 8px; margin: 20px 0;
-      ">
-        <h3 style="margin: 0 0 10px 0;">⚠️ שגיאה בטעינת התמונות</h3>
-        <p style="margin: 0; font-size: 14px; opacity: 0.8;">
-          ${err.name === 'AbortError' ? 'הטעינה ארכה יותר מהצפוי' : err.message}
-        </p>
-        <button onclick="loadGallery('${tag}')" style="
-          margin-top: 15px; padding: 8px 16px; background: #dc3545;
-          color: white; border: none; border-radius: 4px; cursor: pointer;
-        ">נסה שוב</button>
-      </div>
-    `;
-    
-    galleryCounter.innerHTML = '<span style="color: #dc3545;">❌ שגיאה בטעינת התמונות</span>';
+  if (!res.ok) {
+    throw new Error(`שגיאת שרת: ${res.status} - ${res.statusText}`);
   }
+
+  const data = await res.json();
+  currentImages = data.resources || data.images || [];
+
+  // ✅ ניקוי הספינר
+  galleryContainer.innerHTML = '';
+
+  if (!currentImages.length) {
+    showEmptyMessage();
+    galleryCounter.innerHTML = '<span style="color:#6c757d;">📭 אין תמונות בקטגוריה זו</span>';
+    removeGalleryButtons();
+    return;
+  }
+
+  galleryCounter.innerHTML = `
+    <span style="color:#495057; font-weight:500;">
+      📊 נמצאו <strong style="color:#ffc107;">${currentImages.length}</strong> תמונות
+    </span>
+  `;
+
+  displayGalleryItems(currentImages.slice(0, MAX_VISIBLE_IMAGES), tag);
+
+  if (currentImages.length > MAX_VISIBLE_IMAGES) {
+    setTimeout(() => createGalleryButtons(tag), 150);
+  }
+
+} catch (err) {
+  console.error('שגיאה בטעינת תמונות:', err);
+
+  galleryContainer.innerHTML = `
+  <div class="centered-status" style="
+    grid-column: 1 / -1;
+    justify-self: center;
+    align-self: center;
+    width: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 220px; text-align: center; padding: 20px;
+  ">
+    <h3 style="margin: 0 0 8px; font-size: 16px; color: #dc3545;">⚠️ לא הצלחנו לטעון</h3>
+    <p style="margin: 0; font-size: 14px; color: #6c757d;">
+      ${err.name === 'AbortError' ? 'הטעינה ארכה יותר מהצפוי' : err.message}
+    </p>
+    <button onclick="loadGallery('${tag}')" style="
+      margin-top: 14px; padding: 6px 14px;
+      background: #ffc107; color: #212529;
+      border: none; border-radius: 999px; cursor: pointer; font-size: 14px;
+    ">נסה שוב</button>
+  </div>
+`;
+
+
+  galleryCounter.innerHTML = '<span style="color:#dc3545;">❌ שגיאה בטעינת התמונות</span>';
+}
+
 }
 
 // ✅ המשך הקוד הקיים עם שיפורים קלים...

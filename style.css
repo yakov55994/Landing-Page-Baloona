@@ -2982,3 +2982,59 @@ div.modern-gallery {
 .btn { margin-top:10px; padding:.6rem 1.1rem; border-radius:10px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; }
 .btn:hover { background:#f8fafc }
 
+.loading-bloom {
+    display: inline-block;
+    position: relative;
+    width: 16px;
+    height: 16px;
+    margin-left: 8px;
+}
+
+.loading-bloom::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    animation: bloom 2s ease-in-out infinite;
+}
+
+.loading-bloom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    border: 2px solid #ff6b6b;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    animation: bloom-ring 2s ease-in-out infinite 0.5s;
+}
+
+@keyframes bloom {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes bloom-ring {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
